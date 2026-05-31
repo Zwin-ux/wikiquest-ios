@@ -103,7 +103,7 @@ corepack pnpm@10 run typecheck
 xcodegen generate --spec project.yml
 ```
 
-Then run the relevant Xcode tests. CI will build the app and App Clip on macOS.
+Then run the relevant Xcode tests. Public CI builds the app and App Clip, runs the Swift unit suite, and compiles simulator test bundles on macOS. Full UI smoke runs remain part of TestFlight/device QA because simulator accessibility timing can be noisy for boot and sign-in screens.
 
 ## License
 

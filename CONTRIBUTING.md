@@ -33,6 +33,8 @@ xcodebuild \
   build-for-testing
 ```
 
+Public CI runs generated-asset checks, script typecheck, app/App Clip builds, and the Swift unit suite. For visual or navigation changes, still attach real simulator or TestFlight screenshots because UI smoke is a release gate, not a substitute for design review.
+
 ## Pull Requests
 
 Every PR should include:
