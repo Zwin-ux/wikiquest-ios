@@ -47,12 +47,14 @@ struct CommandButton: View {
     var isDisabled = false
     var playsHaptic = true
     var action: () -> Void
+    @State private var tapToken = 0
 
     var body: some View {
         Button(action: {
             if playsHaptic {
                 Haptics.light()
             }
+            tapToken &+= 1
             action()
         }) {
             Label(title, systemImage: icon)
@@ -66,6 +68,7 @@ struct CommandButton: View {
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.45 : 1)
         .buttonStyle(ArcadePressStyle())
+        .motionTick(trigger: tapToken, tint: tint, enabled: !isDisabled)
     }
 }
 
@@ -508,6 +511,7 @@ struct StatusMetric: View {
         .overlay(alignment: .top) {
             Rectangle().fill(WikiTheme.rule.opacity(0.42)).frame(height: 1)
         }
+        .motionTick(trigger: "\(value ?? -999_999)-\(text ?? "")", tint: tint)
     }
 }
 
@@ -529,6 +533,7 @@ struct GameHUDPill: View {
     let value: String
     var systemImage: String?
     var tint: Color = WikiTheme.blue
+    var flashesOnChange = true
 
     var body: some View {
         HStack(spacing: 7) {
@@ -546,6 +551,8 @@ struct GameHUDPill: View {
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
+                    .contentTransition(.numericText())
+                    .animation(WikiMotion.ticker, value: value)
             }
         }
         .padding(.horizontal, 9)
@@ -555,6 +562,7 @@ struct GameHUDPill: View {
             Rectangle().fill(tint).frame(width: 2)
         }
         .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .motionTick(trigger: value, tint: tint, enabled: flashesOnChange)
     }
 }
 
@@ -623,12 +631,14 @@ struct CommandRow: View {
     var isDisabled = false
     var playsHaptic = true
     var action: () -> Void
+    @State private var tapToken = 0
 
     var body: some View {
         Button(action: {
             if playsHaptic {
                 Haptics.light()
             }
+            tapToken &+= 1
             action()
         }) {
             HStack(spacing: 12) {
@@ -667,6 +677,7 @@ struct CommandRow: View {
         .buttonStyle(ArcadePressStyle())
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.52 : 1)
+        .motionTick(trigger: tapToken, tint: tint, enabled: !isDisabled)
     }
 }
 
@@ -772,6 +783,7 @@ struct ResultBanner: View {
             Rectangle().fill(tint).frame(height: 3)
         }
         .transition(.scale(scale: motion.reduceMotion ? 1 : 0.98).combined(with: .opacity))
+        .resultPop(trigger: "\(title)-\(detail)-\(score ?? -1)", tint: tint)
     }
 }
 
@@ -844,6 +856,7 @@ struct ArticleHeroImage: View {
                 .stroke(tint.opacity(0.60), lineWidth: 1)
         }
         .animation(WikiMotion.active(WikiMotion.panel, reduceMotion: motion.reduceMotion), value: visualState)
+        .revealSweep(trigger: visualState, tint: tint, enabled: visualState != .locked)
         .accessibilityLabel(title)
     }
 
@@ -986,10 +999,12 @@ struct QuestDeckCard: View {
     let primaryMetric: WikiMetric
     var tint: Color = WikiTheme.blue
     let action: () -> Void
+    @State private var tapToken = 0
 
     var body: some View {
         Button(action: {
             Haptics.light()
+            tapToken &+= 1
             action()
         }) {
             ZStack(alignment: .bottomLeading) {
@@ -1046,6 +1061,7 @@ struct QuestDeckCard: View {
             }
         }
         .buttonStyle(ArcadePressStyle())
+        .motionTick(trigger: tapToken, tint: tint)
     }
 
     private var metricBadge: some View {

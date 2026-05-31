@@ -151,7 +151,7 @@ private struct RacePhotoStage: View {
 
                 VStack(alignment: .trailing, spacing: 7) {
                     GameHUDPill(label: "Clicks", value: "\(clicks)", systemImage: "cursorarrow.click", tint: WikiTheme.blue)
-                    GameHUDPill(label: "Time", value: "\(elapsed)s", systemImage: "timer", tint: WikiTheme.violet)
+                    GameHUDPill(label: "Time", value: "\(elapsed)s", systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
                 }
                 .padding(14)
 
@@ -249,6 +249,7 @@ private struct RaceTrailInline: View {
                                     .lineLimit(1)
                             }
                             .padding(.vertical, 7)
+                            .transition(.opacity.combined(with: .move(edge: .trailing)))
 
                             if index < path.count - 1 {
                                 Rectangle()
@@ -264,6 +265,7 @@ private struct RaceTrailInline: View {
         .overlay(alignment: .top) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
+        .motionTick(trigger: path.count, tint: WikiTheme.blue, enabled: !path.isEmpty)
     }
 }
 
@@ -276,20 +278,22 @@ private struct LinkChoiceList: View {
 
     var body: some View {
         FlatSection(title: "Choose the next blue link") {
-            ForEach(links) { link in
+            ForEach(Array(links.enumerated()), id: \.element.id) { index, link in
                 let visited = visitedTitles.contains(link.title)
-                Button {
-                    choose(link)
-                } label: {
-                    LinkChoiceRow(
-                        title: link.label,
-                        media: mediaFor(link),
-                        visited: visited,
-                        loading: loadingTitle == link.title
-                    )
+                PanelReveal(delay: Double(index) * 0.018) {
+                    Button {
+                        choose(link)
+                    } label: {
+                        LinkChoiceRow(
+                            title: link.label,
+                            media: mediaFor(link),
+                            visited: visited,
+                            loading: loadingTitle == link.title
+                        )
+                    }
+                    .buttonStyle(ArcadePressStyle())
+                    .disabled(loadingTitle != nil || visited)
                 }
-                .buttonStyle(ArcadePressStyle())
-                .disabled(loadingTitle != nil || visited)
             }
         }
     }
@@ -300,6 +304,7 @@ private struct LinkChoiceRow: View {
     let media: WikiMedia?
     let visited: Bool
     let loading: Bool
+    @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
         HStack(spacing: 12) {
@@ -318,9 +323,11 @@ private struct LinkChoiceRow: View {
                 }
             }
             Spacer(minLength: 8)
-            Image(systemName: visited ? "checkmark" : "chevron.right")
+            Image(systemName: loading ? "arrow.triangle.2.circlepath" : (visited ? "checkmark" : "chevron.right"))
                 .font(.callout.weight(.bold))
                 .foregroundStyle(visited ? WikiTheme.muted : WikiTheme.blue)
+                .rotationEffect(.degrees(loading && !motion.reduceMotion ? 18 : 0))
+                .wikiBounce(enabled: loading && !motion.reduceMotion, value: loading)
         }
         .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
         .padding(.vertical, 7)
@@ -328,5 +335,6 @@ private struct LinkChoiceRow: View {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
         .opacity(visited ? 0.62 : 1)
+        .motionTick(trigger: loading, tint: WikiTheme.blue, enabled: loading)
     }
 }

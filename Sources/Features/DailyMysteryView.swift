@@ -134,7 +134,7 @@ private struct MysteryPhotoStage: View {
                 VStack(alignment: .trailing, spacing: 7) {
                     GameHUDPill(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber)
                     GameHUDPill(label: "Score", value: "\(viewModel.score)", systemImage: "star.fill", tint: WikiTheme.green)
-                    GameHUDPill(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet)
+                    GameHUDPill(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
                 }
                 .padding(14)
             }
@@ -288,9 +288,11 @@ private struct SuggestionRail: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Kicker(text: "Suggestions")
-            ForEach(suggestions, id: \.self) { suggestion in
-                CommandRow(title: suggestion, systemImage: "arrow.up.forward", tint: WikiTheme.blue, playsHaptic: false) {
-                    choose(suggestion)
+            ForEach(Array(suggestions.enumerated()), id: \.element) { index, suggestion in
+                PanelReveal(delay: Double(index) * 0.025) {
+                    CommandRow(title: suggestion, systemImage: "arrow.up.forward", tint: WikiTheme.blue, playsHaptic: false) {
+                        choose(suggestion)
+                    }
                 }
             }
         }
@@ -300,20 +302,25 @@ private struct SuggestionRail: View {
 
 private struct GuessHistory: View {
     let guesses: [GuessRecord]
+    @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
         if !guesses.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 Kicker(text: "Guesses")
-                ForEach(guesses) { guess in
-                    HStack {
-                        Text(guess.text)
-                            .font(.callout.monospaced())
-                        Spacer()
-                        Image(systemName: guess.correct ? "checkmark.circle.fill" : "xmark.circle")
-                            .foregroundStyle(guess.correct ? WikiTheme.green : WikiTheme.red)
+                ForEach(Array(guesses.enumerated()), id: \.element.id) { index, guess in
+                    PanelReveal(delay: Double(index) * 0.02) {
+                        HStack {
+                            Text(guess.text)
+                                .font(.callout.monospaced())
+                            Spacer()
+                            Image(systemName: guess.correct ? "checkmark.circle.fill" : "xmark.circle")
+                                .foregroundStyle(guess.correct ? WikiTheme.green : WikiTheme.red)
+                                .wikiBounce(enabled: !motion.reduceMotion, value: guess.correct)
+                        }
+                        .padding(.vertical, 5)
+                        .motionTick(trigger: guess.correct, tint: guess.correct ? WikiTheme.green : WikiTheme.red)
                     }
-                    .padding(.vertical, 5)
                 }
             }
             .transition(.opacity)

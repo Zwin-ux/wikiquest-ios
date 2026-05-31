@@ -162,6 +162,7 @@ private struct HomeStats: View {
 private struct HomeModeRail: View {
     let modes: [ModeTile]
     let navigate: (AppTab) -> Void
+    @State private var selectedModeID: String?
 
     private let columns = [
         GridItem(.flexible(), spacing: 8),
@@ -177,6 +178,7 @@ private struct HomeModeRail: View {
                     PanelReveal(delay: Double(index) * 0.035) {
                         Button {
                             Haptics.light()
+                            selectedModeID = mode.id
                             navigate(mode.tab)
                         } label: {
                             VStack(alignment: .leading, spacing: 8) {
@@ -216,6 +218,7 @@ private struct HomeModeRail: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(ArcadePressStyle())
+                        .motionTick(trigger: selectedModeID == mode.id ? selectedModeID : nil, tint: mode.color)
                     }
                 }
             }

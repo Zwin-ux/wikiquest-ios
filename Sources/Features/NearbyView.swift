@@ -40,6 +40,7 @@ struct NearbyView: View {
                                     .foregroundStyle(WikiTheme.blue)
                                     .shadow(color: .black.opacity(0.18), radius: 4, y: 2)
                                     .wikiBounce(enabled: !motion.reduceMotion, value: guessPulse)
+                                    .pinPulse(trigger: guessPulse, tint: WikiTheme.blue)
                             }
                         }
                         if viewModel.phase == .revealed {
@@ -49,6 +50,7 @@ struct NearbyView: View {
                                         .font(.system(size: article.id == viewModel.selected?.id ? 28 : 15, weight: .bold))
                                         .foregroundStyle(article.id == viewModel.selected?.id ? WikiTheme.red : WikiTheme.muted)
                                         .wikiBounce(enabled: !motion.reduceMotion, value: viewModel.phase == .revealed)
+                                        .pinPulse(trigger: viewModel.phase == .revealed, tint: article.id == viewModel.selected?.id ? WikiTheme.red : WikiTheme.muted)
                                 }
                             }
                         }
@@ -125,7 +127,7 @@ struct NearbyView: View {
                             revealTitle: viewModel.phase == .revealed ? "Next" : "Reveal",
                             revealIcon: viewModel.phase == .revealed ? "arrow.clockwise" : "mappin.and.ellipse",
                             revealDisabled: revealDisabled,
-                            revealPlaysHaptic: viewModel.phase == .revealed,
+                            revealPlaysHaptic: true,
                             reveal: {
                                 Task {
                                     if viewModel.phase == .revealed {
@@ -404,14 +406,19 @@ private struct MapQuestStatus: View {
 private struct CityRail: View {
     let cities: [KnownCity]
     let choose: (KnownCity) -> Void
+    @State private var selectedCityID: UUID?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Kicker(text: "Jump")
             HStack(spacing: 8) {
                 ForEach(cities) { city in
-                    Button(city.label) {
+                    Button {
+                        Haptics.light()
+                        selectedCityID = city.id
                         choose(city)
+                    } label: {
+                        Text(city.label)
                     }
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(WikiTheme.blue)
@@ -419,6 +426,7 @@ private struct CityRail: View {
                     .padding(.vertical, 7)
                     .overlay(RoundedRectangle(cornerRadius: WikiTheme.radius).stroke(WikiTheme.rule.opacity(0.75)))
                     .buttonStyle(ArcadePressStyle())
+                    .motionTick(trigger: selectedCityID == city.id ? selectedCityID : nil, tint: WikiTheme.blue)
                 }
             }
         }
