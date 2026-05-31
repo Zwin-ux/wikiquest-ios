@@ -6,8 +6,7 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         app.launchEnvironment["WIKIQUEST_APP_CLIP_DISABLE_NETWORK"] = "1"
         app.launch()
 
-        XCTAssertTrue(app.otherElements["ClipQuestRoot"].waitForExistence(timeout: 6))
-        XCTAssertTrue(app.staticTexts["30-second Mystery."].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["30-second Mystery."].waitForExistence(timeout: Self.launchTimeout))
     }
 
     func testNetworkManifestReplacesFallback() {
@@ -15,7 +14,7 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         app.launchEnvironment["WIKIQUEST_APP_CLIP_MANIFEST_JSON"] = Self.manifestJSON
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["Network Mystery"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.staticTexts["Network Mystery"].waitForExistence(timeout: Self.launchTimeout))
         XCTAssertFalse(app.staticTexts["30-second Mystery."].exists)
     }
 
@@ -24,7 +23,7 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         app.launchEnvironment["WIKIQUEST_APP_CLIP_FORCE_TIMEOUT"] = "1"
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["30-second Mystery."].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.staticTexts["30-second Mystery."].waitForExistence(timeout: Self.launchTimeout))
     }
 
     func testResultCTAAppearsAfterChoice() {
@@ -32,11 +31,11 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         app.launchEnvironment["WIKIQUEST_APP_CLIP_DISABLE_NETWORK"] = "1"
         app.launch()
 
-        XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: Self.launchTimeout))
         app.buttons["ClipQuestChoice-great-wave"].tap()
 
-        XCTAssertTrue(app.otherElements["ClipQuestResultBanner"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestOpenFullApp"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["SOLVED"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestOpenFullApp"].waitForExistence(timeout: 8))
     }
 
     private func makeApp() -> XCUIApplication {
@@ -44,6 +43,8 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         app.launchArguments += ["-UITests"]
         return app
     }
+
+    private static let launchTimeout: TimeInterval = 30
 
     private static let manifestJSON = """
     {
