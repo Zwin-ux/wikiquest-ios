@@ -1,0 +1,190 @@
+name: TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_backend_ready:
+        description: "Confirm API_BASE_URL is production/staging and smoke-tested"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  upload:
+    if: ${{ inputs.confirm_backend_ready == true }}
+    runs-on: macos-15
+    environment: app-store
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Verify generated assets
+        run: |
+          corepack enable
+          corepack pnpm@10 install --frozen-lockfile
+          corepack pnpm@10 run assets:wikiquest
+          corepack pnpm@10 run typecheck
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate --spec project.yml
+
+      - name: Guard release configuration
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          REVENUECAT_IOS_API_KEY: ${{ secrets.REVENUECAT_IOS_API_KEY }}
+        run: |
+          if [ -z "$API_BASE_URL" ]; then
+            echo "API_BASE_URL secret is missing."
+            exit 1
+          fi
+          case "$API_BASE_URL" in
+            http://localhost*|http://127.*|*replit.app*)
+              echo "API_BASE_URL must point at production/staging backend before upload."
+              exit 1
+              ;;
+          esac
+          if [ -z "$REVENUECAT_IOS_API_KEY" ]; then
+            echo "REVENUECAT_IOS_API_KEY secret is missing."
+            exit 1
+          fi
+
+      - name: Import signing assets
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          APPLE_WIDGETS_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_WIDGETS_PROVISIONING_PROFILE_BASE64 }}
+          APPLE_APP_CLIP_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_APP_CLIP_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          printf "%s" "$APPLE_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/wikiquest.mobileprovision"
+          printf "%s" "$APPLE_WIDGETS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/wikiquest-widgets.mobileprovision"
+          printf "%s" "$APPLE_APP_CLIP_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/wikiquest-appclip.mobileprovision"
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/wikiquest-signing.keychain-db"
+          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
+          security unlock-keychain -p "" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          printf "%s" "$APPLE_CERTIFICATE_BASE64" | base64 --decode > certificate.p12
+          security import certificate.p12 -k "$KEYCHAIN_PATH" -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Create export options
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_PROVISIONING_PROFILE_SPECIFIER }}
+          IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER }}
+          IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER }}
+        run: |
+          cat > ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.wikiquest.app</key>
+              <string>${IOS_PROVISIONING_PROFILE_SPECIFIER}</string>
+              <key>com.wikiquest.app.widgets</key>
+              <string>${IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER}</string>
+              <key>com.wikiquest.app.Clip</key>
+              <string>${IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER}</string>
+            </dict>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>teamID</key>
+            <string>${APPLE_TEAM_ID}</string>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Archive and export
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          REVENUECAT_IOS_API_KEY: ${{ secrets.REVENUECAT_IOS_API_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          IOS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_PROVISIONING_PROFILE_SPECIFIER }}
+          IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER }}
+          IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER }}
+        run: |
+          mkdir -p private_keys build
+          KEY_PATH="$PWD/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          printf "%s" "$ASC_API_KEY_P8_BASE64" | base64 --decode > "$KEY_PATH"
+
+          xcodebuild \
+            -project WikiQuest.xcodeproj \
+            -scheme WikiQuest \
+            -destination "generic/platform=iOS" \
+            -archivePath build/WikiQuest.xcarchive \
+            API_BASE_URL="$API_BASE_URL" \
+            REVENUECAT_IOS_API_KEY="$REVENUECAT_IOS_API_KEY" \
+            APPLE_TEAM_ID="$APPLE_TEAM_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$IOS_PROVISIONING_PROFILE_SPECIFIER" \
+            IOS_PROVISIONING_PROFILE_SPECIFIER="$IOS_PROVISIONING_PROFILE_SPECIFIER" \
+            IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER="$IOS_WIDGETS_PROVISIONING_PROFILE_SPECIFIER" \
+            IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER="$IOS_APP_CLIP_PROVISIONING_PROFILE_SPECIFIER" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            archive
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/WikiQuest.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            -exportPath build/export
+
+      - name: Inspect exported bundle
+        run: |
+          rm -rf build/inspect
+          mkdir -p build/inspect
+          unzip -q build/export/WikiQuest.ipa -d build/inspect
+          test -f build/inspect/Payload/WikiQuest.app/Assets.car
+          test -d build/inspect/Payload/WikiQuest.app/AppClips/WikiQuestClip.app
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" build/inspect/Payload/WikiQuest.app/Info.plist
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" build/inspect/Payload/WikiQuest.app/AppClips/WikiQuestClip.app/Info.plist
+
+      - name: Upload TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          mkdir -p private_keys
+          printf "%s" "$ASC_API_KEY_P8_BASE64" | base64 --decode > "private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          xcrun altool --upload-app \
+            --type ios \
+            --file build/export/WikiQuest.ipa \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"

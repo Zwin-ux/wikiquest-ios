@@ -1,0 +1,34 @@
+# Roadmap
+
+## Current Focus
+
+- Make the Quest Deck feel visual and playable.
+- Keep onboarding short: logo, one preview round, Apple sign-in.
+- Use real Wikipedia/Commons media with source links.
+- Keep App Clip lightweight and account-free.
+- Keep TestFlight release quality high.
+
+## Near Term
+
+- Stronger photo rails for recent discoveries.
+- Better Link Race path animation.
+- More robust no-network and no-image fallbacks.
+- Game Center achievement polish.
+- Widget snapshot refinement.
+- App Clip invocation after production domain setup.
+
+## Later
+
+- Public App Store launch.
+- Android native app.
+- Web/PWA redesign.
+- Seasonal quest packs.
+- Community challenge templates.
+
+## Not Planned Right Now
+
+- Social feed.
+- Chat.
+- Generic classroom management inside the native app.
+- Heavy animation libraries.
+- CloudKit sync.

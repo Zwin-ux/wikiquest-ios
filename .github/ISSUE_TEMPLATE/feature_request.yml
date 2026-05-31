@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest a focused product improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Player problem
+      description: What gets easier, clearer, or more fun?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the smallest useful version.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Onboarding
+        - Mystery
+        - Race
+        - Map
+        - App Clip
+        - Widgets / Live Activities
+        - Design system
+        - Other
+    validations:
+      required: true

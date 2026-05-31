@@ -1,0 +1,36 @@
+# Xcode
+DerivedData/
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.xcodeproj
+!WikiQuest.xcodeproj/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Node tooling for asset generation
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Generated local output
+build/
+coverage/
+WebAssets/
+
+# Signing and App Store credentials
+AuthKey_*.p8
+*.p8
+*.p12
+*.cer
+*.mobileprovision
+private_keys/
+ExportOptions.plist
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

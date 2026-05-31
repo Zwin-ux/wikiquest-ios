@@ -1,0 +1,18 @@
+{
+  "name": "wikiquest-ios",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "assets:wikiquest": "tsx ./scripts/src/generate-wikiquest-assets.ts && tsx ./scripts/src/verify-wikiquest-assets.ts",
+    "assets:verify": "tsx ./scripts/src/verify-wikiquest-assets.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^25.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.2"
+  }
+}
