@@ -59,6 +59,18 @@ jobs:
             echo "REVENUECAT_IOS_API_KEY secret is missing."
             exit 1
           fi
+          case "$REVENUECAT_IOS_API_KEY" in
+            sk_*)
+              echo "REVENUECAT_IOS_API_KEY must be the public iOS SDK key, not a RevenueCat secret API key."
+              exit 1
+              ;;
+            appl_*)
+              ;;
+            *)
+              echo "REVENUECAT_IOS_API_KEY must be the RevenueCat public Apple SDK key. It should start with appl_."
+              exit 1
+              ;;
+          esac
 
       - name: Import signing assets
         env:
