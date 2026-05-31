@@ -202,10 +202,7 @@ struct WikiDock: View {
     var body: some View {
         HStack(spacing: 6) {
             HStack(spacing: 6) {
-                BrandMarkView(variant: .glyph, size: 22, animated: false)
-                Text("WQ")
-                    .font(.caption.weight(.black).monospaced())
-                    .foregroundStyle(WikiTheme.surfaceStrong)
+                BrandMarkView(variant: .glyph, size: 28, animated: false)
             }
             .frame(width: 52, height: 48)
             .overlay {
