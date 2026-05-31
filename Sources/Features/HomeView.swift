@@ -25,37 +25,31 @@ struct HomeView: View {
     private let wikipedia = WikipediaClient()
 
     private let modes = [
-        ModeTile(id: "mystery", title: "Mystery", detail: "Decode the hidden page.", icon: "questionmark.circle", color: WikiTheme.amber, tab: .mystery),
-        ModeTile(id: "race", title: "Race", detail: "Move through blue links.", icon: "link", color: WikiTheme.blue, tab: .race),
-        ModeTile(id: "nearby", title: "Map", detail: "Guess where the page lives.", icon: "mappin.and.ellipse", color: WikiTheme.green, tab: .nearby)
+        ModeTile(id: "mystery", title: "Mystery", detail: "Decode", icon: "questionmark.circle", color: WikiTheme.amber, tab: .mystery),
+        ModeTile(id: "race", title: "Race", detail: "Link fast", icon: "link", color: WikiTheme.blue, tab: .race),
+        ModeTile(id: "nearby", title: "Map", detail: "Pin it", icon: "mappin.and.ellipse", color: WikiTheme.green, tab: .nearby)
     ]
 
     var body: some View {
-        WikiScreen(navigationTitle: "Today", spacing: 20) {
+        WikiScreen(navigationTitle: "Deck", spacing: 16) {
             HomeOSHeader(displayName: session.displayName, now: now)
             HomeStats(profile: profile, entitlements: entitlements, signedIn: session.isSignedIn)
 
             QuestDeckCard(
-                title: "Today's Quest",
-                detail: "Start with Mystery. Keep going into Race or Map.",
+                title: "Daily Mystery",
+                detail: "Decode today's hidden page, then keep the trail alive.",
                 media: deckArticle?.media,
                 primaryMetric: WikiMetric(label: "Reset", text: WikiDisplayFormat.resetCountdown(now: now), tint: WikiTheme.amber),
-                tint: WikiTheme.ink
+                tint: WikiTheme.amber
             ) {
                 navigate(.mystery)
             }
 
-            DiscoveryPhotoRail(items: discoveryItems)
+            MediaCreditRow(media: deckArticle?.media)
 
-            FlatSection(title: "Modes") {
-                ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
-                    PanelReveal(delay: Double(index) * 0.035) {
-                        ModeRow(title: mode.title, detail: mode.detail, systemImage: mode.icon, tint: mode.color) {
-                            navigate(mode.tab)
-                        }
-                    }
-                }
-            }
+            HomeModeRail(modes: modes, navigate: navigate)
+
+            DiscoveryPhotoRail(items: discoveryItems)
 
             ReminderPanel(store: reminders)
         }
@@ -137,7 +131,7 @@ private struct HomeOSHeader: View {
                     .font(.caption.weight(.black).monospaced())
                     .foregroundStyle(WikiTheme.green)
             }
-            Text("One Wikipedia trail for the day: solve, race, place the pin.")
+            Text("Pick up the daily deck. Solve, race, place the pin.")
                 .font(.callout)
                 .foregroundStyle(WikiTheme.muted)
                 .lineSpacing(3)
@@ -162,6 +156,70 @@ private struct HomeStats: View {
             WikiMetric(label: "XP", value: signedIn ? profile?.xp ?? 0 : 0, tint: WikiTheme.blue),
             WikiMetric(label: "Member", text: entitlements?.isMember == true ? "ON" : "OFF", tint: entitlements?.isMember == true ? WikiTheme.green : WikiTheme.muted)
         ])
+    }
+}
+
+private struct HomeModeRail: View {
+    let modes: [ModeTile]
+    let navigate: (AppTab) -> Void
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Kicker(text: "Play")
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
+                    PanelReveal(delay: Double(index) * 0.035) {
+                        Button {
+                            Haptics.light()
+                            navigate(mode.tab)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: mode.icon)
+                                        .font(.headline.weight(.black))
+                                        .foregroundStyle(mode.color)
+                                    Spacer(minLength: 4)
+                                    Circle()
+                                        .fill(mode.color)
+                                        .frame(width: 6, height: 6)
+                                }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(mode.title)
+                                        .font(.callout.weight(.black))
+                                        .foregroundStyle(WikiTheme.ink)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.78)
+                                    Text(mode.detail)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(WikiTheme.muted)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.74)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 86, alignment: .leading)
+                            .padding(10)
+                            .background(WikiTheme.surfaceStrong.opacity(0.62))
+                            .overlay(alignment: .top) {
+                                Rectangle().fill(mode.color).frame(height: 2)
+                            }
+                            .overlay {
+                                RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                                    .stroke(WikiTheme.hairline, lineWidth: 1)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(ArcadePressStyle())
+                    }
+                }
+            }
+        }
     }
 }
 

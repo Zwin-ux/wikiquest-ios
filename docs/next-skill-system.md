@@ -36,6 +36,14 @@ Do not start with `ship`. Shipping a weak flow faster is not the right bottlenec
 
 Build **Quest Deck V2** as the center of the app.
 
+First shipped slice:
+
+- Home deck is image-first with HUD overlay.
+- `Daily Mystery` is the primary deck action.
+- Mystery/Race/Map moved into a compact command rail.
+- Discovery photos remain secondary.
+- Public CI remains the gate after each slice.
+
 ### First Launch
 
 - boot tick: Archive Compass mark, `WikiQuest`, short system pulse

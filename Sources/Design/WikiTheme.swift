@@ -958,19 +958,81 @@ struct QuestDeckCard: View {
             Haptics.light()
             action()
         }) {
-            VStack(alignment: .leading, spacing: 10) {
-                PhotoClueCard(kicker: "TODAY'S DECK", title: title, detail: detail, media: media, visualState: .revealed, tint: tint)
-                HStack(spacing: 14) {
-                    MetricTicker(metric: primaryMetric)
-                    Spacer(minLength: 10)
-                    Label("Start", systemImage: "play.fill")
-                        .font(.callout.weight(.black))
-                        .foregroundStyle(tint)
+            ZStack(alignment: .bottomLeading) {
+                ArticleHeroImage(media: media, title: title, visualState: .revealed, height: 322, tint: tint)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("TODAY'S DECK")
+                                .font(.caption.weight(.black).monospaced())
+                                .foregroundStyle(.white.opacity(0.76))
+                            Text("Wikipedia run")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.white.opacity(0.82))
+                        }
+                        Spacer(minLength: 12)
+                        metricBadge
+                    }
+
+                    Spacer(minLength: 36)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(title)
+                            .font(.system(.largeTitle, design: .serif).weight(.black))
+                            .foregroundStyle(.white)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.68)
+                        Text(detail)
+                            .font(.callout.weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.84))
+                            .lineLimit(2)
+
+                        HStack(spacing: 10) {
+                            Label("Start quest", systemImage: "play.fill")
+                                .font(.callout.weight(.black))
+                                .foregroundStyle(.white)
+                            Rectangle()
+                                .fill(.white.opacity(0.30))
+                                .frame(height: 1)
+                            Image(systemName: "arrow.right")
+                                .font(.callout.weight(.black))
+                                .foregroundStyle(.white)
+                        }
+                        .padding(.top, 5)
+                    }
                 }
-                .padding(.horizontal, 2)
+                .padding(16)
+            }
+            .overlay(alignment: .topLeading) {
+                Rectangle()
+                    .fill(tint)
+                    .frame(width: 64, height: 4)
+                    .padding(14)
             }
         }
         .buttonStyle(ArcadePressStyle())
+    }
+
+    private var metricBadge: some View {
+        VStack(alignment: .trailing, spacing: 3) {
+            Text(primaryMetric.label.uppercased())
+                .font(.caption2.weight(.black).monospaced())
+                .foregroundStyle(.white.opacity(0.66))
+            if let value = primaryMetric.value {
+                TickerNumberText(value: value, font: .system(.callout, design: .monospaced).weight(.black))
+                    .foregroundStyle(.white)
+            } else {
+                Text(primaryMetric.text ?? "-")
+                    .font(.system(.callout, design: .monospaced).weight(.black))
+                    .foregroundStyle(.white)
+                    .contentTransition(.numericText())
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.black.opacity(0.54))
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
     }
 }
 
