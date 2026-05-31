@@ -49,7 +49,7 @@ final class PurchaseStore: ObservableObject {
     @Published var storeEntitlementActive = false
     @Published var hasLoadedOfferings = false
 
-    let productIds = [Self.monthlyProductID, Self.annualProductID]
+    let productIds = [PurchaseStore.monthlyProductID, PurchaseStore.annualProductID]
 
     private static var revenueCatConfigured = false
 
