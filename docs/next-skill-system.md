@@ -68,6 +68,7 @@ First shipped slice:
 - result stamp and media credit after reveal
 - shipped first V2 slice: photo clue now owns the HUD overlay, progress strip, and media credit
 - next design cleanup: make the photo stage the first object, remove duplicate score metrics, and keep the hint/guess commands directly under the playfield
+- cleanup shipped: old intro header removed, mode switch moved under the stage, time joined the HUD, and the duplicate status strip was removed
 
 ### Race
 
@@ -78,6 +79,7 @@ First shipped slice:
 - visual path trail
 - shipped first V2 slice: current article now owns the playfield, target/XP moved into objective strip
 - next design cleanup: remove old explanatory route header, move the trail closer to the objective strip, and keep link rows visually subordinate to the current article stage
+- cleanup shipped: old route copy removed, unused route header components removed, and the trail now lives inside the route stage
 
 ### Map
 
@@ -88,6 +90,7 @@ First shipped slice:
 - distance ticker and source credit
 - shipped first V2 slice: map owns phase/page/distance HUD, below-map copy is now command/status
 - next design cleanup: remove redundant window/header chrome below the map and turn the lower area into one compact command sheet
+- cleanup shipped: redundant lower window chrome removed, phase/status/actions now sit in one flat map command sheet
 
 ### App Clip
 

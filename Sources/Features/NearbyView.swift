@@ -85,8 +85,7 @@ struct NearbyView: View {
                 }
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        WikiOSWindowHeader(title: "Nearby")
+                    MapControlSheet(tint: phaseTint) {
                         MapQuestStatus(title: viewModel.targetTitle, detail: phaseDetail, phase: viewModel.phase, centerLabel: viewModel.centerLabel)
 
                         if location.authorizationDenied || viewModel.phase == .denied {
@@ -122,14 +121,12 @@ struct NearbyView: View {
                             .buttonStyle(ArcadePressStyle())
                         }
 
-                        HStack(spacing: 10) {
-                            CommandButton(
-                                title: viewModel.phase == .revealed ? "Next" : "Reveal",
-                                icon: viewModel.phase == .revealed ? "arrow.clockwise" : "mappin.and.ellipse",
-                                tint: WikiTheme.blue,
-                                isDisabled: revealDisabled,
-                                playsHaptic: viewModel.phase == .revealed
-                            ) {
+                        MapActionRow(
+                            revealTitle: viewModel.phase == .revealed ? "Next" : "Reveal",
+                            revealIcon: viewModel.phase == .revealed ? "arrow.clockwise" : "mappin.and.ellipse",
+                            revealDisabled: revealDisabled,
+                            revealPlaysHaptic: viewModel.phase == .revealed,
+                            reveal: {
                                 Task {
                                     if viewModel.phase == .revealed {
                                         await viewModel.load(center: viewModel.region.center, label: viewModel.centerLabel, denied: location.authorizationDenied)
@@ -137,11 +134,11 @@ struct NearbyView: View {
                                         await viewModel.reveal(session: session)
                                     }
                                 }
-                            }
-                            CommandButton(title: "Locate", icon: "location", tint: WikiTheme.ink) {
+                            },
+                            locate: {
                                 location.request()
                             }
-                        }
+                        )
                     }
                     .padding(WikiTheme.screenPadding)
                 }
@@ -261,6 +258,30 @@ private struct KnownCity: Identifiable {
     let coordinate: CLLocationCoordinate2D
 }
 
+private struct MapControlSheet<Content: View>: View {
+    let tint: Color
+    @ViewBuilder var content: Content
+
+    init(tint: Color, @ViewBuilder content: () -> Content) {
+        self.tint = tint
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            content
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .overlay(alignment: .top) {
+            Rectangle().fill(tint).frame(height: 3)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+    }
+}
+
 private struct MapStatusBadge: View {
     let phase: NearbyPhase
 
@@ -346,9 +367,6 @@ private struct MapQuestStatus: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
-        .overlay(alignment: .top) {
-            Rectangle().fill(phaseTint).frame(height: 2)
-        }
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
@@ -404,6 +422,30 @@ private struct CityRail: View {
                 }
             }
         }
+    }
+}
+
+private struct MapActionRow: View {
+    let revealTitle: String
+    let revealIcon: String
+    let revealDisabled: Bool
+    let revealPlaysHaptic: Bool
+    let reveal: () -> Void
+    let locate: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            CommandButton(
+                title: revealTitle,
+                icon: revealIcon,
+                tint: WikiTheme.blue,
+                isDisabled: revealDisabled,
+                playsHaptic: revealPlaysHaptic,
+                action: reveal
+            )
+            CommandButton(title: "Locate", icon: "location", tint: WikiTheme.ink, action: locate)
+        }
+        .padding(.top, 2)
     }
 }
 

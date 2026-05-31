@@ -46,9 +46,15 @@ Plan-eng review result: UI-only implementation. Reuse existing view models, API 
 
 ### Plan Design Review: Mode Screens
 
-Status: cleared for the next implementation pass with focused cleanup.
+Status: cleanup slice implemented for Mystery, Race, and Map.
 
 Current score: 7.4/10. The direction is right: the modes now use real media, HUD pills, and playfield-first composition. The remaining design debt is old app layout competing with the game stage.
+
+Implemented cleanup:
+
+- Mystery starts with the photo stage, moves mode switching below the stage, and removes the duplicate score/time status strip.
+- Race starts with the current article stage, removes the old route explainer, and attaches the trail directly under the target objective strip.
+- Map removes the extra lower window header and groups status, city jumps, reveal state, and map actions into one flat command sheet.
 
 Priority fixes:
 

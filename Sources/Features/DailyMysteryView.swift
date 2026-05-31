@@ -13,15 +13,9 @@ struct DailyMysteryView: View {
 
     var body: some View {
         WikiScreen(navigationTitle: "Mystery") {
-            ScreenHeader(
-                kicker: "SPECIAL:MYSTERY",
-                title: viewModel.mode == .daily ? "Daily Mystery" : "Practice Mystery",
-                detail: "Read the clues, type a Wikipedia title, keep the streak alive."
-            )
+            MysteryPhotoStage(viewModel: viewModel, detail: photoDetail)
 
             MysteryModeSwitch(selection: $viewModel.mode)
-
-            MysteryPhotoStage(viewModel: viewModel, detail: photoDetail)
 
             if let error = viewModel.error {
                 InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
@@ -140,6 +134,7 @@ private struct MysteryPhotoStage: View {
                 VStack(alignment: .trailing, spacing: 7) {
                     GameHUDPill(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber)
                     GameHUDPill(label: "Score", value: "\(viewModel.score)", systemImage: "star.fill", tint: WikiTheme.green)
+                    GameHUDPill(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet)
                 }
                 .padding(14)
             }
@@ -165,12 +160,6 @@ private struct MysteryPhotoStage: View {
                 }
             }
             .frame(height: 3)
-
-            StatusStrip(items: [
-                StatusMetricItem(label: "Guesses", value: viewModel.guessesRemaining, color: WikiTheme.violet),
-                StatusMetricItem(label: "Score", value: viewModel.score, color: WikiTheme.green),
-                StatusMetricItem(label: "Time", text: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), color: WikiTheme.ink)
-            ])
 
             MediaCreditRow(media: viewModel.isComplete ? viewModel.mysteryMedia : viewModel.clueMedia)
         }

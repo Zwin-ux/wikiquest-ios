@@ -15,12 +15,6 @@ struct LinkRaceView: View {
 
     var body: some View {
         WikiScreen(navigationTitle: "Link Race") {
-            ScreenHeader(
-                kicker: "SPECIAL:LINKRACE",
-                title: routeTitle,
-                detail: "Start on one Wikipedia page and reach the target through blue links."
-            )
-
             if let error = viewModel.error {
                 InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
             }
@@ -36,7 +30,8 @@ struct LinkRaceView: View {
                     fallbackTargetTitle: viewModel.targets?.target,
                     clicks: viewModel.clickCount,
                     elapsed: viewModel.elapsedSeconds(now: now),
-                    xp: viewModel.savedXP ?? 0
+                    xp: viewModel.savedXP ?? 0,
+                    path: viewModel.path
                 )
                     .id(current.article.title)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -64,8 +59,6 @@ struct LinkRaceView: View {
                     Task { await viewModel.newRace() }
                 }
             }
-
-            VisualBreadcrumb(path: viewModel.path, tint: WikiTheme.blue)
 
             if viewModel.current == nil && viewModel.error == nil {
                 WikiLoadingGlyph(title: "READY", detail: "Picking a start and target.", tint: WikiTheme.blue)
@@ -114,11 +107,6 @@ struct LinkRaceView: View {
         }
     }
 
-    private var routeTitle: String {
-        guard let targets = viewModel.targets else { return "Picking a route" }
-        return "\(targets.start) to \(targets.target)"
-    }
-
     private var linkRaceShareText: String {
         guard let targets = viewModel.targets else {
             return "Played WikiQuest Link Race."
@@ -154,6 +142,7 @@ private struct RacePhotoStage: View {
     let clicks: Int
     let elapsed: Int
     let xp: Int
+    let path: [String]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -183,6 +172,7 @@ private struct RacePhotoStage: View {
             }
 
             RaceObjectiveStrip(target: target, fallbackTargetTitle: fallbackTargetTitle, xp: xp)
+            RaceTrailInline(path: path)
             MediaCreditRow(media: current.media)
         }
     }
@@ -227,44 +217,53 @@ private struct RaceObjectiveStrip: View {
     }
 }
 
-private struct RaceRouteHeader: View {
-    let current: WikiArticle?
-    let target: WikiArticle?
-    let fallbackTargetTitle: String?
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            RaceMiniArticle(label: "Current", title: current?.title ?? "Picking start", media: current?.media, tint: WikiTheme.blue)
-            VStack(spacing: 7) {
-                Image(systemName: "arrow.right")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(WikiTheme.muted)
-                Rectangle()
-                    .fill(WikiTheme.hairline)
-                    .frame(width: 1, height: 92)
-            }
-            RaceMiniArticle(label: "Target", title: target?.title ?? fallbackTargetTitle ?? "Target", media: target?.media, tint: WikiTheme.amber)
-        }
-    }
-}
-
-private struct RaceMiniArticle: View {
-    let label: String
-    let title: String
-    let media: WikiMedia?
-    let tint: Color
+private struct RaceTrailInline: View {
+    let path: [String]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            ArticleHeroImage(media: media, title: title, height: 124, tint: tint)
-            Kicker(text: label)
-            Text(title)
-                .font(.caption.weight(.black))
-                .foregroundStyle(WikiTheme.ink)
-                .lineLimit(2)
-                .minimumScaleFactor(0.76)
+            HStack(spacing: 8) {
+                Kicker(text: "Trail")
+                Spacer(minLength: 8)
+                Text("\(max(path.count - 1, 0)) clicks")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.blue)
+            }
+
+            if path.isEmpty {
+                Text("Choose a blue link to start the route.")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.muted)
+                    .padding(.vertical, 7)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 7) {
+                        ForEach(Array(path.enumerated()), id: \.offset) { index, title in
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(index == path.count - 1 ? WikiTheme.blue : WikiTheme.hairline)
+                                    .frame(width: 7, height: 7)
+                                Text(title)
+                                    .font(.caption.weight(.bold).monospaced())
+                                    .foregroundStyle(index == path.count - 1 ? WikiTheme.ink : WikiTheme.blue)
+                                    .lineLimit(1)
+                            }
+                            .padding(.vertical, 7)
+
+                            if index < path.count - 1 {
+                                Rectangle()
+                                    .fill(WikiTheme.hairline)
+                                    .frame(width: 18, height: 1)
+                            }
+                        }
+                    }
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
     }
 }
 
