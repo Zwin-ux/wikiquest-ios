@@ -170,6 +170,7 @@ struct AppClipView: View {
                         .padding(.vertical, 13)
                         .background(ClipPalette.ink)
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .accessibilityIdentifier("ClipQuestOpenFullAppLabel")
                 }
                 .accessibilityIdentifier("ClipQuestOpenFullApp")
             }
@@ -375,6 +376,7 @@ private struct ClipResultBanner: View {
                 Text(title.uppercased())
                     .font(.caption.weight(.bold).monospaced())
                     .foregroundStyle(tint)
+                    .accessibilityIdentifier("ClipQuestResultTitle")
                 Text(detail)
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(ClipPalette.ink)
