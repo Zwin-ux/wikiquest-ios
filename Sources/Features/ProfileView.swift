@@ -10,6 +10,8 @@ struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
     @StateObject private var purchases = PurchaseStore()
     @State private var showDeleteConfirmation = false
+    @State private var showRevenueCatPaywall = false
+    @State private var showCustomerCenter = false
     @State private var isDeletingAccount = false
     @State private var deleteMessage: String?
 
@@ -29,12 +31,13 @@ struct ProfileView: View {
             ProfileStats(profile: viewModel.profile, entitlements: viewModel.entitlements)
             DiscoveryPhotoRail(items: viewModel.discoveredItems)
             ProfileEditor(viewModel: viewModel)
-            MemberPanel(purchases: purchases, entitlements: viewModel.entitlements) {
-                await viewModel.load(signedIn: session.isSignedIn)
-                if viewModel.entitlements?.isMember == true || purchases.storeEntitlementActive {
-                    gameCenter.reportMemberFounder()
-                }
-            }
+            MemberPanel(
+                purchases: purchases,
+                entitlements: viewModel.entitlements,
+                openPaywall: { showRevenueCatPaywall = true },
+                openCustomerCenter: { showCustomerCenter = true },
+                refresh: refreshMembershipState
+            )
             GameCenterPanel(store: gameCenter)
             MysteryProfileStats(stats: viewModel.mysteryStats, daily: viewModel.dailyLeaderboard)
             BarnstarsPanel(barnstars: viewModel.profile?.barnstars ?? [])
@@ -71,6 +74,16 @@ struct ProfileView: View {
             await viewModel.load(signedIn: session.isSignedIn)
         }
         .refreshable { await viewModel.load(signedIn: session.isSignedIn) }
+        .sheet(isPresented: $showRevenueCatPaywall, onDismiss: {
+            Task { await refreshMembershipState() }
+        }) {
+            RevenueCatPaywallSheet(purchases: purchases)
+        }
+        .sheet(isPresented: $showCustomerCenter, onDismiss: {
+            Task { await refreshMembershipState() }
+        }) {
+            RevenueCatCustomerCenterSheet(purchases: purchases)
+        }
         .alert("Delete WikiQuest account?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
@@ -78,6 +91,14 @@ struct ProfileView: View {
             }
         } message: {
             Text("This removes saved profile, XP, leaderboard identity, and contribution log from WikiQuest. App Store purchase history stays with Apple.")
+        }
+    }
+
+    private func refreshMembershipState() async {
+        await purchases.refreshCustomerInfo()
+        await viewModel.load(signedIn: session.isSignedIn)
+        if viewModel.entitlements?.isMember == true || purchases.storeEntitlementActive {
+            gameCenter.reportMemberFounder()
         }
     }
 
@@ -214,20 +235,29 @@ private struct ProfileEditor: View {
 private struct MemberPanel: View {
     @ObservedObject var purchases: PurchaseStore
     let entitlements: EntitlementSummary?
+    let openPaywall: () -> Void
+    let openCustomerCenter: () -> Void
     let refresh: () async -> Void
+
+    private var isMember: Bool {
+        entitlements?.isMember == true || purchases.subscription.isMember || purchases.storeEntitlementActive
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             InlineNotice(
                 title: "MEMBER",
-                detail: entitlements?.isMember == true ? "Member is active." : "Monthly and annual plans are handled by the App Store.",
-                tint: entitlements?.isMember == true ? WikiTheme.green : WikiTheme.blue
+                detail: isMember ? purchases.subscription.statusText : "Monthly and annual plans are handled by the App Store.",
+                tint: isMember ? WikiTheme.green : WikiTheme.blue
             )
+            CommandButton(title: "View Member plans", icon: "rectangle.stack.badge.person.crop", tint: WikiTheme.blue, isDisabled: purchases.isLoading) {
+                openPaywall()
+            }
             ForEach(purchases.packages) { package in
                 CommandButton(
                     title: "\(package.title) / \(package.price)",
-                    icon: package.id.contains("annual") ? "sparkles" : "calendar",
-                    tint: package.id.contains("annual") ? WikiTheme.green : WikiTheme.blue,
+                    icon: package.isAnnual ? "sparkles" : "calendar",
+                    tint: package.isAnnual ? WikiTheme.green : WikiTheme.blue,
                     isDisabled: purchases.isLoading
                 ) {
                     Task {
@@ -236,11 +266,21 @@ private struct MemberPanel: View {
                     }
                 }
             }
+            if purchases.hasLoadedOfferings && purchases.packages.isEmpty {
+                InlineNotice(
+                    title: "OFFERING",
+                    detail: "No Member packages are in the current RevenueCat Offering yet.",
+                    tint: WikiTheme.amber
+                )
+            }
             CommandButton(title: "Restore purchases", icon: "arrow.clockwise", tint: WikiTheme.ink, isDisabled: purchases.isLoading) {
                 Task {
                     await purchases.restore()
                     await refresh()
                 }
+            }
+            CommandButton(title: "Purchase settings", icon: "person.crop.circle.badge.questionmark", tint: WikiTheme.violet, isDisabled: purchases.isLoading) {
+                openCustomerCenter()
             }
         }
     }

@@ -35,6 +35,8 @@ targets:
         embed: true
       - package: RevenueCat
         product: RevenueCat
+      - package: RevenueCat
+        product: RevenueCatUI
   WikiQuestWidgets:
     type: app-extension
     platform: iOS

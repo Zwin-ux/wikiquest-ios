@@ -64,6 +64,10 @@ jobs:
               echo "REVENUECAT_IOS_API_KEY must be the public iOS SDK key, not a RevenueCat secret API key."
               exit 1
               ;;
+            test_*)
+              echo "REVENUECAT_IOS_API_KEY is a RevenueCat Test Store key. Use it only for local/debug builds, not TestFlight or App Store uploads."
+              exit 1
+              ;;
             appl_*)
               ;;
             *)

@@ -107,6 +107,8 @@ Then run the relevant Xcode tests. Public CI builds the app and App Clip, runs t
 
 The next product/design loop is captured in [Next Skill System](docs/next-skill-system.md).
 
+RevenueCat setup is documented in [RevenueCat](docs/revenuecat.md).
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).

@@ -28,6 +28,8 @@ Public CI builds without signing. TestFlight release requires private Apple and 
 1. Confirm backend `API_BASE_URL` points to production.
 2. Run backend smoke tests from the private backend repo.
 3. Confirm RevenueCat products and `member` entitlement.
+   - TestFlight requires the public Apple SDK key, normally `appl_...`.
+   - Do not use a RevenueCat Test Store key (`test_...`) or secret API key (`sk_...`) for release.
 4. Run public iOS CI.
 5. Dispatch TestFlight release workflow.
 6. Install TestFlight build.
