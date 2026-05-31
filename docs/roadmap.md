@@ -7,6 +7,7 @@
 - Use real Wikipedia/Commons media with source links.
 - Keep App Clip lightweight and account-free.
 - Keep TestFlight release quality high.
+- Use `game-studio:game-ui-frontend` as the next implementation lens before more release work.
 
 ## Near Term
 
