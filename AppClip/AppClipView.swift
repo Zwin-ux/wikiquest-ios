@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AppClipView: View {
     private let appStoreURL = URL(string: "https://apps.apple.com/app/id6766046481")
+    private let resultAnchorID = "ClipQuestResultAnchor"
     @StateObject private var model: AppClipQuestViewModel
     @State private var session = ClipQuestSession()
 
@@ -14,19 +15,28 @@ struct AppClipView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                header
-                clueStack
-                choiceStack
-                resultBlock
-                installBlock
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    header
+                    clueStack
+                    choiceStack
+                    resultBlock
+                        .id(resultAnchorID)
+                    installBlock
+                }
+                .padding(20)
+                .padding(.top, 10)
             }
-            .padding(20)
-            .padding(.top, 10)
+            .accessibilityIdentifier("ClipQuestRoot")
+            .onChange(of: session.selectedChoiceID) { _, selectedChoiceID in
+                guard selectedChoiceID != nil else { return }
+                withAnimation(.spring(response: 0.30, dampingFraction: 0.86)) {
+                    proxy.scrollTo(resultAnchorID, anchor: .center)
+                }
+            }
         }
         .background(ClipPaperBackground())
-        .accessibilityIdentifier("ClipQuestRoot")
         .task {
             await model.load()
         }
