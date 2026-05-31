@@ -34,15 +34,29 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: Self.launchTimeout))
         app.buttons["ClipQuestChoice-great-wave"].tap()
 
-        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestResultBanner"].waitForExistence(timeout: 8))
+        let selectedChoice = app.buttons["ClipQuestChoice-great-wave"]
+        let selectedPredicate = NSPredicate(format: "value CONTAINS %@", "Correct answer")
+        expectation(for: selectedPredicate, evaluatedWith: selectedChoice)
+        waitForExpectations(timeout: 8)
+
         app.swipeUp()
-        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestOpenFullApp"].waitForExistence(timeout: 8))
+        XCTAssertTrue(openFullAppCTA(in: app).waitForExistence(timeout: 8))
     }
 
     private func makeApp() -> XCUIApplication {
         let app = XCUIApplication(bundleIdentifier: "com.wikiquest.app.Clip")
         app.launchArguments += ["-UITests"]
         return app
+    }
+
+    private func openFullAppCTA(in app: XCUIApplication) -> XCUIElement {
+        if app.links["Open full app"].exists {
+            return app.links["Open full app"]
+        }
+        if app.buttons["Open full app"].exists {
+            return app.buttons["Open full app"]
+        }
+        return app.staticTexts["Open full app"]
     }
 
     private static let launchTimeout: TimeInterval = 30
