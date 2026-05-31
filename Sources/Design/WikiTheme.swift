@@ -524,6 +524,40 @@ struct StatusStrip: View {
     }
 }
 
+struct GameHUDPill: View {
+    let label: String
+    let value: String
+    var systemImage: String?
+    var tint: Color = WikiTheme.blue
+
+    var body: some View {
+        HStack(spacing: 7) {
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(tint)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label.uppercased())
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(.white.opacity(0.64))
+                Text(value)
+                    .font(.caption.weight(.black).monospaced())
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+            }
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .background(.black.opacity(0.56))
+        .overlay(alignment: .leading) {
+            Rectangle().fill(tint).frame(width: 2)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+    }
+}
+
 struct WikiMetric: Identifiable {
     let label: String
     var id: String { label }

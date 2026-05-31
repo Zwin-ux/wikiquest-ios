@@ -66,6 +66,7 @@ First shipped slice:
 - clue ticks, guess count, time, score
 - flat article input and suggestion rail
 - result stamp and media credit after reveal
+- shipped first V2 slice: photo clue now owns the HUD overlay, progress strip, and media credit
 
 ### Race
 
@@ -74,6 +75,7 @@ First shipped slice:
 - blue-link choices with tiny thumbnails where available
 - click/time HUD
 - visual path trail
+- shipped first V2 slice: current article now owns the playfield, target/XP moved into objective strip
 
 ### Map
 
@@ -82,6 +84,7 @@ First shipped slice:
 - pin pulse on placement
 - reveal photo card only after guess
 - distance ticker and source credit
+- shipped first V2 slice: map owns phase/page/distance HUD, below-map copy is now command/status
 
 ### App Clip
 

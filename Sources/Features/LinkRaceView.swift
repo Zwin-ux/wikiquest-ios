@@ -21,18 +21,6 @@ struct LinkRaceView: View {
                 detail: "Start on one Wikipedia page and reach the target through blue links."
             )
 
-            StatusStrip(items: [
-                StatusMetricItem(label: "Clicks", value: viewModel.clickCount, color: WikiTheme.blue),
-                StatusMetricItem(label: "Time", text: "\(viewModel.elapsedSeconds(now: now))s", color: WikiTheme.violet),
-                StatusMetricItem(label: "XP", value: viewModel.savedXP ?? 0, color: WikiTheme.green)
-            ])
-
-            RaceRouteHeader(
-                current: viewModel.current?.article,
-                target: viewModel.targetArticle,
-                fallbackTargetTitle: viewModel.targets?.target
-            )
-
             if let error = viewModel.error {
                 InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
             }
@@ -42,7 +30,14 @@ struct LinkRaceView: View {
             }
 
             if let current = viewModel.current {
-                ArticlePreview(article: current.article, tint: WikiTheme.blue)
+                RacePhotoStage(
+                    current: current.article,
+                    target: viewModel.targetArticle,
+                    fallbackTargetTitle: viewModel.targets?.target,
+                    clicks: viewModel.clickCount,
+                    elapsed: viewModel.elapsedSeconds(now: now),
+                    xp: viewModel.savedXP ?? 0
+                )
                     .id(current.article.title)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
 
@@ -149,6 +144,86 @@ struct LinkRaceView: View {
             startedAt: startedAt,
             pathTail: pathTail
         )
+    }
+}
+
+private struct RacePhotoStage: View {
+    let current: WikiArticle
+    let target: WikiArticle?
+    let fallbackTargetTitle: String?
+    let clicks: Int
+    let elapsed: Int
+    let xp: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ZStack(alignment: .topTrailing) {
+                ArticleHeroImage(media: current.media, title: current.title, height: 292, tint: WikiTheme.blue)
+
+                VStack(alignment: .trailing, spacing: 7) {
+                    GameHUDPill(label: "Clicks", value: "\(clicks)", systemImage: "cursorarrow.click", tint: WikiTheme.blue)
+                    GameHUDPill(label: "Time", value: "\(elapsed)s", systemImage: "timer", tint: WikiTheme.violet)
+                }
+                .padding(14)
+
+                VStack(alignment: .leading, spacing: 7) {
+                    Spacer(minLength: 44)
+                    Text(current.title)
+                        .font(.system(.title, design: .serif).weight(.black))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.70)
+                    Text(current.description ?? "Choose the next blue link.")
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.84))
+                        .lineLimit(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+            }
+
+            RaceObjectiveStrip(target: target, fallbackTargetTitle: fallbackTargetTitle, xp: xp)
+            MediaCreditRow(media: current.media)
+        }
+    }
+}
+
+private struct RaceObjectiveStrip: View {
+    let target: WikiArticle?
+    let fallbackTargetTitle: String?
+    let xp: Int
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            ArticleHeroImage(media: target?.media, title: targetTitle, height: 68, tint: WikiTheme.amber)
+                .frame(width: 88)
+            VStack(alignment: .leading, spacing: 3) {
+                Kicker(text: "Target")
+                Text(targetTitle)
+                    .font(.callout.weight(.black))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 3) {
+                Kicker(text: "XP")
+                TickerNumberText(value: xp, font: .system(.headline, design: .monospaced).weight(.black))
+                    .foregroundStyle(WikiTheme.green)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 86, alignment: .leading)
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+    }
+
+    private var targetTitle: String {
+        target?.title ?? fallbackTargetTitle ?? "Target"
     }
 }
 

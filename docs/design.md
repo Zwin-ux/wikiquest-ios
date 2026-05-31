@@ -31,6 +31,19 @@ The signed-in Home screen is the game start, not an app dashboard.
 
 Design review score after this decision: 8/10. The remaining gap is real-device screenshot review for image cropping, dock spacing, and small-iPhone mode rail density.
 
+## Mode Screens V2
+
+Mystery, Race, and Map use the same game-screen grammar as the deck.
+
+- **Mystery:** photo clue is the stage; hints, score, guesses, and progress attach to that stage.
+- **Race:** current article is the stage; target, clicks, time, XP, and path read as HUD/objective data.
+- **Map:** MapKit is the stage; phase, page count, distance, score, and reveal photo sit around the map, not above it as app copy.
+- Keep long explanations below the play surface or remove them.
+- Show media credits only when media is visible.
+- Do not repeat full headers, generic panels, and equal-weight metrics if the HUD already carries the state.
+
+Plan-eng review result: UI-only implementation. Reuse existing view models, API clients, media parsing, haptics, and motion; do not add dependencies, backend routes, or release workflow changes.
+
 ## Motion
 
 Use motion to confirm state:

@@ -68,6 +68,14 @@ struct NearbyView: View {
                     MapStatusBadge(phase: viewModel.phase)
                         .padding(12)
                 }
+                .overlay(alignment: .topTrailing) {
+                    MapHUDCluster(
+                        articleCount: viewModel.articles.count,
+                        score: viewModel.localScore ?? viewModel.savedXP ?? 0,
+                        distance: viewModel.distanceMeters
+                    )
+                    .padding(12)
+                }
                 .overlay(alignment: .bottomLeading) {
                     MapCommandOverlay(title: mapOverlayTitle, detail: mapOverlayDetail, tint: phaseTint)
                         .padding(12)
@@ -79,17 +87,7 @@ struct NearbyView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         WikiOSWindowHeader(title: "Nearby")
-                        ScreenHeader(
-                            kicker: "NEARBY",
-                            title: viewModel.targetTitle,
-                            detail: phaseDetail
-                        )
-
-                        StatusStrip(items: [
-                            StatusMetricItem(label: "Articles", value: viewModel.articles.count, color: WikiTheme.blue),
-                            StatusMetricItem(label: "Score", value: viewModel.localScore ?? 0, color: WikiTheme.green),
-                            StatusMetricItem(label: "Distance", text: viewModel.distanceMeters.map(NearbyScoring.format) ?? "--", color: WikiTheme.violet)
-                        ])
+                        MapQuestStatus(title: viewModel.targetTitle, detail: phaseDetail, phase: viewModel.phase, centerLabel: viewModel.centerLabel)
 
                         if location.authorizationDenied || viewModel.phase == .denied {
                             InlineNotice(title: "LOCATION", detail: "Location is denied. You can still play from a sample city.", tint: WikiTheme.amber)
@@ -291,6 +289,96 @@ private struct MapStatusBadge: View {
             return "REVEALED"
         case .empty:
             return "EMPTY"
+        }
+    }
+}
+
+private struct MapHUDCluster: View {
+    let articleCount: Int
+    let score: Int
+    let distance: Double?
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 7) {
+            GameHUDPill(label: "Pages", value: "\(articleCount)", systemImage: "doc.text.magnifyingglass", tint: WikiTheme.blue)
+            if let distance {
+                GameHUDPill(label: "Distance", value: NearbyScoring.format(distance), systemImage: "ruler", tint: WikiTheme.violet)
+            } else {
+                GameHUDPill(label: "Score", value: "\(score)", systemImage: "star.fill", tint: WikiTheme.green)
+            }
+        }
+    }
+}
+
+private struct MapQuestStatus: View {
+    let title: String
+    let detail: String
+    let phase: NearbyPhase
+    let centerLabel: String?
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image("ModeNearbyMark")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(width: 48, height: 48)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 8) {
+                    Kicker(text: centerLabel ?? "Map")
+                    Text(phaseLabel)
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(phaseTint)
+                }
+                Text(title)
+                    .font(.system(.title3, design: .serif).weight(.black))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
+                Text(detail)
+                    .font(.callout)
+                    .foregroundStyle(WikiTheme.muted)
+                    .lineLimit(3)
+                    .lineSpacing(3)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 12)
+        .overlay(alignment: .top) {
+            Rectangle().fill(phaseTint).frame(height: 2)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+    }
+
+    private var phaseLabel: String {
+        switch phase {
+        case .locating:
+            return "LOCATING"
+        case .loading:
+            return "LOADING"
+        case .guess, .denied:
+            return "PLACE PIN"
+        case .revealed:
+            return "REVEALED"
+        case .empty:
+            return "EMPTY"
+        }
+    }
+
+    private var phaseTint: Color {
+        switch phase {
+        case .revealed:
+            return WikiTheme.red
+        case .guess, .denied:
+            return WikiTheme.blue
+        case .empty:
+            return WikiTheme.muted
+        default:
+            return WikiTheme.ink
         }
     }
 }

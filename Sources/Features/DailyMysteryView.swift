@@ -21,17 +21,7 @@ struct DailyMysteryView: View {
 
             MysteryModeSwitch(selection: $viewModel.mode)
 
-            MysteryHeaderStrip(viewModel: viewModel)
-
-            PhotoClueCard(
-                kicker: viewModel.mode == .daily ? "Daily photo clue" : "Practice photo clue",
-                title: viewModel.photoTitle,
-                detail: photoDetail,
-                media: viewModel.mysteryMedia,
-                visualState: viewModel.photoVisualState,
-                tint: WikiTheme.amber
-            )
-            MediaCreditRow(media: viewModel.isComplete ? viewModel.mysteryMedia : viewModel.clueMedia)
+            MysteryPhotoStage(viewModel: viewModel, detail: photoDetail)
 
             if let error = viewModel.error {
                 InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
@@ -131,45 +121,59 @@ struct DailyMysteryView: View {
     }
 }
 
-private struct MysteryHeaderStrip: View {
+private struct MysteryPhotoStage: View {
     @ObservedObject var viewModel: DailyMysteryViewModel
+    let detail: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 14) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Kicker(text: viewModel.mode == .daily ? "Daily" : "Practice")
-                    Text(viewModel.title)
-                        .font(.headline.monospaced())
+            ZStack(alignment: .topTrailing) {
+                PhotoClueCard(
+                    kicker: viewModel.mode == .daily ? "Daily Mystery" : "Practice Mystery",
+                    title: viewModel.photoTitle,
+                    detail: detail,
+                    media: viewModel.mysteryMedia,
+                    visualState: viewModel.photoVisualState,
+                    tint: WikiTheme.amber
+                )
+
+                VStack(alignment: .trailing, spacing: 7) {
+                    GameHUDPill(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber)
+                    GameHUDPill(label: "Score", value: "\(viewModel.score)", systemImage: "star.fill", tint: WikiTheme.green)
                 }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 4) {
-                    Kicker(text: "Hints")
-                    HStack(spacing: 2) {
-                        TickerNumberText(value: viewModel.hintsRevealed)
-                        Text("/ \(viewModel.totalHints)")
-                            .font(.system(.title3, design: .monospaced).weight(.bold))
-                            .foregroundStyle(WikiTheme.muted)
-                    }
-                }
+                .padding(14)
             }
+
+            HStack(alignment: .center, spacing: 10) {
+                Kicker(text: viewModel.mode == .daily ? "Daily" : "Practice")
+                Text(viewModel.title)
+                    .font(.caption.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.ink)
+                Spacer(minLength: 8)
+                Text("\(viewModel.guessesRemaining) guesses")
+                    .font(.caption.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.violet)
+            }
+
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Rectangle().fill(WikiTheme.rule.opacity(0.38)).frame(height: 3)
                     Rectangle()
-                        .fill(WikiTheme.blue)
+                        .fill(WikiTheme.amber)
                         .frame(width: geo.size.width * viewModel.progress, height: 3)
                         .animation(WikiMotion.ticker, value: viewModel.progress)
                 }
             }
             .frame(height: 3)
+
             StatusStrip(items: [
                 StatusMetricItem(label: "Guesses", value: viewModel.guessesRemaining, color: WikiTheme.violet),
                 StatusMetricItem(label: "Score", value: viewModel.score, color: WikiTheme.green),
                 StatusMetricItem(label: "Time", text: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), color: WikiTheme.ink)
             ])
+
+            MediaCreditRow(media: viewModel.isComplete ? viewModel.mysteryMedia : viewModel.clueMedia)
         }
-        .padding(.vertical, 8)
     }
 }
 
