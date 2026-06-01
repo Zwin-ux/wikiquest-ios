@@ -120,6 +120,7 @@ First shipped slice:
 - no stacked card grid
 - deck HUD cleanup in progress: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
 - discovery rail cleanup in progress: random article photos now read as a secondary Wiki drift with numbered visual trail cards
+- small-phone rail cleanup in progress: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
 
 ### Mystery
 
