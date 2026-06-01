@@ -85,13 +85,16 @@ struct NearbyView: View {
                 .overlay(alignment: .bottom) {
                     Rectangle().fill(WikiTheme.hairline).frame(height: 1)
                 }
+                .accessibilityIdentifier("NearbyMapStage")
 
                 ScrollView {
                     MapControlSheet(tint: phaseTint) {
                         MapQuestStatus(title: viewModel.targetTitle, detail: phaseDetail, phase: viewModel.phase, centerLabel: viewModel.centerLabel)
+                            .accessibilityIdentifier("NearbyQuestStatus")
 
                         if shouldShowPinFeedback {
                             MapPinFeedbackStrip(trigger: guessPulse, tint: phaseTint)
+                                .accessibilityIdentifier("NearbyPinFeedback")
                         }
 
                         if location.authorizationDenied || viewModel.phase == .denied {
@@ -153,6 +156,7 @@ struct NearbyView: View {
                         CityRail(cities: cities) { city in
                             Task { await loadCity(city) }
                         }
+                        .accessibilityIdentifier("NearbyCityRail")
                     }
                     .padding(WikiTheme.screenPadding)
                 }
@@ -312,6 +316,7 @@ private struct MapControlSheet<Content: View>: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
+        .accessibilityIdentifier("NearbyControlSheet")
         .motionTick(trigger: "\(tint)", tint: tint)
     }
 }
@@ -529,6 +534,7 @@ private struct MapActionRow: View {
             CommandButton(title: "Locate", icon: "location", tint: WikiTheme.ink, action: locate)
         }
         .padding(.top, 2)
+        .accessibilityIdentifier("NearbyActionRow")
     }
 }
 
@@ -567,6 +573,7 @@ private struct NearbyRevealPanel: View {
         .overlay(alignment: .top) {
             Rectangle().fill(WikiTheme.red).frame(height: 3)
         }
+        .accessibilityIdentifier("NearbyRevealPanel")
         .transition(.move(edge: .bottom).combined(with: .opacity))
         .motionTick(trigger: "\(article.id)-\(distanceText)-\(score)", tint: WikiTheme.red)
     }

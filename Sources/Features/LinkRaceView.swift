@@ -174,6 +174,7 @@ private struct RaceCompletionPanel: View {
         .overlay(alignment: .top) {
             Rectangle().fill(WikiTheme.green.opacity(0.72)).frame(height: 2)
         }
+        .accessibilityIdentifier("RaceCompletionPanel")
         .motionTick(trigger: "\(target)-\(score)-\(clicks)-\(elapsed)", tint: WikiTheme.green)
     }
 }
@@ -238,9 +239,12 @@ private struct RacePhotoStage: View {
             }
 
             RaceObjectiveStrip(target: target, fallbackTargetTitle: fallbackTargetTitle, xp: xp)
+                .accessibilityIdentifier("RaceObjectiveStrip")
             RaceTrailInline(path: path)
+                .accessibilityIdentifier("RaceTrailInline")
             MediaCreditRow(media: current.media)
         }
+        .accessibilityIdentifier("RacePhotoStage")
     }
 }
 
@@ -372,6 +376,7 @@ private struct LinkChoiceList: View {
                         )
                     }
                     .buttonStyle(ArcadePressStyle())
+                    .accessibilityIdentifier("RaceLinkChoice-\(index + 1)")
                     .disabled(loadingTitle != nil || visited)
                 }
             }
@@ -381,6 +386,7 @@ private struct LinkChoiceList: View {
         .overlay(alignment: .top) {
             Rectangle().fill(WikiTheme.blue.opacity(0.72)).frame(height: 2)
         }
+        .accessibilityIdentifier("RaceLinkChoiceList")
         .motionTick(trigger: "\(links.count)-\(loadingTitle ?? "ready")", tint: WikiTheme.blue)
     }
 
