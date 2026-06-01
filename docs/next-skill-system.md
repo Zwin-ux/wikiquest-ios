@@ -109,6 +109,7 @@ First shipped slice:
 - primary action after result: `Sign in with Apple`
 - legal links visible before sign-in
 - no dock while signed out
+- preview HUD shipped: first launch now shows clue/choice/XP counters and numbered answer routes so the preview reads like a game round, not a static form
 
 ### Signed-In Today
 
