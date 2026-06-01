@@ -47,6 +47,10 @@ final class WikiQuestSmokeTests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["Today"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.wikiElement("QuestDeckCard").waitForExistence(timeout: 6))
+        XCTAssertTrue(app.wikiElement("HomeMode-mystery").exists)
+        XCTAssertTrue(app.wikiElement("HomeMode-race").exists)
+        XCTAssertTrue(app.wikiElement("HomeMode-nearby").exists)
         XCTAssertFalse(app.buttons["Sign in with Apple"].exists)
     }
 }
