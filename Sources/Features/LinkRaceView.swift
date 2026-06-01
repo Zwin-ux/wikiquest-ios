@@ -345,25 +345,30 @@ private struct LinkChoiceList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Kicker(text: "Next link")
+                Kicker(text: routeLocked ? "Route locked" : "Choose next link")
                 Spacer(minLength: 8)
-                Text("\(links.count) options")
+                Text(routeLocked ? "Opening" : "\(links.count) exits")
                     .font(.caption2.weight(.black).monospaced())
                     .foregroundStyle(WikiTheme.blue)
             }
 
+            if let loadingTitle {
+                RouteLockStrip(title: loadingTitle)
+            }
+
             ForEach(Array(links.enumerated()), id: \.element.id) { index, link in
                 let visited = visitedTitles.contains(link.title)
+                let state: LinkChoiceState = loadingTitle == link.title ? .loading : (visited ? .visited : .available)
                 PanelReveal(delay: Double(index) * 0.018) {
                     Button {
                         Haptics.light()
                         choose(link)
                     } label: {
                         LinkChoiceRow(
+                            index: index + 1,
                             title: link.label,
                             media: mediaFor(link),
-                            visited: visited,
-                            loading: loadingTitle == link.title
+                            state: state
                         )
                     }
                     .buttonStyle(ArcadePressStyle())
@@ -378,44 +383,183 @@ private struct LinkChoiceList: View {
         }
         .motionTick(trigger: "\(links.count)-\(loadingTitle ?? "ready")", tint: WikiTheme.blue)
     }
+
+    private var routeLocked: Bool {
+        loadingTitle != nil
+    }
+}
+
+private enum LinkChoiceState: Equatable {
+    case available
+    case loading
+    case visited
+
+    var tint: Color {
+        switch self {
+        case .available, .loading:
+            return WikiTheme.blue
+        case .visited:
+            return WikiTheme.muted
+        }
+    }
+
+    var statusText: String? {
+        switch self {
+        case .available:
+            return nil
+        case .loading:
+            return "Opening route"
+        case .visited:
+            return "Already visited"
+        }
+    }
+
+    var motionKey: String {
+        switch self {
+        case .available:
+            return "available"
+        case .loading:
+            return "loading"
+        case .visited:
+            return "visited"
+        }
+    }
 }
 
 private struct LinkChoiceRow: View {
+    let index: Int
     let title: String
     let media: WikiMedia?
-    let visited: Bool
-    let loading: Bool
+    let state: LinkChoiceState
     @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
         HStack(spacing: 12) {
-            ArticleHeroImage(media: media, title: title, height: 48, tint: visited ? WikiTheme.muted : WikiTheme.blue)
+            RaceChoiceMarker(index: index, state: state)
+
+            ArticleHeroImage(media: media, title: title, height: 48, tint: state == .visited ? WikiTheme.muted : WikiTheme.blue)
                 .frame(width: 58)
+
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.callout.weight(.semibold))
-                    .foregroundStyle(visited ? WikiTheme.subtle : WikiTheme.ink)
+                    .foregroundStyle(state == .visited ? WikiTheme.subtle : WikiTheme.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.82)
-                if visited || loading {
-                    Text(loading ? "Loading" : "Already visited")
+                if let statusText = state.statusText {
+                    Text(statusText)
                         .font(.caption.weight(.bold).monospaced())
                         .foregroundStyle(WikiTheme.muted)
                 }
             }
             Spacer(minLength: 8)
-            Image(systemName: loading ? "arrow.triangle.2.circlepath" : (visited ? "checkmark" : "chevron.right"))
+            Image(systemName: trailingIcon)
                 .font(.callout.weight(.bold))
-                .foregroundStyle(visited ? WikiTheme.muted : WikiTheme.blue)
-                .rotationEffect(.degrees(loading && !motion.reduceMotion ? 18 : 0))
-                .wikiBounce(enabled: loading && !motion.reduceMotion, value: loading)
+                .foregroundStyle(state == .visited ? WikiTheme.muted : WikiTheme.blue)
+                .rotationEffect(.degrees(state == .loading && !motion.reduceMotion ? 18 : 0))
+                .wikiBounce(enabled: state == .loading && !motion.reduceMotion, value: state.motionKey)
         }
         .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
         .padding(.vertical, 7)
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(state == .loading ? WikiTheme.blue : .clear)
+                .frame(width: 2)
+        }
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
-        .opacity(visited ? 0.62 : 1)
-        .motionTick(trigger: loading, tint: WikiTheme.blue, enabled: loading)
+        .opacity(state == .visited ? 0.62 : 1)
+        .motionTick(trigger: state.motionKey, tint: WikiTheme.blue, enabled: state == .loading)
+    }
+
+    private var trailingIcon: String {
+        switch state {
+        case .available:
+            return "chevron.right"
+        case .loading:
+            return "arrow.triangle.2.circlepath"
+        case .visited:
+            return "checkmark"
+        }
+    }
+}
+
+private struct RouteLockStrip: View {
+    let title: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "link")
+                .font(.caption.weight(.black))
+            Text(title)
+                .font(.caption.weight(.bold).monospaced())
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+            Spacer(minLength: 8)
+            Text("ROUTE")
+                .font(.caption2.weight(.black).monospaced())
+        }
+        .foregroundStyle(WikiTheme.blue)
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.blue.opacity(0.28)).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.blue.opacity(0.28)).frame(height: 1)
+        }
+        .motionTick(trigger: title, tint: WikiTheme.blue)
+    }
+}
+
+private struct RaceChoiceMarker: View {
+    let index: Int
+    let state: LinkChoiceState
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(fill)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .stroke(state.tint.opacity(state == .available ? 0.42 : 0.70), lineWidth: 1)
+                }
+
+            markerContent
+        }
+        .frame(width: 38, height: 48)
+        .motionTick(trigger: "\(index)-\(state.motionKey)", tint: state.tint, enabled: state == .loading)
+    }
+
+    @ViewBuilder
+    private var markerContent: some View {
+        switch state {
+        case .available:
+            Text(String(format: "%02d", index))
+                .font(.caption.weight(.black).monospacedDigit())
+                .foregroundStyle(WikiTheme.blue)
+        case .loading:
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.white)
+                .rotationEffect(.degrees(motion.reduceMotion ? 0 : 18))
+                .wikiBounce(enabled: !motion.reduceMotion, value: state.motionKey)
+        case .visited:
+            Image(systemName: "checkmark")
+                .font(.caption.weight(.black))
+                .foregroundStyle(WikiTheme.muted)
+        }
+    }
+
+    private var fill: Color {
+        switch state {
+        case .available:
+            return WikiTheme.blue.opacity(0.07)
+        case .loading:
+            return WikiTheme.blue
+        case .visited:
+            return WikiTheme.surface
+        }
     }
 }
