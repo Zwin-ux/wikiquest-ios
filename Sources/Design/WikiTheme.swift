@@ -59,6 +59,8 @@ struct CommandButton: View {
         }) {
             Label(title, systemImage: icon)
                 .font(.callout.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .foregroundStyle(.white)

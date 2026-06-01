@@ -156,6 +156,7 @@ First shipped slice:
 - cleanup shipped: redundant lower window chrome removed, phase/status/actions now sit in one flat map command sheet
 - command cleanup shipped: pin placement has tactile feedback, reveal/next inherits the phase tint, and map actions now appear before lower-priority city jumps
 - reveal cleanup shipped: revealed target now reads as photo + distance/XP moment instead of duplicating title and description below the card
+- pin feedback shipped: dropping a guess now arms the command sheet, updates the reveal action, and pulses once without duplicate haptic taps
 
 ### App Clip
 

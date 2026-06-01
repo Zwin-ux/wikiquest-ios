@@ -60,7 +60,6 @@ struct NearbyView: View {
                         SpatialTapGesture()
                             .onEnded { value in
                                 if let coordinate = proxy.convert(value.location, from: .local) {
-                                    Haptics.light()
                                     viewModel.placeGuess(coordinate)
                                 }
                             }
@@ -91,6 +90,10 @@ struct NearbyView: View {
                     MapControlSheet(tint: phaseTint) {
                         MapQuestStatus(title: viewModel.targetTitle, detail: phaseDetail, phase: viewModel.phase, centerLabel: viewModel.centerLabel)
 
+                        if shouldShowPinFeedback {
+                            MapPinFeedbackStrip(trigger: guessPulse, tint: phaseTint)
+                        }
+
                         if location.authorizationDenied || viewModel.phase == .denied {
                             InlineNotice(title: "LOCATION", detail: "Location is denied. You can still play from a sample city.", tint: WikiTheme.amber)
                         }
@@ -120,8 +123,8 @@ struct NearbyView: View {
 
                         MapActionRow(
                             tint: phaseTint,
-                            revealTitle: viewModel.phase == .revealed ? "Next" : "Reveal",
-                            revealIcon: viewModel.phase == .revealed ? "arrow.clockwise" : "mappin.and.ellipse",
+                            revealTitle: revealActionTitle,
+                            revealIcon: revealActionIcon,
                             revealDisabled: revealDisabled,
                             revealPlaysHaptic: true,
                             reveal: {
@@ -236,6 +239,9 @@ struct NearbyView: View {
         case .loading:
             return "Loading nearby Wikipedia coordinates."
         case .guess, .denied:
+            if viewModel.guess != nil {
+                return "Pin set. Reveal the target or tap the map to move it."
+            }
             return "Tap the map where you think the hidden article belongs."
         case .revealed:
             if let distance = viewModel.distanceMeters {
@@ -250,6 +256,22 @@ struct NearbyView: View {
     private var revealDisabled: Bool {
         if viewModel.phase == .revealed { return false }
         return viewModel.guess == nil || viewModel.selected == nil
+    }
+
+    private var shouldShowPinFeedback: Bool {
+        viewModel.guess != nil && (viewModel.phase == .guess || viewModel.phase == .denied)
+    }
+
+    private var revealActionTitle: String {
+        if viewModel.phase == .revealed { return "Next" }
+        if viewModel.guess != nil { return "Reveal target" }
+        return "Reveal"
+    }
+
+    private var revealActionIcon: String {
+        if viewModel.phase == .revealed { return "arrow.clockwise" }
+        if viewModel.guess != nil { return "scope" }
+        return "mappin.and.ellipse"
     }
 
     private func loadCity(_ city: KnownCity) async {
@@ -440,6 +462,48 @@ private struct CityRail: View {
                 }
             }
         }
+    }
+}
+
+private struct MapPinFeedbackStrip: View {
+    let trigger: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(tint.opacity(0.12))
+                    .frame(width: 34, height: 34)
+                Image(systemName: "mappin.circle.fill")
+                    .font(.callout.weight(.black))
+                    .foregroundStyle(tint)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Kicker(text: "Pin armed")
+                Text("Reveal target or tap the map to move it.")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.76)
+            }
+
+            Spacer(minLength: 8)
+
+            Text("READY")
+                .font(.caption2.weight(.black).monospaced())
+                .foregroundStyle(tint)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 9)
+        .overlay(alignment: .top) {
+            Rectangle().fill(tint.opacity(0.28)).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(tint.opacity(0.28)).frame(height: 1)
+        }
+        .motionTick(trigger: trigger, tint: tint)
     }
 }
 
