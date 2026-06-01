@@ -21,6 +21,18 @@ Run these phases in order. Each phase has one primary skill, one job, and the co
 
 Do not start with `ship`. Shipping a weak flow faster is not the right bottleneck.
 
+## Current Command Function
+
+The program is now locked to this loop until the core game screens feel good:
+
+1. `game-studio:game-ui-frontend` decides the play surface budget.
+2. `plan-design-review` removes weak hierarchy, extra copy, and non-game chrome.
+3. `plan-eng-review` keeps the slice scoped to existing SwiftUI architecture.
+4. Codex edits the smallest useful gameplay slice.
+5. `qa` runs local script checks and inspects changed behavior.
+6. GitHub `iOS CI` validates Swift/Xcode.
+7. `ship` is only allowed after CI, backend smoke, and TestFlight screenshot review.
+
 ## Why This Skill
 
 WikiQuest should read as a playable Wikipedia system within a few seconds. The UI needs game discipline:
@@ -114,6 +126,7 @@ First shipped slice:
 - shipped first V2 slice: photo clue now owns the HUD overlay, progress strip, and media credit
 - next design cleanup: make the photo stage the first object, remove duplicate score metrics, and keep the hint/guess commands directly under the playfield
 - cleanup shipped: old intro header removed, mode switch moved under the stage, time joined the HUD, and the duplicate status strip was removed
+- command cleanup shipped: guess field, reveal hint, refresh, suggestions, and result now sit directly under the photo stage before the clue log
 
 ### Race
 
@@ -125,6 +138,7 @@ First shipped slice:
 - shipped first V2 slice: current article now owns the playfield, target/XP moved into objective strip
 - next design cleanup: remove old explanatory route header, move the trail closer to the objective strip, and keep link rows visually subordinate to the current article stage
 - cleanup shipped: old route copy removed, unused route header components removed, and the trail now lives inside the route stage
+- command cleanup shipped: next-link rows now read as a compact route command list with haptic tap feedback instead of a generic section
 
 ### Map
 
@@ -136,6 +150,7 @@ First shipped slice:
 - shipped first V2 slice: map owns phase/page/distance HUD, below-map copy is now command/status
 - next design cleanup: remove redundant window/header chrome below the map and turn the lower area into one compact command sheet
 - cleanup shipped: redundant lower window chrome removed, phase/status/actions now sit in one flat map command sheet
+- command cleanup shipped: pin placement has tactile feedback, reveal/next inherits the phase tint, and map actions now appear before lower-priority city jumps
 
 ### App Clip
 

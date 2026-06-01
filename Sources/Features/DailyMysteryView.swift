@@ -15,71 +15,14 @@ struct DailyMysteryView: View {
         WikiScreen(navigationTitle: "Mystery", showsWindowHeader: false) {
             MysteryPhotoStage(viewModel: viewModel, detail: photoDetail)
 
-            MysteryModeSwitch(selection: $viewModel.mode)
+            MysteryCommandDeck(
+                viewModel: viewModel,
+                isSignedIn: session.isSignedIn,
+                error: viewModel.error,
+                shareText: mysteryShareText
+            )
 
-            if let error = viewModel.error {
-                InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
-            }
-
-            if viewModel.isLoading {
-                WikiLoadingGlyph(title: "LOADING", detail: "Pulling the current puzzle.", tint: WikiTheme.blue)
-            }
-
-            FlatSection(title: "Hints") {
-                if viewModel.currentHints.isEmpty {
-                    EmptyMysteryState()
-                } else {
-                    ForEach(Array(viewModel.currentHints.enumerated()), id: \.element.id) { index, hint in
-                        PanelReveal(delay: Double(index) * 0.035) {
-                            HintRow(hint: hint)
-                        }
-                    }
-                }
-            }
-
-            GuessHistory(guesses: viewModel.guessHistory)
-
-            if !viewModel.isComplete {
-                CommandField(placeholder: "Type an article title", text: $viewModel.guess) {
-                    Task { await viewModel.submitGuess(signedIn: session.isSignedIn) }
-                }
-                .onChange(of: viewModel.guess) { _, _ in
-                    Task { await viewModel.refreshSuggestions() }
-                }
-
-                if !viewModel.suggestions.isEmpty {
-                    SuggestionRail(suggestions: viewModel.suggestions) { suggestion in
-                        Task { await viewModel.submitGuess(signedIn: session.isSignedIn, forcedGuess: suggestion) }
-                    }
-                }
-
-                HStack(spacing: 10) {
-                    CommandButton(
-                        title: "Reveal hint",
-                        icon: "eye",
-                        tint: WikiTheme.amber,
-                        isDisabled: viewModel.isSubmitting,
-                        playsHaptic: false
-                    ) {
-                        Task { await viewModel.revealHint(signedIn: session.isSignedIn) }
-                    }
-                    CommandButton(
-                        title: "Refresh",
-                        icon: "arrow.clockwise",
-                        tint: WikiTheme.ink,
-                        isDisabled: viewModel.isLoading
-                    ) {
-                        Task { await viewModel.load(signedIn: session.isSignedIn) }
-                    }
-                }
-            } else {
-                ResultPanel(
-                    isCorrect: viewModel.isCorrect,
-                    score: viewModel.score,
-                    answer: viewModel.answerTitle,
-                    shareText: mysteryShareText
-                )
-            }
+            MysteryClueStack(hints: viewModel.currentHints, guesses: viewModel.guessHistory)
         }
         .task(id: session.isSignedIn) { await viewModel.load(signedIn: session.isSignedIn) }
         .onChange(of: viewModel.mode) { _, _ in
@@ -87,6 +30,11 @@ struct DailyMysteryView: View {
         }
         .onChange(of: viewModel.isComplete) { _, complete in
             if complete {
+                if viewModel.isCorrect {
+                    Haptics.success()
+                } else {
+                    Haptics.error()
+                }
                 gameCenter.reportDailyMystery(
                     score: viewModel.score,
                     solved: viewModel.isCorrect,
@@ -112,6 +60,74 @@ struct DailyMysteryView: View {
             return "The image is partly open. Use it carefully."
         }
         return "Reveal clues until the image unlocks."
+    }
+}
+
+private struct MysteryCommandDeck: View {
+    @ObservedObject var viewModel: DailyMysteryViewModel
+    let isSignedIn: Bool
+    let error: String?
+    let shareText: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            MysteryModeSwitch(selection: $viewModel.mode)
+
+            if let error {
+                InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
+            }
+
+            if viewModel.isLoading {
+                WikiLoadingGlyph(title: "LOADING", detail: "Pulling the current puzzle.", tint: WikiTheme.blue)
+            }
+
+            if viewModel.isComplete {
+                ResultPanel(
+                    isCorrect: viewModel.isCorrect,
+                    score: viewModel.score,
+                    answer: viewModel.answerTitle,
+                    shareText: shareText
+                )
+            } else {
+                CommandField(placeholder: "Type an article title", text: $viewModel.guess) {
+                    Task { await viewModel.submitGuess(signedIn: isSignedIn) }
+                }
+                .onChange(of: viewModel.guess) { _, _ in
+                    Task { await viewModel.refreshSuggestions() }
+                }
+
+                HStack(spacing: 10) {
+                    CommandButton(
+                        title: "Reveal hint",
+                        icon: "eye",
+                        tint: WikiTheme.amber,
+                        isDisabled: viewModel.isSubmitting
+                    ) {
+                        Task { await viewModel.revealHint(signedIn: isSignedIn) }
+                    }
+                    CommandButton(
+                        title: "Refresh",
+                        icon: "arrow.clockwise",
+                        tint: WikiTheme.ink,
+                        isDisabled: viewModel.isLoading
+                    ) {
+                        Task { await viewModel.load(signedIn: isSignedIn) }
+                    }
+                }
+
+                if !viewModel.suggestions.isEmpty {
+                    SuggestionRail(suggestions: viewModel.suggestions) { suggestion in
+                        Task { await viewModel.submitGuess(signedIn: isSignedIn, forcedGuess: suggestion) }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.amber.opacity(0.72)).frame(height: 2)
+        }
+        .motionTick(trigger: "\(viewModel.mode.id)-\(viewModel.score)-\(viewModel.currentHints.count)-\(viewModel.isComplete)", tint: WikiTheme.amber)
     }
 }
 
@@ -162,6 +178,39 @@ private struct MysteryPhotoStage: View {
             .frame(height: 3)
 
             MediaCreditRow(media: viewModel.isComplete ? viewModel.mysteryMedia : viewModel.clueMedia)
+        }
+    }
+}
+
+private struct MysteryClueStack: View {
+    let hints: [WikiHint]
+    let guesses: [GuessRecord]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Kicker(text: "Clues")
+                Spacer(minLength: 8)
+                Text("\(hints.count) open")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.amber)
+            }
+
+            if hints.isEmpty {
+                EmptyMysteryState()
+            } else {
+                ForEach(Array(hints.enumerated()), id: \.element.id) { index, hint in
+                    PanelReveal(delay: Double(index) * 0.035) {
+                        HintRow(hint: hint)
+                    }
+                }
+            }
+
+            GuessHistory(guesses: guesses)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
     }
 }
