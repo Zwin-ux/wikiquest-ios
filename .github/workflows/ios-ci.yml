@@ -50,7 +50,10 @@ jobs:
         id: ios-destination
         run: |
           destinations="$(xcodebuild -project WikiQuest.xcodeproj -scheme WikiQuest -showdestinations 2>/dev/null || true)"
-          line="$(printf "%s\n" "$destinations" | grep 'platform:iOS Simulator' | grep -v 'Any iOS Simulator Device' | head -n 1 || true)"
+          line="$(printf "%s\n" "$destinations" | grep 'platform:iOS Simulator' | grep 'iPhone' | grep -v 'Any iOS Simulator Device' | head -n 1 || true)"
+          if [ -z "$line" ]; then
+            line="$(printf "%s\n" "$destinations" | grep 'platform:iOS Simulator' | grep -v 'Any iOS Simulator Device' | head -n 1 || true)"
+          fi
           if [ -n "$line" ]; then
             simulator_id="$(printf "%s" "$line" | sed -E 's/.*id:([^,}]+).*/\1/' | xargs)"
             if [ -n "$simulator_id" ] && [ "$simulator_id" != "$line" ]; then
