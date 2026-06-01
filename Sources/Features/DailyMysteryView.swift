@@ -14,6 +14,7 @@ struct DailyMysteryView: View {
     var body: some View {
         WikiScreen(navigationTitle: "Mystery", showsWindowHeader: false) {
             MysteryPhotoStage(viewModel: viewModel, detail: photoDetail)
+                .accessibilityIdentifier("MysteryPhotoStage")
 
             MysteryCommandDeck(
                 viewModel: viewModel,
@@ -21,12 +22,14 @@ struct DailyMysteryView: View {
                 error: viewModel.error,
                 shareText: mysteryShareText
             )
+            .accessibilityIdentifier("MysteryCommandDeck")
 
             MysteryClueStack(
                 hints: viewModel.currentHints,
                 totalHints: viewModel.totalHints,
                 guesses: viewModel.guessHistory
             )
+            .accessibilityIdentifier("MysteryClueStack")
         }
         .task(id: session.isSignedIn) { await viewModel.load(signedIn: session.isSignedIn) }
         .onChange(of: viewModel.mode) { _, _ in
@@ -76,6 +79,7 @@ private struct MysteryCommandDeck: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             MysteryModeSwitch(selection: $viewModel.mode)
+                .accessibilityIdentifier("MysteryModeSwitch")
 
             if let error {
                 InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
@@ -96,6 +100,7 @@ private struct MysteryCommandDeck: View {
                 CommandField(placeholder: "Type an article title", text: $viewModel.guess) {
                     Task { await viewModel.submitGuess(signedIn: isSignedIn) }
                 }
+                .accessibilityIdentifier("MysteryGuessField")
                 .onChange(of: viewModel.guess) { _, _ in
                     Task { await viewModel.refreshSuggestions() }
                 }
@@ -109,6 +114,7 @@ private struct MysteryCommandDeck: View {
                     ) {
                         Task { await viewModel.revealHint(signedIn: isSignedIn) }
                     }
+                    .accessibilityIdentifier("MysteryRevealHintButton")
                     CommandButton(
                         title: "Refresh",
                         icon: "arrow.clockwise",
@@ -117,12 +123,14 @@ private struct MysteryCommandDeck: View {
                     ) {
                         Task { await viewModel.load(signedIn: isSignedIn) }
                     }
+                    .accessibilityIdentifier("MysteryRefreshButton")
                 }
 
                 if !viewModel.suggestions.isEmpty {
                     SuggestionRail(suggestions: viewModel.suggestions) { suggestion in
                         Task { await viewModel.submitGuess(signedIn: isSignedIn, forcedGuess: suggestion) }
                     }
+                    .accessibilityIdentifier("MysterySuggestionRail")
                 }
             }
         }

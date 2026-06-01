@@ -134,6 +134,7 @@ First shipped slice:
 - cleanup shipped: old intro header removed, mode switch moved under the stage, time joined the HUD, and the duplicate status strip was removed
 - command cleanup shipped: guess field, reveal hint, refresh, suggestions, and result now sit directly under the photo stage before the clue log
 - clue-stage polish shipped: linear progress bar replaced by numbered clue pips, photo stage gets a completion stamp, and revealed hints now read as a timeline
+- verification cleanup in progress: photo stage, command deck, clue stack, guess field, hint action, refresh action, and suggestion rail now expose stable accessibility IDs for screenshot QA
 
 ### Race
 
@@ -148,6 +149,7 @@ First shipped slice:
 - command cleanup shipped: next-link rows now read as a compact route command list with haptic tap feedback instead of a generic section
 - finish cleanup shipped: completion now has a dedicated finish panel with clicks, time, XP, share, new race, and success haptic feedback
 - route feedback shipped: link choices now have numbered lane markers, route-locked loading feedback, visited checks, and loading motion without adding another panel
+- verification cleanup in progress: route photo stage, objective strip, trail, link choice list, per-link buttons, and completion panel now expose stable accessibility IDs for screenshot QA
 
 ### Map
 
@@ -162,6 +164,7 @@ First shipped slice:
 - command cleanup shipped: pin placement has tactile feedback, reveal/next inherits the phase tint, and map actions now appear before lower-priority city jumps
 - reveal cleanup shipped: revealed target now reads as photo + distance/XP moment instead of duplicating title and description below the card
 - pin feedback shipped: dropping a guess now arms the command sheet, updates the reveal action, and pulses once without duplicate haptic taps
+- verification cleanup in progress: map stage, status, pin feedback, command sheet, action row, reveal panel, and city rail now expose stable accessibility IDs for screenshot QA
 
 ### App Clip
 
