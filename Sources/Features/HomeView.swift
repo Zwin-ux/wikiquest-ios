@@ -45,7 +45,12 @@ struct HomeView: View {
             MediaCreditRow(media: deckArticle?.media)
             HomeStats(profile: profile, entitlements: entitlements, signedIn: session.isSignedIn)
 
-            HomeModeRail(modes: modes, navigate: navigate)
+            HomeModeRail(
+                modes: modes,
+                discoveryItems: discoveryItems,
+                deckMedia: deckArticle?.media,
+                navigate: navigate
+            )
 
             DiscoveryPhotoRail(items: discoveryItems)
 
@@ -124,6 +129,8 @@ private struct HomeStats: View {
 
 private struct HomeModeRail: View {
     let modes: [ModeTile]
+    let discoveryItems: [QuestDeckItem]
+    let deckMedia: WikiMedia?
     let navigate: (AppTab) -> Void
     @State private var selectedModeID: String?
 
@@ -135,7 +142,7 @@ private struct HomeModeRail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Kicker(text: "Play")
+            Kicker(text: "Choose route")
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
                     PanelReveal(delay: Double(index) * 0.035) {
@@ -144,41 +151,7 @@ private struct HomeModeRail: View {
                             selectedModeID = mode.id
                             navigate(mode.tab)
                         } label: {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Image(systemName: mode.icon)
-                                        .font(.headline.weight(.black))
-                                        .foregroundStyle(mode.color)
-                                    Spacer(minLength: 4)
-                                    Circle()
-                                        .fill(mode.color)
-                                        .frame(width: 6, height: 6)
-                                }
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(mode.title)
-                                        .font(.callout.weight(.black))
-                                        .foregroundStyle(WikiTheme.ink)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.78)
-                                    Text(mode.detail)
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(WikiTheme.muted)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.74)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 86, alignment: .leading)
-                            .padding(10)
-                            .background(WikiTheme.surfaceStrong.opacity(0.62))
-                            .overlay(alignment: .top) {
-                                Rectangle().fill(mode.color).frame(height: 2)
-                            }
-                            .overlay {
-                                RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
-                                    .stroke(WikiTheme.hairline, lineWidth: 1)
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
-                            .contentShape(Rectangle())
+                            ModeDeckTile(mode: mode, media: media(for: index))
                         }
                         .buttonStyle(ArcadePressStyle())
                         .motionTick(trigger: selectedModeID == mode.id ? selectedModeID : nil, tint: mode.color)
@@ -186,6 +159,62 @@ private struct HomeModeRail: View {
                 }
             }
         }
+    }
+
+    private func media(for index: Int) -> WikiMedia? {
+        if discoveryItems.indices.contains(index) {
+            return discoveryItems[index].media ?? deckMedia
+        }
+        return deckMedia
+    }
+}
+
+private struct ModeDeckTile: View {
+    let mode: ModeTile
+    let media: WikiMedia?
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            ArticleHeroImage(media: media, title: mode.title, height: 108, tint: mode.color)
+
+            VStack(alignment: .leading, spacing: 7) {
+                HStack {
+                    Image(systemName: mode.icon)
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(.white)
+                    Spacer(minLength: 4)
+                    Circle()
+                        .fill(mode.color)
+                        .frame(width: 6, height: 6)
+                }
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(mode.title)
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
+                    Text(mode.detail)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white.opacity(0.78))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                }
+            }
+            .padding(10)
+        }
+        .frame(maxWidth: .infinity, minHeight: 108, alignment: .leading)
+        .overlay(alignment: .topLeading) {
+            Rectangle()
+                .fill(mode.color)
+                .frame(width: 28, height: 3)
+                .padding(9)
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(mode.title), \(mode.detail)")
     }
 }
 
