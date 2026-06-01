@@ -14,7 +14,7 @@ struct LinkRaceView: View {
     }
 
     var body: some View {
-        WikiScreen(navigationTitle: "Link Race") {
+        WikiScreen(navigationTitle: "Link Race", showsWindowHeader: false) {
             if let error = viewModel.error {
                 InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
             }

@@ -6,7 +6,7 @@ WikiQuest should feel like a game system built out of Wikipedia, not a generic m
 
 - Paper and ink first.
 - Mode accents: Mystery amber, Race blue, Map green.
-- Archive Compass mark.
+- Simple blue `W` mark.
 - Compact OS rhythm.
 - Real article media instead of stock visuals.
 
@@ -52,6 +52,8 @@ Current score: 7.4/10. The direction is right: the modes now use real media, HUD
 
 Implemented cleanup:
 
+- Deck, Mystery, and Race now hide the shared OS/window header so the first visible object is the play surface.
+- Deck now opens directly on the Daily Mystery photo card, with stats and mode commands after the visual object.
 - Mystery starts with the photo stage, moves mode switching below the stage, and removes the duplicate score/time status strip.
 - Race starts with the current article stage, removes the old route explainer, and attaches the trail directly under the target objective strip.
 - Map removes the extra lower window header and groups status, city jumps, reveal state, and map actions into one flat command sheet.

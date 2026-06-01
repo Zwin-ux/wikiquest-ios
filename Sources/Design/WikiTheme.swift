@@ -75,13 +75,16 @@ struct CommandButton: View {
 struct WikiScreen<Content: View>: View {
     let navigationTitle: String
     var spacing: CGFloat = 18
+    var showsWindowHeader = true
     @ViewBuilder var content: Content
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: spacing) {
-                    WikiOSWindowHeader(title: navigationTitle)
+                    if showsWindowHeader {
+                        WikiOSWindowHeader(title: navigationTitle)
+                    }
                     content
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
