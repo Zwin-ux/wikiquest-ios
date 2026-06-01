@@ -11,7 +11,6 @@
 
 ## Near Term
 
-- Stronger photo rails for recent discoveries.
 - Clearer API no-network and retry recovery.
 - Game Center achievement polish.
 - Widget snapshot refinement.

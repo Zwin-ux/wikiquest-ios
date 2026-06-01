@@ -122,6 +122,7 @@ First shipped slice:
 - shared fallback polish shipped: missing Daily/route/discovery media now uses a mode-aware archive surface instead of a generic dark placeholder
 - deck HUD cleanup shipped: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
 - discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
+- discovery rail density shipped: Today now pulls a broader concurrent random-page batch and shows a five-card Wiki drift rail with tighter reveal timing
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
 - smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
 - shared HUD cleanup shipped: Quest Deck now uses the same compact game HUD cluster as the mode screens
