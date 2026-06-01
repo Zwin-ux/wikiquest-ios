@@ -119,6 +119,7 @@ First shipped slice:
 - three mode entries: Mystery, Race, Map
 - no marketing copy
 - no stacked card grid
+- shared fallback polish shipped: missing Daily/route/discovery media now uses a mode-aware archive surface instead of a generic dark placeholder
 - deck HUD cleanup shipped: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
 - discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
@@ -138,6 +139,7 @@ First shipped slice:
 - clue-stage polish shipped: linear progress bar replaced by numbered clue pips, photo stage gets a completion stamp, and revealed hints now read as a timeline
 - verification cleanup shipped: photo stage, command deck, clue stack, guess field, hint action, refresh action, and suggestion rail now expose stable accessibility IDs for screenshot QA
 - responsive HUD cleanup shipped: Mystery uses the shared game HUD cluster, so dense stage metrics collapse before crowding the photo
+- fallback polish shipped: locked or missing Mystery media uses the clue fallback surface and keeps the answer hidden until reveal
 
 ### Race
 
@@ -155,6 +157,7 @@ First shipped slice:
 - verification cleanup shipped: route photo stage, objective strip, trail, link choice list, per-link buttons, and completion panel now expose stable accessibility IDs for screenshot QA
 - responsive HUD cleanup shipped: Race uses the shared game HUD cluster for click/time state
 - trail motion cleanup shipped: Race path now reads as numbered route nodes with current-article emphasis, fresh connector feedback, sweep motion, and automatic scroll-to-latest behavior
+- fallback polish shipped: current, target, and link-choice image failures now fall back to the article archive surface
 
 ### Map
 
@@ -172,6 +175,7 @@ First shipped slice:
 - verification cleanup shipped: map stage, status, pin feedback, command sheet, action row, reveal panel, and city rail now expose stable accessibility IDs for screenshot QA
 - responsive HUD cleanup shipped: Map uses the shared game HUD cluster for pages, score, and distance
 - command/reveal polish shipped: Map now gives Reveal/Next the primary command width, demotes Locate to an icon utility, and shows distance/XP as a result strip before the revealed article photo
+- fallback polish shipped: revealed targets without usable media now use the map fallback surface instead of a generic placeholder
 
 ### App Clip
 

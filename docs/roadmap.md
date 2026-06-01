@@ -12,7 +12,7 @@
 ## Near Term
 
 - Stronger photo rails for recent discoveries.
-- More robust no-network and no-image fallbacks.
+- Clearer API no-network and retry recovery.
 - Game Center achievement polish.
 - Widget snapshot refinement.
 - App Clip invocation after production domain setup.

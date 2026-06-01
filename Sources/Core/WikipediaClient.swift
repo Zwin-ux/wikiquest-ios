@@ -6,6 +6,32 @@ enum MediaFallbackStyle: String, Codable, Equatable {
     case article
     case mystery
     case map
+
+    var displayLabel: String {
+        switch self {
+        case .archive:
+            return "Archive"
+        case .article:
+            return "Article"
+        case .mystery:
+            return "Clue"
+        case .map:
+            return "Map"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .archive:
+            return "building.columns.fill"
+        case .article:
+            return "doc.text.magnifyingglass"
+        case .mystery:
+            return "questionmark.diamond.fill"
+        case .map:
+            return "map.fill"
+        }
+    }
 }
 
 struct WikiMedia: Codable, Equatable {
