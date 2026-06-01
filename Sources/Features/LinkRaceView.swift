@@ -289,6 +289,7 @@ private struct RaceObjectiveStrip: View {
 
 private struct RaceTrailInline: View {
     let path: [String]
+    @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -306,27 +307,34 @@ private struct RaceTrailInline: View {
                     .foregroundStyle(WikiTheme.muted)
                     .padding(.vertical, 7)
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 7) {
-                        ForEach(Array(path.enumerated()), id: \.offset) { index, title in
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(index == path.count - 1 ? WikiTheme.blue : WikiTheme.hairline)
-                                    .frame(width: 7, height: 7)
-                                Text(title)
-                                    .font(.caption.weight(.bold).monospaced())
-                                    .foregroundStyle(index == path.count - 1 ? WikiTheme.ink : WikiTheme.blue)
-                                    .lineLimit(1)
-                            }
-                            .padding(.vertical, 7)
-                            .transition(.opacity.combined(with: .move(edge: .trailing)))
+                ScrollViewReader { proxy in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 0) {
+                            ForEach(Array(path.enumerated()), id: \.offset) { index, title in
+                                RaceTrailNode(
+                                    index: index,
+                                    title: title,
+                                    isLatest: index == path.count - 1
+                                )
+                                .id(index)
+                                .accessibilityIdentifier("RaceTrailNode-\(index + 1)")
+                                .transition(.opacity.combined(with: .move(edge: .trailing)))
 
-                            if index < path.count - 1 {
-                                Rectangle()
-                                    .fill(WikiTheme.hairline)
-                                    .frame(width: 18, height: 1)
+                                if index < path.count - 1 {
+                                    RaceTrailConnector(isFresh: index == path.count - 2)
+                                        .frame(width: 24)
+                                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                                }
                             }
                         }
+                        .padding(.vertical, 5)
+                        .revealSweep(trigger: path.count, tint: WikiTheme.blue, enabled: path.count > 1)
+                    }
+                    .onAppear {
+                        scrollToLatest(with: proxy)
+                    }
+                    .onChange(of: path.count) { _, _ in
+                        scrollToLatest(with: proxy)
                     }
                 }
             }
@@ -336,6 +344,86 @@ private struct RaceTrailInline: View {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
         .motionTick(trigger: path.count, tint: WikiTheme.blue, enabled: !path.isEmpty)
+        .animation(WikiMotion.active(WikiMotion.panel, reduceMotion: motion.reduceMotion), value: path.count)
+    }
+
+    private func scrollToLatest(with proxy: ScrollViewProxy) {
+        guard let latest = path.indices.last else { return }
+        if motion.reduceMotion {
+            proxy.scrollTo(latest, anchor: .trailing)
+        } else {
+            withAnimation(WikiMotion.panel) {
+                proxy.scrollTo(latest, anchor: .trailing)
+            }
+        }
+    }
+}
+
+private struct RaceTrailNode: View {
+    let index: Int
+    let title: String
+    let isLatest: Bool
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        HStack(spacing: 7) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(isLatest ? WikiTheme.blue : WikiTheme.surface)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .stroke(isLatest ? WikiTheme.blue : WikiTheme.hairline, lineWidth: 1)
+                    }
+
+                if isLatest {
+                    Image(systemName: "location.fill")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(.white)
+                        .wikiBounce(enabled: !motion.reduceMotion, value: title)
+                } else {
+                    Text(String(format: "%02d", index + 1))
+                        .font(.caption2.weight(.black).monospacedDigit())
+                        .foregroundStyle(WikiTheme.blue)
+                }
+            }
+            .frame(width: 31, height: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(isLatest ? "Current" : "Visited")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(isLatest ? WikiTheme.blue : WikiTheme.muted)
+                Text(title)
+                    .font(.caption.weight(.bold).monospaced())
+                    .foregroundStyle(isLatest ? WikiTheme.ink : WikiTheme.blue)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.76)
+            }
+        }
+        .frame(width: 164, alignment: .leading)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(isLatest ? WikiTheme.blue.opacity(0.08) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous))
+        .scaleEffect(isLatest && !motion.reduceMotion ? 1.015 : 1)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(isLatest ? "Current" : "Visited") article \(index + 1), \(title)")
+    }
+}
+
+private struct RaceTrailConnector: View {
+    let isFresh: Bool
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(WikiTheme.hairline)
+                .frame(height: 1)
+            Rectangle()
+                .fill(WikiTheme.blue.opacity(isFresh ? 0.58 : 0.30))
+                .frame(height: isFresh ? 2 : 1)
+                .padding(.horizontal, 4)
+        }
+        .motionTick(trigger: isFresh, tint: WikiTheme.blue, enabled: isFresh)
     }
 }
 

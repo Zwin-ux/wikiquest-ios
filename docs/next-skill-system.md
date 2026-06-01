@@ -110,7 +110,7 @@ First shipped slice:
 - legal links visible before sign-in
 - no dock while signed out
 - preview HUD shipped: first launch now shows clue/choice/XP counters and numbered answer routes so the preview reads like a game round, not a static form
-- preview HUD polish in progress: onboarding now uses the shared game HUD cluster, result-specific haptics, and stable preview choice identifiers
+- preview HUD polish shipped: onboarding now uses the shared game HUD cluster, result-specific haptics, and stable preview choice identifiers
 
 ### Signed-In Today
 
@@ -123,7 +123,7 @@ First shipped slice:
 - discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
 - smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
-- shared HUD cleanup in progress: Quest Deck now uses the same compact game HUD cluster as the mode screens
+- shared HUD cleanup shipped: Quest Deck now uses the same compact game HUD cluster as the mode screens
 
 ### Mystery
 
@@ -154,6 +154,7 @@ First shipped slice:
 - route feedback shipped: link choices now have numbered lane markers, route-locked loading feedback, visited checks, and loading motion without adding another panel
 - verification cleanup shipped: route photo stage, objective strip, trail, link choice list, per-link buttons, and completion panel now expose stable accessibility IDs for screenshot QA
 - responsive HUD cleanup shipped: Race uses the shared game HUD cluster for click/time state
+- trail motion cleanup shipped: Race path now reads as numbered route nodes with current-article emphasis, fresh connector feedback, sweep motion, and automatic scroll-to-latest behavior
 
 ### Map
 
