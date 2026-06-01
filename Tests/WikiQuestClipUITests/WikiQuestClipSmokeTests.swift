@@ -34,9 +34,8 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: Self.launchTimeout))
         app.buttons["ClipQuestChoice-great-wave"].tap()
 
-        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestResultBanner"].waitForExistence(timeout: 8))
-
         app.swipeUp()
+        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestResultBanner"].waitForExistence(timeout: 8))
         XCTAssertTrue(openFullAppCTA(in: app).waitForExistence(timeout: 8))
     }
 
