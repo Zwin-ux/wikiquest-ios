@@ -168,6 +168,8 @@ private struct PreviewQuestPanel: View {
                 tint: resultTint
             )
 
+            PreviewQuestHUD(session: session, quest: quest, tint: resultTint)
+
             MediaCreditRow(media: session.hasSelection ? quest.media : nil)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -198,14 +200,19 @@ private struct PreviewQuestPanel: View {
             }
 
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(quest.choices) { choice in
+                ForEach(Array(quest.choices.enumerated()), id: \.element.id) { index, choice in
                     Button {
                         Haptics.light()
                         withAnimation(WikiMotion.active(WikiMotion.result, reduceMotion: motion.reduceMotion)) {
                             session.choose(choiceID: choice.id, in: quest)
                         }
                     } label: {
-                        PreviewChoiceRow(choice: choice, result: session.result(in: quest), isSelected: session.selectedChoiceID == choice.id)
+                        PreviewChoiceRow(
+                            index: index + 1,
+                            choice: choice,
+                            result: session.result(in: quest),
+                            isSelected: session.selectedChoiceID == choice.id
+                        )
                     }
                     .buttonStyle(.plain)
                     .disabled(session.hasSelection)
@@ -258,6 +265,56 @@ private struct PreviewQuestPanel: View {
     }
 }
 
+private struct PreviewQuestHUD: View {
+    let session: PreviewQuestSession
+    let quest: PreviewQuest
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            PreviewHUDMetric(label: "Clues", value: "\(session.visibleClues(in: quest).count)/\(quest.clues.count)", tint: WikiTheme.blue)
+            PreviewHUDMetric(label: "Choices", value: "\(quest.choices.count)", tint: WikiTheme.amber)
+            PreviewHUDMetric(label: "XP", value: session.result(in: quest) == nil ? "120" : xpText, tint: tint)
+        }
+        .padding(.vertical, 1)
+        .motionTick(trigger: "\(session.visibleClues(in: quest).count)-\(session.selectedChoiceID ?? "open")", tint: tint)
+    }
+
+    private var xpText: String {
+        switch session.result(in: quest) {
+        case .correct:
+            return "+120"
+        case .missed:
+            return "0"
+        case nil:
+            return "120"
+        }
+    }
+}
+
+private struct PreviewHUDMetric: View {
+    let label: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Kicker(text: label)
+            Text(value)
+                .font(.system(.callout, design: .monospaced).weight(.black))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.76)
+                .contentTransition(.numericText())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+    }
+}
+
 private struct PreviewClueRow: View {
     let index: Int
     let clue: String
@@ -282,15 +339,15 @@ private struct PreviewClueRow: View {
 }
 
 private struct PreviewChoiceRow: View {
+    let index: Int
     let choice: PreviewQuestChoice
     let result: PreviewQuestResult?
     let isSelected: Bool
 
     var body: some View {
         HStack(spacing: 12) {
-            Capsule()
-                .fill(isSelected ? tint : WikiTheme.hairline)
-                .frame(width: 4, height: 34)
+            PreviewChoiceMarker(index: index, tint: tint, isSelected: isSelected, isLocked: result != nil)
+
             VStack(alignment: .leading, spacing: 3) {
                 Text(choice.title)
                     .font(.callout.weight(.bold))
@@ -312,6 +369,7 @@ private struct PreviewChoiceRow: View {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
         .contentShape(Rectangle())
+        .motionTick(trigger: "\(choice.id)-\(isSelected)-\(result != nil)", tint: tint, enabled: isSelected)
     }
 
     private var tint: Color {
@@ -335,6 +393,41 @@ private struct PreviewChoiceRow: View {
             return "xmark.octagon.fill"
         case nil:
             return "target"
+        }
+    }
+}
+
+private struct PreviewChoiceMarker: View {
+    let index: Int
+    let tint: Color
+    let isSelected: Bool
+    let isLocked: Bool
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(isSelected ? tint : WikiTheme.blue.opacity(0.07))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .stroke(isSelected ? tint : WikiTheme.blue.opacity(0.35), lineWidth: 1)
+                }
+
+            markerContent
+        }
+        .frame(width: 38, height: 44)
+        .opacity(!isSelected && isLocked ? 0.46 : 1)
+    }
+
+    @ViewBuilder
+    private var markerContent: some View {
+        if isSelected {
+            Image(systemName: "scope")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.white)
+        } else {
+            Text(String(format: "%02d", index))
+                .font(.caption.weight(.black).monospacedDigit())
+                .foregroundStyle(WikiTheme.blue)
         }
     }
 }
