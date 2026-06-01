@@ -32,13 +32,12 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: Self.launchTimeout))
-        app.buttons["ClipQuestChoice-great-wave"].tap()
+        let selectedChoice = app.buttons["ClipQuestChoice-great-wave"]
+        selectedChoice.tap()
 
-        let resultBanner = app.descendants(matching: .any)["ClipQuestResultBanner"]
-        if !resultBanner.waitForExistence(timeout: 4) {
-            app.swipeUp()
-        }
-        XCTAssertTrue(resultBanner.waitForExistence(timeout: 8))
+        let selectedState = NSPredicate(format: "value CONTAINS[c] %@", "Correct answer")
+        expectation(for: selectedState, evaluatedWith: selectedChoice)
+        waitForExpectations(timeout: 8)
 
         let cta = openFullAppCTA(in: app)
         if !cta.waitForExistence(timeout: 4) {
