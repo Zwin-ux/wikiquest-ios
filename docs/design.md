@@ -25,6 +25,7 @@ The signed-in Home screen is the game start, not an app dashboard.
 - Lead with one large Wikipedia media surface.
 - Put time/reset/state as a small HUD overlay, not a separate metric card.
 - Use a three-command mode rail for Mystery, Race, and Map.
+- Let the mode rail adapt to two columns on narrow phones instead of squeezing text and icons.
 - Keep discovery photos secondary and horizontal.
 - Keep reminders and account utility below the primary play loop.
 - Do not add marketing hero copy, carousel framing, or a grid of equal-weight cards.

@@ -134,9 +134,7 @@ private struct HomeModeRail: View {
     @State private var selectedModeID: String?
 
     private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8)
+        GridItem(.adaptive(minimum: 104), spacing: 8)
     ]
 
     var body: some View {
