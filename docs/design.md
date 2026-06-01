@@ -98,6 +98,7 @@ Pass scores:
 - Shared HUD cleanup: Quest Deck, Mystery, Race, and Map use one `GameHUDCluster` rule now. Dense clusters collapse labels before covering the playfield, while accessibility labels keep the metrics understandable.
 - Onboarding preview cleanup: the first playable round uses the same HUD language and result-specific haptics as the signed-in game surfaces.
 - Race trail cleanup: the path now reads as a moving route rail with numbered visited nodes, a current-article marker, fresh connector feedback, and automatic scroll-to-latest behavior.
+- Map reveal cleanup: the command sheet now gives Reveal/Next priority, keeps Locate as a small utility control, and turns distance/XP into a clear result strip before the revealed article photo.
 
 Not in scope for this cleanup:
 

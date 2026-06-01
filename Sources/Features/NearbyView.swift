@@ -536,10 +536,36 @@ private struct MapActionRow: View {
                 playsHaptic: revealPlaysHaptic,
                 action: reveal
             )
-            CommandButton(title: "Locate", icon: "location", tint: WikiTheme.ink, action: locate)
+            MapLocateButton(action: locate)
         }
         .padding(.top, 2)
         .accessibilityIdentifier("NearbyActionRow")
+    }
+}
+
+private struct MapLocateButton: View {
+    let action: () -> Void
+    @State private var tapToken = 0
+
+    var body: some View {
+        Button {
+            Haptics.light()
+            tapToken &+= 1
+            action()
+        } label: {
+            Image(systemName: "location")
+                .font(.callout.weight(.black))
+                .foregroundStyle(WikiTheme.ink)
+                .frame(width: 46, height: 46)
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .stroke(WikiTheme.rule.opacity(0.82), lineWidth: 1)
+                }
+        }
+        .buttonStyle(ArcadePressStyle())
+        .accessibilityLabel("Locate")
+        .accessibilityIdentifier("NearbyLocateButton")
+        .motionTick(trigger: tapToken, tint: WikiTheme.ink)
     }
 }
 
@@ -550,20 +576,17 @@ private struct NearbyRevealPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            NearbyRevealSummary(title: article.title, distanceText: distanceText, score: score)
+
             PhotoClueCard(
                 kicker: "Target revealed",
                 title: article.title,
-                detail: article.description ?? distanceText,
+                detail: article.description ?? "Wikipedia target",
                 media: article.media,
                 visualState: .revealed,
                 tint: WikiTheme.red
             )
             MediaCreditRow(media: article.media)
-
-            HStack(spacing: 10) {
-                NearbyRevealMetric(label: "Distance", value: distanceText, tint: WikiTheme.violet)
-                NearbyRevealMetric(label: "XP", value: "\(score)", tint: WikiTheme.green)
-            }
 
             if let extract = article.extract {
                 Text(extract)
@@ -584,25 +607,42 @@ private struct NearbyRevealPanel: View {
     }
 }
 
-private struct NearbyRevealMetric: View {
-    let label: String
-    let value: String
-    let tint: Color
+private struct NearbyRevealSummary: View {
+    let title: String
+    let distanceText: String
+    let score: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Kicker(text: label)
-            Text(value)
-                .font(.system(.headline, design: .monospaced).weight(.black))
-                .foregroundStyle(tint)
-                .lineLimit(1)
-                .minimumScaleFactor(0.68)
-                .contentTransition(.numericText())
+        HStack(alignment: .center, spacing: 12) {
+            ResultStamp(systemImage: "scope", tint: WikiTheme.red, value: score)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Kicker(text: "Pin result")
+                Text(distanceText)
+                    .font(.system(.title3, design: .monospaced).weight(.black))
+                    .foregroundStyle(WikiTheme.violet)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.76)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 3) {
+                Kicker(text: "XP")
+                TickerNumberText(value: score, font: .system(.headline, design: .monospaced).weight(.black))
+                    .foregroundStyle(WikiTheme.green)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 10)
-        .overlay(alignment: .top) {
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
+        .resultPop(trigger: "\(title)-\(distanceText)-\(score)", tint: WikiTheme.red)
     }
 }
