@@ -399,6 +399,7 @@ private struct ClipResultBanner: View {
             Rectangle().fill(tint).frame(height: 3)
         }
         .transition(.scale(scale: 0.98).combined(with: .opacity))
+        .accessibilityElement(children: .combine)
         .accessibilityIdentifier("ClipQuestResultBanner")
     }
 }
