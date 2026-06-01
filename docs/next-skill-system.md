@@ -100,6 +100,7 @@ First shipped slice:
 - Mystery/Race/Map moved into a compact command rail.
 - Discovery photos remain secondary.
 - Public CI remains the gate after each slice.
+- next polish slice in progress: first-launch copy tightened and Today mode entries now use media-backed route tiles instead of utility boxes
 
 ### First Launch
 

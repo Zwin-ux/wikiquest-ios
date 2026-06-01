@@ -70,13 +70,7 @@ struct OnboardingGate: View {
 
                     appleSignInBlock
 
-                    FlatSection(title: "Full game") {
-                        ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
-                            PanelReveal(delay: Double(index) * 0.035) {
-                                OnboardingModeRow(mode: mode)
-                            }
-                        }
-                    }
+                    OnboardingModeStrip(modes: modes)
 
                     OnboardingLegalLinks()
                 }
@@ -112,7 +106,7 @@ struct OnboardingGate: View {
                     .foregroundStyle(WikiTheme.ink)
                     .minimumScaleFactor(0.70)
                     .accessibilityIdentifier("OnboardingTitle")
-                Text("Play one clue. Save the full trail with Apple.")
+                Text("Play the preview. Sign in to keep your streak.")
                     .font(.callout)
                     .foregroundStyle(WikiTheme.muted)
                     .lineSpacing(3)
@@ -140,12 +134,12 @@ struct OnboardingGate: View {
             } else if let error = session.lastAuthError {
                 InlineNotice(title: "SIGN IN", detail: error, tint: WikiTheme.red)
             } else if previewSession.hasSelection {
-                Text("Save Mystery, Race, Map, streaks, and purchases.")
+                Text("Save your solves, streak, Race paths, Map pins, and purchases.")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(WikiTheme.subtle)
                     .lineLimit(2)
             } else {
-                Text("You can sign in now, or make the preview guess first.")
+                Text("Try the preview first, then sign in when the game clicks.")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(WikiTheme.subtle)
                     .lineLimit(2)
@@ -258,7 +252,7 @@ private struct PreviewQuestPanel: View {
 
     private var detail: String {
         if session.hasSelection {
-            return "That is the loop: image, clues, answer, score."
+            return "Now keep the run, streak, and score."
         }
         return quest.prompt
     }
@@ -546,6 +540,23 @@ private struct OnboardingModeRow: View {
             return "OnboardingMode-Nearby"
         default:
             return "OnboardingMode-\(mode.title.replacingOccurrences(of: " ", with: ""))"
+        }
+    }
+}
+
+private struct OnboardingModeStrip: View {
+    let modes: [OnboardingMode]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Kicker(text: "Modes")
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
+                    PanelReveal(delay: Double(index) * 0.035) {
+                        OnboardingModeRow(mode: mode)
+                    }
+                }
+            }
         }
     }
 }

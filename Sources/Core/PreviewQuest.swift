@@ -17,9 +17,9 @@ struct PreviewQuest: Equatable {
     }
 
     static let firstRun = PreviewQuest(
-        kicker: "FIRST RUN",
-        title: "Guess the image.",
-        prompt: "Reveal clues, make one call, then save your trail.",
+        kicker: "PREVIEW",
+        title: "What article is this?",
+        prompt: "One image. Three clues. One answer.",
         media: WikiMedia(
             thumbnailURL: URL(string: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/640px-The_Great_Wave_off_Kanagawa.jpg"),
             imageURL: URL(string: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/1024px-The_Great_Wave_off_Kanagawa.jpg"),
