@@ -171,6 +171,7 @@ First shipped slice:
 - pin feedback shipped: dropping a guess now arms the command sheet, updates the reveal action, and pulses once without duplicate haptic taps
 - verification cleanup shipped: map stage, status, pin feedback, command sheet, action row, reveal panel, and city rail now expose stable accessibility IDs for screenshot QA
 - responsive HUD cleanup shipped: Map uses the shared game HUD cluster for pages, score, and distance
+- command/reveal polish shipped: Map now gives Reveal/Next the primary command width, demotes Locate to an icon utility, and shows distance/XP as a result strip before the revealed article photo
 
 ### App Clip
 
