@@ -1316,7 +1316,7 @@ struct DiscoveryPhotoRail: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                            PanelReveal(delay: Double(index) * 0.04) {
+                            PanelReveal(delay: Double(index) * 0.028) {
                                 DiscoveryRailCard(
                                     item: item,
                                     index: index + 1,
@@ -1363,7 +1363,7 @@ private struct DiscoveryRailCard: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.82)
         }
-        .frame(width: 156, alignment: .leading)
+        .frame(width: 146, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(item.title), \(item.detail)")
     }

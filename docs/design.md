@@ -100,6 +100,7 @@ Pass scores:
 - Race trail cleanup: the path now reads as a moving route rail with numbered visited nodes, a current-article marker, fresh connector feedback, and automatic scroll-to-latest behavior.
 - Map reveal cleanup: the command sheet now gives Reveal/Next priority, keeps Locate as a small utility control, and turns distance/XP into a clear result strip before the revealed article photo.
 - Media fallback cleanup: every shared image surface now has a mode-aware archive fallback, so no-image and image-load failure states still look like WikiQuest rather than broken media.
+- Discovery rail cleanup: Today pulls a wider random-page batch concurrently and shows more compact Wiki drift cards, giving the Deck more real Wikipedia texture without adding another panel.
 
 Not in scope for this cleanup:
 

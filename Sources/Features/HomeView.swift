@@ -23,6 +23,7 @@ struct HomeView: View {
     @State private var deckArticle: WikiArticle?
     @State private var discoveryItems: [QuestDeckItem] = []
     private let wikipedia = WikipediaClient()
+    private let discoveryRailLimit = 5
 
     private let modes = [
         ModeTile(id: "mystery", title: "Mystery", detail: "Decode", icon: "questionmark.circle", color: WikiTheme.amber, tab: .mystery),
@@ -110,21 +111,39 @@ struct HomeView: View {
 
     @MainActor
     private func refreshDiscovery() async {
-        var articles: [WikiArticle] = []
-        for _ in 0..<4 {
-            if let article = try? await wikipedia.randomSummary() {
-                articles.append(article)
+        async let first: WikiArticle? = try? wikipedia.randomSummary()
+        async let second: WikiArticle? = try? wikipedia.randomSummary()
+        async let third: WikiArticle? = try? wikipedia.randomSummary()
+        async let fourth: WikiArticle? = try? wikipedia.randomSummary()
+        async let fifth: WikiArticle? = try? wikipedia.randomSummary()
+        async let sixth: WikiArticle? = try? wikipedia.randomSummary()
+        async let seventh: WikiArticle? = try? wikipedia.randomSummary()
+
+        let articles = uniqueArticles(await [first, second, third, fourth, fifth, sixth, seventh].compactMap { $0 })
+        let selectedDeck = articles.first { $0.media != nil } ?? articles.first
+        deckArticle = selectedDeck
+
+        discoveryItems = articles
+            .filter { article in
+                guard let selectedDeck else { return true }
+                return article.id != selectedDeck.id
             }
-        }
-        deckArticle = articles.first { $0.media != nil } ?? articles.first
-        discoveryItems = articles.dropFirst().prefix(3).map { article in
-            QuestDeckItem(
-                id: "\(article.id)-\(article.title)",
-                title: article.title,
-                detail: article.description ?? "Wikipedia article",
-                media: article.media,
-                tintName: "blue"
-            )
+            .prefix(discoveryRailLimit)
+            .map { article in
+                QuestDeckItem(
+                    id: "\(article.id)-\(article.title)",
+                    title: article.title,
+                    detail: article.description ?? "Wikipedia article",
+                    media: article.media,
+                    tintName: "blue"
+                )
+            }
+    }
+
+    private func uniqueArticles(_ articles: [WikiArticle]) -> [WikiArticle] {
+        var seenTitles = Set<String>()
+        return articles.filter { article in
+            seenTitles.insert(article.title).inserted
         }
     }
 }
