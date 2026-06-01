@@ -216,10 +216,10 @@ private struct RacePhotoStage: View {
             ZStack(alignment: .topTrailing) {
                 ArticleHeroImage(media: current.media, title: current.title, height: 292, tint: WikiTheme.blue)
 
-                VStack(alignment: .trailing, spacing: 7) {
-                    GameHUDPill(label: "Clicks", value: "\(clicks)", systemImage: "cursorarrow.click", tint: WikiTheme.blue)
-                    GameHUDPill(label: "Time", value: "\(elapsed)s", systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
-                }
+                GameHUDCluster(items: [
+                    GameHUDItem(label: "Clicks", value: "\(clicks)", systemImage: "cursorarrow.click", tint: WikiTheme.blue),
+                    GameHUDItem(label: "Time", value: "\(elapsed)s", systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
+                ])
                 .padding(14)
 
                 VStack(alignment: .leading, spacing: 7) {

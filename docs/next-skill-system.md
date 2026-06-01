@@ -100,7 +100,7 @@ First shipped slice:
 - Mystery/Race/Map moved into a compact command rail.
 - Discovery photos remain secondary.
 - Public CI remains the gate after each slice.
-- next polish slice in progress: first-launch copy tightened and Today mode entries now use media-backed route tiles instead of utility boxes
+- first polish slice shipped: first-launch copy tightened and Today mode entries now use media-backed route tiles instead of utility boxes
 
 ### First Launch
 
@@ -118,10 +118,10 @@ First shipped slice:
 - three mode entries: Mystery, Race, Map
 - no marketing copy
 - no stacked card grid
-- deck HUD cleanup in progress: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
-- discovery rail cleanup in progress: random article photos now read as a secondary Wiki drift with numbered visual trail cards
-- small-phone rail cleanup in progress: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
-- smoke coverage in progress: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
+- deck HUD cleanup shipped: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
+- discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
+- small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
+- smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
 
 ### Mystery
 
@@ -134,7 +134,8 @@ First shipped slice:
 - cleanup shipped: old intro header removed, mode switch moved under the stage, time joined the HUD, and the duplicate status strip was removed
 - command cleanup shipped: guess field, reveal hint, refresh, suggestions, and result now sit directly under the photo stage before the clue log
 - clue-stage polish shipped: linear progress bar replaced by numbered clue pips, photo stage gets a completion stamp, and revealed hints now read as a timeline
-- verification cleanup in progress: photo stage, command deck, clue stack, guess field, hint action, refresh action, and suggestion rail now expose stable accessibility IDs for screenshot QA
+- verification cleanup shipped: photo stage, command deck, clue stack, guess field, hint action, refresh action, and suggestion rail now expose stable accessibility IDs for screenshot QA
+- responsive HUD cleanup in progress: Mystery uses the shared game HUD cluster, so dense stage metrics collapse before crowding the photo
 
 ### Race
 
@@ -149,7 +150,8 @@ First shipped slice:
 - command cleanup shipped: next-link rows now read as a compact route command list with haptic tap feedback instead of a generic section
 - finish cleanup shipped: completion now has a dedicated finish panel with clicks, time, XP, share, new race, and success haptic feedback
 - route feedback shipped: link choices now have numbered lane markers, route-locked loading feedback, visited checks, and loading motion without adding another panel
-- verification cleanup in progress: route photo stage, objective strip, trail, link choice list, per-link buttons, and completion panel now expose stable accessibility IDs for screenshot QA
+- verification cleanup shipped: route photo stage, objective strip, trail, link choice list, per-link buttons, and completion panel now expose stable accessibility IDs for screenshot QA
+- responsive HUD cleanup in progress: Race uses the shared game HUD cluster for click/time state
 
 ### Map
 
@@ -164,7 +166,8 @@ First shipped slice:
 - command cleanup shipped: pin placement has tactile feedback, reveal/next inherits the phase tint, and map actions now appear before lower-priority city jumps
 - reveal cleanup shipped: revealed target now reads as photo + distance/XP moment instead of duplicating title and description below the card
 - pin feedback shipped: dropping a guess now arms the command sheet, updates the reveal action, and pulses once without duplicate haptic taps
-- verification cleanup in progress: map stage, status, pin feedback, command sheet, action row, reveal panel, and city rail now expose stable accessibility IDs for screenshot QA
+- verification cleanup shipped: map stage, status, pin feedback, command sheet, action row, reveal panel, and city rail now expose stable accessibility IDs for screenshot QA
+- responsive HUD cleanup in progress: Map uses the shared game HUD cluster for pages, score, and distance
 
 ### App Clip
 

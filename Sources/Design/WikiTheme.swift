@@ -539,6 +539,7 @@ struct GameHUDPill: View {
     var systemImage: String?
     var tint: Color = WikiTheme.blue
     var flashesOnChange = true
+    var compact = false
 
     var body: some View {
         HStack(spacing: 7) {
@@ -547,27 +548,83 @@ struct GameHUDPill: View {
                     .font(.caption.weight(.black))
                     .foregroundStyle(tint)
             }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label.uppercased())
-                    .font(.caption2.weight(.black).monospaced())
-                    .foregroundStyle(.white.opacity(0.64))
+            VStack(alignment: .leading, spacing: compact ? 0 : 2) {
+                if !compact {
+                    Text(label.uppercased())
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(.white.opacity(0.64))
+                }
                 Text(value)
                     .font(.caption.weight(.black).monospaced())
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .minimumScaleFactor(compact ? 0.68 : 0.72)
                     .contentTransition(.numericText())
                     .animation(WikiMotion.ticker, value: value)
             }
         }
-        .padding(.horizontal, 9)
-        .padding(.vertical, 7)
+        .padding(.horizontal, compact ? 8 : 9)
+        .padding(.vertical, compact ? 6 : 7)
         .background(.black.opacity(0.56))
         .overlay(alignment: .leading) {
             Rectangle().fill(tint).frame(width: 2)
         }
         .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label) \(value)")
         .motionTick(trigger: value, tint: tint, enabled: flashesOnChange)
+    }
+}
+
+struct GameHUDItem: Identifiable {
+    let id: String
+    let label: String
+    let value: String
+    var systemImage: String?
+    var tint: Color = WikiTheme.blue
+    var flashesOnChange = true
+
+    init(
+        id: String? = nil,
+        label: String,
+        value: String,
+        systemImage: String? = nil,
+        tint: Color = WikiTheme.blue,
+        flashesOnChange: Bool = true
+    ) {
+        self.id = id ?? label
+        self.label = label
+        self.value = value
+        self.systemImage = systemImage
+        self.tint = tint
+        self.flashesOnChange = flashesOnChange
+    }
+}
+
+struct GameHUDCluster: View {
+    let items: [GameHUDItem]
+    var alignment: HorizontalAlignment = .trailing
+    var compactAfterCount = 2
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        VStack(alignment: alignment, spacing: isCompact ? 5 : 7) {
+            ForEach(items) { item in
+                GameHUDPill(
+                    label: item.label,
+                    value: item.value,
+                    systemImage: item.systemImage,
+                    tint: item.tint,
+                    flashesOnChange: item.flashesOnChange,
+                    compact: isCompact
+                )
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var isCompact: Bool {
+        items.count > compactAfterCount || dynamicTypeSize.isAccessibilitySize
     }
 }
 

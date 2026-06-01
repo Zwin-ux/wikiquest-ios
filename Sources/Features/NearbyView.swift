@@ -359,14 +359,19 @@ private struct MapHUDCluster: View {
     let distance: Double?
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 7) {
-            GameHUDPill(label: "Pages", value: "\(articleCount)", systemImage: "doc.text.magnifyingglass", tint: WikiTheme.blue)
-            if let distance {
-                GameHUDPill(label: "Distance", value: NearbyScoring.format(distance), systemImage: "ruler", tint: WikiTheme.violet)
-            } else {
-                GameHUDPill(label: "Score", value: "\(score)", systemImage: "star.fill", tint: WikiTheme.green)
-            }
+        GameHUDCluster(items: items)
+    }
+
+    private var items: [GameHUDItem] {
+        var hudItems = [
+            GameHUDItem(label: "Pages", value: "\(articleCount)", systemImage: "doc.text.magnifyingglass", tint: WikiTheme.blue)
+        ]
+        if let distance {
+            hudItems.append(GameHUDItem(label: "Distance", value: NearbyScoring.format(distance), systemImage: "ruler", tint: WikiTheme.violet))
+        } else {
+            hudItems.append(GameHUDItem(label: "Score", value: "\(score)", systemImage: "star.fill", tint: WikiTheme.green))
         }
+        return hudItems
     }
 }
 
