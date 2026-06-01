@@ -118,6 +118,7 @@ First shipped slice:
 - three mode entries: Mystery, Race, Map
 - no marketing copy
 - no stacked card grid
+- deck HUD cleanup in progress: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
 
 ### Mystery
 

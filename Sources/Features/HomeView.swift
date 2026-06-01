@@ -34,16 +34,15 @@ struct HomeView: View {
         WikiScreen(navigationTitle: "Deck", spacing: 16, showsWindowHeader: false) {
             QuestDeckCard(
                 title: "Daily Mystery",
-                detail: "Decode today's hidden page, then keep the trail alive.",
+                detail: "Find the hidden Wikipedia page before reset.",
                 media: deckArticle?.media,
-                primaryMetric: WikiMetric(label: "Reset", text: WikiDisplayFormat.resetCountdown(now: now), tint: WikiTheme.amber),
+                hudMetrics: deckMetrics,
                 tint: WikiTheme.amber
             ) {
                 navigate(.mystery)
             }
 
             MediaCreditRow(media: deckArticle?.media)
-            HomeStats(profile: profile, entitlements: entitlements, signedIn: session.isSignedIn)
 
             HomeModeRail(
                 modes: modes,
@@ -61,6 +60,15 @@ struct HomeView: View {
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { tick in
             now = tick
         }
+    }
+
+    private var deckMetrics: [WikiMetric] {
+        [
+            WikiMetric(label: "Reset", text: WikiDisplayFormat.resetCountdown(now: now), tint: WikiTheme.amber),
+            WikiMetric(label: "Streak", value: profile?.currentStreak ?? 0, tint: WikiTheme.amber),
+            WikiMetric(label: "XP", value: profile?.xp ?? 0, tint: WikiTheme.blue),
+            WikiMetric(label: "Level", value: profile?.level ?? 1, tint: WikiTheme.green)
+        ]
     }
 
     @MainActor
@@ -113,20 +121,6 @@ struct HomeView: View {
     }
 }
 
-private struct HomeStats: View {
-    let profile: UserProfile?
-    let entitlements: EntitlementSummary?
-    let signedIn: Bool
-
-    var body: some View {
-        StatusStrip(items: [
-            WikiMetric(label: "Streak", value: signedIn ? profile?.currentStreak ?? 0 : 0, tint: WikiTheme.amber),
-            WikiMetric(label: "XP", value: signedIn ? profile?.xp ?? 0 : 0, tint: WikiTheme.blue),
-            WikiMetric(label: "Member", text: entitlements?.isMember == true ? "ON" : "OFF", tint: entitlements?.isMember == true ? WikiTheme.green : WikiTheme.muted)
-        ])
-    }
-}
-
 private struct HomeModeRail: View {
     let modes: [ModeTile]
     let discoveryItems: [QuestDeckItem]
@@ -151,7 +145,7 @@ private struct HomeModeRail: View {
                             selectedModeID = mode.id
                             navigate(mode.tab)
                         } label: {
-                            ModeDeckTile(mode: mode, media: media(for: index))
+                            ModeDeckTile(mode: mode, media: media(for: index), index: index + 1)
                         }
                         .buttonStyle(ArcadePressStyle())
                         .motionTick(trigger: selectedModeID == mode.id ? selectedModeID : nil, tint: mode.color)
@@ -172,6 +166,7 @@ private struct HomeModeRail: View {
 private struct ModeDeckTile: View {
     let mode: ModeTile
     let media: WikiMedia?
+    let index: Int
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -183,9 +178,13 @@ private struct ModeDeckTile: View {
                         .font(.callout.weight(.black))
                         .foregroundStyle(.white)
                     Spacer(minLength: 4)
-                    Circle()
-                        .fill(mode.color)
-                        .frame(width: 6, height: 6)
+                    Text(String(format: "%02d", index))
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 4)
+                        .background(mode.color.opacity(0.88))
+                        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
                 }
 
                 Spacer(minLength: 12)
@@ -201,6 +200,10 @@ private struct ModeDeckTile: View {
                         .foregroundStyle(.white.opacity(0.78))
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
+                    Text("Open")
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(.white.opacity(0.66))
+                        .lineLimit(1)
                 }
             }
             .padding(10)
