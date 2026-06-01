@@ -95,6 +95,7 @@ Pass scores:
 - AI slop resistance: 8.5/10 -> target 9/10 by cutting explanatory copy.
 - Design system reuse: 8/10 -> target 8.5/10 with one shared stage/HUD rule.
 - Responsive readiness: 6.5/10 -> target 8/10 after small-iPhone HUD rules are explicit.
+- Shared HUD cleanup: Mystery, Race, and Map use one `GameHUDCluster` rule now. Dense clusters collapse labels before covering the playfield, while accessibility labels keep the metrics understandable.
 
 Not in scope for this cleanup:
 

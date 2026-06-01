@@ -159,11 +159,11 @@ private struct MysteryPhotoStage: View {
                     tint: WikiTheme.amber
                 )
 
-                VStack(alignment: .trailing, spacing: 7) {
-                    GameHUDPill(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber)
-                    GameHUDPill(label: "Score", value: "\(viewModel.score)", systemImage: "star.fill", tint: WikiTheme.green)
-                    GameHUDPill(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
-                }
+                GameHUDCluster(items: [
+                    GameHUDItem(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber),
+                    GameHUDItem(label: "Score", value: "\(viewModel.score)", systemImage: "star.fill", tint: WikiTheme.green),
+                    GameHUDItem(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
+                ])
                 .padding(14)
 
                 if viewModel.isComplete {
