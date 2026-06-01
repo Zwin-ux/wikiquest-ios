@@ -901,6 +901,7 @@ struct ArticleHeroImage: View {
     var visualState: ArticleVisualState = .revealed
     var height: CGFloat = 220
     var tint: Color = WikiTheme.blue
+    var fallbackStyle: MediaFallbackStyle = .article
     @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
@@ -958,21 +959,12 @@ struct ArticleHeroImage: View {
     }
 
     private var fallback: some View {
-        ZStack {
-            WikiTheme.ink
-            GridPattern()
-                .stroke(tint.opacity(0.22), lineWidth: 1)
-            VStack(spacing: 10) {
-                BrandMarkView(variant: .glyph, size: 46, animated: false)
-                    .opacity(0.85)
-                Text(title)
-                    .font(.caption.weight(.bold).monospaced())
-                    .foregroundStyle(WikiTheme.surfaceStrong.opacity(0.82))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 18)
-            }
-        }
+        ArticleMediaFallbackSurface(
+            title: title,
+            style: media?.fallbackStyle ?? fallbackStyle,
+            tint: tint,
+            visualState: visualState
+        )
     }
 
     private var lockedOverlay: some View {
@@ -1004,6 +996,78 @@ struct ArticleHeroImage: View {
     }
 }
 
+private struct ArticleMediaFallbackSurface: View {
+    let title: String
+    let style: MediaFallbackStyle
+    let tint: Color
+    let visualState: ArticleVisualState
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        ZStack {
+            WikiTheme.ink
+
+            LinearGradient(
+                colors: [
+                    tint.opacity(0.34),
+                    WikiTheme.ink.opacity(0.90),
+                    WikiTheme.ink
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            GridPattern()
+                .stroke(tint.opacity(0.20), lineWidth: 1)
+
+            fallbackLines
+
+            VStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                        .fill(tint.opacity(0.18))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                                .stroke(tint.opacity(0.72), lineWidth: 1)
+                        }
+                    Image(systemName: style.systemImage)
+                        .font(.title2.weight(.black))
+                        .foregroundStyle(WikiTheme.surfaceStrong)
+                        .wikiBounce(enabled: visualState != .locked && !motion.reduceMotion, value: style.rawValue)
+                }
+                .frame(width: 54, height: 48)
+
+                Text(style.displayLabel.uppercased())
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(tint.opacity(0.92))
+
+                Text(title)
+                    .font(.caption.weight(.bold).monospaced())
+                    .foregroundStyle(WikiTheme.surfaceStrong.opacity(0.86))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.74)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 18)
+            }
+            .opacity(visualState == .locked ? 0.74 : 1)
+        }
+        .accessibilityLabel("\(style.displayLabel) fallback image for \(title)")
+    }
+
+    private var fallbackLines: some View {
+        VStack(spacing: 11) {
+            ForEach(0..<4, id: \.self) { index in
+                Rectangle()
+                    .fill(tint.opacity(index == 0 ? 0.34 : 0.16))
+                    .frame(width: CGFloat(122 - (index * 17)), height: index == 0 ? 2 : 1)
+            }
+        }
+        .rotationEffect(.degrees(-10))
+        .offset(x: -58, y: 48)
+        .opacity(0.72)
+    }
+}
+
 struct PhotoClueCard: View {
     let kicker: String
     let title: String
@@ -1011,10 +1075,18 @@ struct PhotoClueCard: View {
     let media: WikiMedia?
     var visualState: ArticleVisualState = .revealed
     var tint: Color = WikiTheme.blue
+    var fallbackStyle: MediaFallbackStyle = .article
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            ArticleHeroImage(media: media, title: title, visualState: visualState, height: 248, tint: tint)
+            ArticleHeroImage(
+                media: media,
+                title: title,
+                visualState: visualState,
+                height: 248,
+                tint: tint,
+                fallbackStyle: fallbackStyle
+            )
             VStack(alignment: .leading, spacing: 5) {
                 Text(kicker.uppercased())
                     .font(.caption.weight(.black).monospaced())
@@ -1083,7 +1155,14 @@ struct QuestDeckCard: View {
             action()
         }) {
             ZStack(alignment: .bottomLeading) {
-                ArticleHeroImage(media: media, title: title, visualState: .revealed, height: 322, tint: tint)
+                ArticleHeroImage(
+                    media: media,
+                    title: title,
+                    visualState: .revealed,
+                    height: 322,
+                    tint: tint,
+                    fallbackStyle: .archive
+                )
 
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
@@ -1261,7 +1340,7 @@ private struct DiscoveryRailCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             ZStack(alignment: .topLeading) {
-                ArticleHeroImage(media: item.media, title: item.title, height: 112, tint: item.tint)
+                ArticleHeroImage(media: item.media, title: item.title, height: 112, tint: item.tint, fallbackStyle: .archive)
                 if showsTrailMarker {
                     Text(String(format: "%02d", index))
                         .font(.caption2.weight(.black).monospaced())
@@ -1296,7 +1375,7 @@ struct ArticlePreview: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ArticleHeroImage(media: article.media, title: article.title, height: 202, tint: tint)
+            ArticleHeroImage(media: article.media, title: article.title, height: 202, tint: tint, fallbackStyle: .article)
             Kicker(text: "Article")
             Text(article.title)
                 .font(.title2.weight(.bold))

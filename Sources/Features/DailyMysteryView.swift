@@ -156,7 +156,8 @@ private struct MysteryPhotoStage: View {
                     detail: detail,
                     media: viewModel.mysteryMedia,
                     visualState: viewModel.photoVisualState,
-                    tint: WikiTheme.amber
+                    tint: WikiTheme.amber,
+                    fallbackStyle: .mystery
                 )
 
                 GameHUDCluster(items: [
@@ -419,7 +420,14 @@ private struct HintRow: View {
                 }
 
                 if let media = hintMedia {
-                    ArticleHeroImage(media: media, title: "Photo clue", visualState: .clue, height: 150, tint: WikiTheme.amber)
+                    ArticleHeroImage(
+                        media: media,
+                        title: "Photo clue",
+                        visualState: .clue,
+                        height: 150,
+                        tint: WikiTheme.amber,
+                        fallbackStyle: .mystery
+                    )
                     MediaCreditRow(media: media)
                 } else {
                     Text(rendered)

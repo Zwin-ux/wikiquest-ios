@@ -165,7 +165,8 @@ private struct PreviewQuestPanel: View {
                 detail: detail,
                 media: quest.media,
                 visualState: visualState,
-                tint: resultTint
+                tint: resultTint,
+                fallbackStyle: .mystery
             )
 
             PreviewQuestHUD(session: session, quest: quest, tint: resultTint)

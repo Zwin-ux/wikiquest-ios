@@ -177,7 +177,13 @@ private struct ModeDeckTile: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            ArticleHeroImage(media: media, title: mode.title, height: 108, tint: mode.color)
+            ArticleHeroImage(
+                media: media,
+                title: mode.title,
+                height: 108,
+                tint: mode.color,
+                fallbackStyle: mode.fallbackStyle
+            )
 
             VStack(alignment: .leading, spacing: 7) {
                 HStack {
@@ -225,6 +231,19 @@ private struct ModeDeckTile: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(mode.title), \(mode.detail)")
+    }
+}
+
+private extension ModeTile {
+    var fallbackStyle: MediaFallbackStyle {
+        switch tab {
+        case .mystery:
+            return .mystery
+        case .nearby:
+            return .map
+        default:
+            return .article
+        }
     }
 }
 

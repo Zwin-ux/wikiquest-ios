@@ -584,7 +584,8 @@ private struct NearbyRevealPanel: View {
                 detail: article.description ?? "Wikipedia target",
                 media: article.media,
                 visualState: .revealed,
-                tint: WikiTheme.red
+                tint: WikiTheme.red,
+                fallbackStyle: .map
             )
             MediaCreditRow(media: article.media)
 
