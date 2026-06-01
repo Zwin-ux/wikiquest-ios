@@ -49,13 +49,13 @@ struct LinkRaceView: View {
             }
 
             if viewModel.completed {
-                ResultPanel(
-                    isCorrect: true,
+                RaceCompletionPanel(
+                    target: viewModel.targets?.target ?? "Target reached",
                     score: viewModel.savedXP ?? 0,
-                    answer: viewModel.targets?.target,
+                    clicks: viewModel.clickCount,
+                    elapsed: viewModel.elapsedSeconds(now: now),
                     shareText: linkRaceShareText
-                )
-                CommandButton(title: "New race", icon: "arrow.clockwise", tint: WikiTheme.blue) {
+                ) {
                     Task { await viewModel.newRace() }
                 }
             }
@@ -92,6 +92,7 @@ struct LinkRaceView: View {
                 let target = viewModel.targets?.target,
                 let startedAt = viewModel.startedAt
             else { return }
+            Haptics.success()
             let elapsed = viewModel.elapsedSeconds(now: now)
             gameCenter.reportLinkRaceCompletion(elapsedSeconds: elapsed)
             Task {
@@ -132,6 +133,71 @@ struct LinkRaceView: View {
             startedAt: startedAt,
             pathTail: pathTail
         )
+    }
+}
+
+private struct RaceCompletionPanel: View {
+    let target: String
+    let score: Int
+    let clicks: Int
+    let elapsed: Int
+    let shareText: String
+    let newRace: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ResultBanner(
+                title: "FINISH",
+                detail: target,
+                score: score,
+                tint: WikiTheme.green,
+                systemImage: "flag.checkered"
+            )
+
+            HStack(spacing: 10) {
+                RaceFinishMetric(label: "Clicks", value: "\(clicks)", tint: WikiTheme.blue)
+                RaceFinishMetric(label: "Time", value: "\(elapsed)s", tint: WikiTheme.violet)
+                RaceFinishMetric(label: "XP", value: "\(score)", tint: WikiTheme.green)
+            }
+
+            CommandButton(title: "New race", icon: "arrow.clockwise", tint: WikiTheme.blue, action: newRace)
+
+            ShareLink(item: shareText) {
+                Label("Share route", systemImage: "square.and.arrow.up")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(WikiTheme.blue)
+            }
+            .buttonStyle(ArcadePressStyle())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.green.opacity(0.72)).frame(height: 2)
+        }
+        .motionTick(trigger: "\(target)-\(score)-\(clicks)-\(elapsed)", tint: WikiTheme.green)
+    }
+}
+
+private struct RaceFinishMetric: View {
+    let label: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Kicker(text: label)
+            Text(value)
+                .font(.system(.headline, design: .monospaced).weight(.black))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+                .contentTransition(.numericText())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
     }
 }
 

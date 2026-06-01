@@ -139,6 +139,7 @@ First shipped slice:
 - next design cleanup: remove old explanatory route header, move the trail closer to the objective strip, and keep link rows visually subordinate to the current article stage
 - cleanup shipped: old route copy removed, unused route header components removed, and the trail now lives inside the route stage
 - command cleanup shipped: next-link rows now read as a compact route command list with haptic tap feedback instead of a generic section
+- finish cleanup shipped: completion now has a dedicated finish panel with clicks, time, XP, share, new race, and success haptic feedback
 
 ### Map
 
@@ -151,6 +152,7 @@ First shipped slice:
 - next design cleanup: remove redundant window/header chrome below the map and turn the lower area into one compact command sheet
 - cleanup shipped: redundant lower window chrome removed, phase/status/actions now sit in one flat map command sheet
 - command cleanup shipped: pin placement has tactile feedback, reveal/next inherits the phase tint, and map actions now appear before lower-priority city jumps
+- reveal cleanup shipped: revealed target now reads as photo + distance/XP moment instead of duplicating title and description below the card
 
 ### App Clip
 
