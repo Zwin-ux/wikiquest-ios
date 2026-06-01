@@ -5,6 +5,7 @@ struct AppClipView: View {
     private let resultAnchorID = "ClipQuestResultAnchor"
     @StateObject private var model: AppClipQuestViewModel
     @State private var session = ClipQuestSession()
+    @State private var didApplyUITestChoice = false
 
     init(model: AppClipQuestViewModel) {
         _model = StateObject(wrappedValue: model)
@@ -39,10 +40,21 @@ struct AppClipView: View {
         .background(ClipPaperBackground())
         .task {
             await model.load()
+            applyUITestChoiceIfNeeded()
         }
         .onChange(of: quest) { _, _ in
             session.reset()
+            didApplyUITestChoice = false
+            applyUITestChoiceIfNeeded()
         }
+    }
+
+    private func applyUITestChoiceIfNeeded() {
+        guard ProcessInfo.processInfo.arguments.contains("-UITests") else { return }
+        guard !didApplyUITestChoice else { return }
+        guard let choiceID = ProcessInfo.processInfo.environment["WIKIQUEST_APP_CLIP_PRESELECT_CHOICE_ID"] else { return }
+        didApplyUITestChoice = true
+        session.choose(choiceID: choiceID, in: quest)
     }
 
     private var header: some View {
