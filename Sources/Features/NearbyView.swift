@@ -111,7 +111,11 @@ struct NearbyView: View {
                         }
 
                         if viewModel.phase == .revealed, let article = viewModel.selected {
-                            NearbyRevealPanel(article: article, score: viewModel.savedXP ?? viewModel.localScore ?? 0)
+                            NearbyRevealPanel(
+                                article: article,
+                                distanceText: viewModel.distanceMeters.map(NearbyScoring.format) ?? "Unknown",
+                                score: viewModel.savedXP ?? viewModel.localScore ?? 0
+                            )
                         }
 
                         MapActionRow(
@@ -466,36 +470,33 @@ private struct MapActionRow: View {
 
 private struct NearbyRevealPanel: View {
     let article: NearbyArticle
+    let distanceText: String
     let score: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             PhotoClueCard(
                 kicker: "Target revealed",
                 title: article.title,
-                detail: article.description ?? "Wikipedia article",
+                detail: article.description ?? distanceText,
                 media: article.media,
                 visualState: .revealed,
                 tint: WikiTheme.red
             )
             MediaCreditRow(media: article.media)
-            Kicker(text: "Target")
-            Text(article.title)
-                .font(.title2.weight(.bold))
-                .foregroundStyle(WikiTheme.ink)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
-            if let description = article.description {
-                Text(description)
-                    .foregroundStyle(WikiTheme.muted)
+
+            HStack(spacing: 10) {
+                NearbyRevealMetric(label: "Distance", value: distanceText, tint: WikiTheme.violet)
+                NearbyRevealMetric(label: "XP", value: "\(score)", tint: WikiTheme.green)
             }
+
             if let extract = article.extract {
                 Text(extract)
-                    .lineLimit(4)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.muted)
+                    .lineLimit(3)
                     .lineSpacing(3)
             }
-            TickerNumberText(value: score, suffix: " XP", font: .system(.title3, design: .monospaced).weight(.black))
-                .foregroundStyle(WikiTheme.green)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
@@ -503,5 +504,29 @@ private struct NearbyRevealPanel: View {
             Rectangle().fill(WikiTheme.red).frame(height: 3)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
+        .motionTick(trigger: "\(article.id)-\(distanceText)-\(score)", tint: WikiTheme.red)
+    }
+}
+
+private struct NearbyRevealMetric: View {
+    let label: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Kicker(text: label)
+            Text(value)
+                .font(.system(.headline, design: .monospaced).weight(.black))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.68)
+                .contentTransition(.numericText())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
     }
 }
