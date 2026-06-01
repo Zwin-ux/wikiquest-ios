@@ -12,7 +12,7 @@
 ## Near Term
 
 - Stronger photo rails for recent discoveries.
-- Better Link Race path animation.
+- Map command sheet and reveal-state polish.
 - More robust no-network and no-image fallbacks.
 - Game Center achievement polish.
 - Widget snapshot refinement.
