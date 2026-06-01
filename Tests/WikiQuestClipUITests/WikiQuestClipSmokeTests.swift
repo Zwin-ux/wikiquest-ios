@@ -29,11 +29,11 @@ final class WikiQuestClipSmokeTests: XCTestCase {
     func testResultCTAAppearsAfterChoice() {
         let app = makeApp()
         app.launchEnvironment["WIKIQUEST_APP_CLIP_DISABLE_NETWORK"] = "1"
+        app.launchEnvironment["WIKIQUEST_APP_CLIP_PRESELECT_CHOICE_ID"] = "great-wave"
         app.launch()
 
         XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: Self.launchTimeout))
         let selectedChoice = app.buttons["ClipQuestChoice-great-wave"]
-        selectedChoice.tap()
 
         let selectedState = NSPredicate(format: "value CONTAINS[c] %@", "Correct answer")
         expectation(for: selectedState, evaluatedWith: selectedChoice)
