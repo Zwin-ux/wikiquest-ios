@@ -1001,7 +1001,7 @@ struct QuestDeckCard: View {
     let title: String
     let detail: String
     let media: WikiMedia?
-    let primaryMetric: WikiMetric
+    let hudMetrics: [WikiMetric]
     var tint: Color = WikiTheme.blue
     let action: () -> Void
     @State private var tapToken = 0
@@ -1018,15 +1018,15 @@ struct QuestDeckCard: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("TODAY'S DECK")
+                            Text("WIKIQUEST")
                                 .font(.caption.weight(.black).monospaced())
                                 .foregroundStyle(.white.opacity(0.76))
-                            Text("Wikipedia run")
+                            Text("Today's run")
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(.white.opacity(0.82))
                         }
                         Spacer(minLength: 12)
-                        metricBadge
+                        metricCluster
                     }
 
                     Spacer(minLength: 36)
@@ -1069,25 +1069,58 @@ struct QuestDeckCard: View {
         .motionTick(trigger: tapToken, tint: tint)
     }
 
-    private var metricBadge: some View {
+    @ViewBuilder
+    private var metricCluster: some View {
+        if !hudMetrics.isEmpty {
+            VStack(alignment: .trailing, spacing: 6) {
+                metricRow(Array(hudMetrics.prefix(2)))
+                metricRow(Array(hudMetrics.dropFirst(2).prefix(2)))
+            }
+        }
+    }
+
+    private func metricRow(_ metrics: [WikiMetric]) -> some View {
+        HStack(spacing: 6) {
+            ForEach(metrics) { metric in
+                DeckMetricBadge(metric: metric)
+            }
+        }
+    }
+}
+
+private struct DeckMetricBadge: View {
+    let metric: WikiMetric
+
+    var body: some View {
         VStack(alignment: .trailing, spacing: 3) {
-            Text(primaryMetric.label.uppercased())
+            Text(metric.label.uppercased())
                 .font(.caption2.weight(.black).monospaced())
                 .foregroundStyle(.white.opacity(0.66))
-            if let value = primaryMetric.value {
-                TickerNumberText(value: value, font: .system(.callout, design: .monospaced).weight(.black))
-                    .foregroundStyle(.white)
-            } else {
-                Text(primaryMetric.text ?? "-")
-                    .font(.system(.callout, design: .monospaced).weight(.black))
-                    .foregroundStyle(.white)
-                    .contentTransition(.numericText())
-            }
+            metricValue
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(.black.opacity(0.54))
+        .overlay(alignment: .leading) {
+            Rectangle().fill(metric.tint).frame(width: 2)
+        }
         .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .motionTick(trigger: metric.value ?? 0, tint: metric.tint, enabled: metric.value != nil)
+    }
+
+    @ViewBuilder
+    private var metricValue: some View {
+        if let value = metric.value {
+            TickerNumberText(value: value, font: .system(.callout, design: .monospaced).weight(.black))
+                .foregroundStyle(.white)
+        } else {
+            Text(metric.text ?? "-")
+                .font(.system(.callout, design: .monospaced).weight(.black))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .contentTransition(.numericText())
+        }
     }
 }
 
