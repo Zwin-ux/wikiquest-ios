@@ -277,11 +277,20 @@ private struct LinkChoiceList: View {
     let choose: (WikiLink) -> Void
 
     var body: some View {
-        FlatSection(title: "Choose the next blue link") {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Kicker(text: "Next link")
+                Spacer(minLength: 8)
+                Text("\(links.count) options")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.blue)
+            }
+
             ForEach(Array(links.enumerated()), id: \.element.id) { index, link in
                 let visited = visitedTitles.contains(link.title)
                 PanelReveal(delay: Double(index) * 0.018) {
                     Button {
+                        Haptics.light()
                         choose(link)
                     } label: {
                         LinkChoiceRow(
@@ -296,6 +305,12 @@ private struct LinkChoiceList: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.blue.opacity(0.72)).frame(height: 2)
+        }
+        .motionTick(trigger: "\(links.count)-\(loadingTitle ?? "ready")", tint: WikiTheme.blue)
     }
 }
 

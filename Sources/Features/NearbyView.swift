@@ -60,6 +60,7 @@ struct NearbyView: View {
                         SpatialTapGesture()
                             .onEnded { value in
                                 if let coordinate = proxy.convert(value.location, from: .local) {
+                                    Haptics.light()
                                     viewModel.placeGuess(coordinate)
                                 }
                             }
@@ -98,10 +99,6 @@ struct NearbyView: View {
                             InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
                         }
 
-                        CityRail(cities: cities) { city in
-                            Task { await loadCity(city) }
-                        }
-
                         if viewModel.phase == .loading || viewModel.phase == .locating {
                             WikiLoadingGlyph(title: "LOADING", detail: location.statusText, tint: WikiTheme.blue)
                         }
@@ -115,15 +112,10 @@ struct NearbyView: View {
 
                         if viewModel.phase == .revealed, let article = viewModel.selected {
                             NearbyRevealPanel(article: article, score: viewModel.savedXP ?? viewModel.localScore ?? 0)
-                            ShareLink(item: nearbyShareText(article: article)) {
-                                Label("Share result", systemImage: "square.and.arrow.up")
-                                    .font(.callout.weight(.semibold))
-                                    .foregroundStyle(WikiTheme.blue)
-                            }
-                            .buttonStyle(ArcadePressStyle())
                         }
 
                         MapActionRow(
+                            tint: phaseTint,
                             revealTitle: viewModel.phase == .revealed ? "Next" : "Reveal",
                             revealIcon: viewModel.phase == .revealed ? "arrow.clockwise" : "mappin.and.ellipse",
                             revealDisabled: revealDisabled,
@@ -141,6 +133,19 @@ struct NearbyView: View {
                                 location.request()
                             }
                         )
+
+                        if viewModel.phase == .revealed, let article = viewModel.selected {
+                            ShareLink(item: nearbyShareText(article: article)) {
+                                Label("Share result", systemImage: "square.and.arrow.up")
+                                    .font(.callout.weight(.semibold))
+                                    .foregroundStyle(WikiTheme.blue)
+                            }
+                            .buttonStyle(ArcadePressStyle())
+                        }
+
+                        CityRail(cities: cities) { city in
+                            Task { await loadCity(city) }
+                        }
                     }
                     .padding(WikiTheme.screenPadding)
                 }
@@ -281,6 +286,7 @@ private struct MapControlSheet<Content: View>: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
+        .motionTick(trigger: "\(tint)", tint: tint)
     }
 }
 
@@ -434,6 +440,7 @@ private struct CityRail: View {
 }
 
 private struct MapActionRow: View {
+    let tint: Color
     let revealTitle: String
     let revealIcon: String
     let revealDisabled: Bool
@@ -446,7 +453,7 @@ private struct MapActionRow: View {
             CommandButton(
                 title: revealTitle,
                 icon: revealIcon,
-                tint: WikiTheme.blue,
+                tint: tint,
                 isDisabled: revealDisabled,
                 playsHaptic: revealPlaysHaptic,
                 action: reveal
