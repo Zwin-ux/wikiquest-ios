@@ -12,7 +12,7 @@ struct DailyMysteryView: View {
     }
 
     var body: some View {
-        WikiScreen(navigationTitle: "Mystery") {
+        WikiScreen(navigationTitle: "Mystery", showsWindowHeader: false) {
             MysteryPhotoStage(viewModel: viewModel, detail: photoDetail)
 
             MysteryModeSwitch(selection: $viewModel.mode)

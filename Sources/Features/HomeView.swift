@@ -31,10 +31,7 @@ struct HomeView: View {
     ]
 
     var body: some View {
-        WikiScreen(navigationTitle: "Deck", spacing: 16) {
-            HomeOSHeader(displayName: session.displayName, now: now)
-            HomeStats(profile: profile, entitlements: entitlements, signedIn: session.isSignedIn)
-
+        WikiScreen(navigationTitle: "Deck", spacing: 16, showsWindowHeader: false) {
             QuestDeckCard(
                 title: "Daily Mystery",
                 detail: "Decode today's hidden page, then keep the trail alive.",
@@ -46,6 +43,7 @@ struct HomeView: View {
             }
 
             MediaCreditRow(media: deckArticle?.media)
+            HomeStats(profile: profile, entitlements: entitlements, signedIn: session.isSignedIn)
 
             HomeModeRail(modes: modes, navigate: navigate)
 
@@ -106,41 +104,6 @@ struct HomeView: View {
                 media: article.media,
                 tintName: "blue"
             )
-        }
-    }
-}
-
-private struct HomeOSHeader: View {
-    let displayName: String
-    let now: Date
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 12) {
-                BrandMarkView(variant: .glyph, size: 38, animated: true)
-                VStack(alignment: .leading, spacing: 3) {
-                    Kicker(text: WikiDisplayFormat.todayLabel(now: now))
-                    Text("Ready, \(displayName).")
-                        .font(.system(.title3, design: .serif).weight(.black))
-                        .foregroundStyle(WikiTheme.ink)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.78)
-                }
-                Spacer(minLength: 8)
-                Text("DECK")
-                    .font(.caption.weight(.black).monospaced())
-                    .foregroundStyle(WikiTheme.green)
-            }
-            Text("Pick up the daily deck. Solve, race, place the pin.")
-                .font(.callout)
-                .foregroundStyle(WikiTheme.muted)
-                .lineSpacing(3)
-        }
-        .overlay(alignment: .top) {
-            Rectangle().fill(WikiTheme.ink).frame(height: 2)
-        }
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
     }
 }

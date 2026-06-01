@@ -1,8 +1,25 @@
 # Next Skill System
 
-The next effective skill for WikiQuest is `game-studio:game-ui-frontend`.
+The active goal is to execute the WikiQuest iOS photo-led native game overhaul with the right Codex/gstack skill at each phase.
 
-Use it before more release work. The project now builds publicly; the weak part is player feel: the first launch, quest deck, HUD rhythm, photo reveal, and game screens.
+Use this runbook before more release work. The project now builds publicly; the weak part is player feel: the first launch, quest deck, HUD rhythm, photo reveal, and game screens.
+
+## Program Command Chain
+
+Run these phases in order. Each phase has one primary skill, one job, and the concrete commands/functions that prove it is done.
+
+| Phase | Primary skill | Job | Commands / functions |
+| --- | --- | --- | --- |
+| 1. Product taste lock | `design-consultation` | Keep the direction sharp: simple blue `W`, photo-led game surfaces, no SaaS/web landing patterns. | Read `docs/design.md`; update only if the visual contract changes. |
+| 2. Game UI map | `game-studio:game-ui-frontend` | Convert WikiQuest into playable surfaces: preview, Quest Deck, Mystery, Race, Map, App Clip. | Update `docs/next-skill-system.md`; map one visual object, one HUD strip, one command area per screen. |
+| 3. Design review | `plan-design-review` | Kill weak hierarchy, over-copy, fake OS labels, clutter, and motion that does not explain state. | Review planned screen changes before touching SwiftUI. |
+| 4. Engineering review | `plan-eng-review` | Keep the SwiftUI changes safe, testable, and scoped to existing architecture. | Verify reuse of `WikiTheme`, `WikiMotion`, `WikipediaClient`, `SessionStore`, `PurchaseStore`, `WikiQuestSnapshotStore`. |
+| 5. Implementation slice | Codex implementation | Build in thin vertical slices: onboarding/preview, Today deck, Mystery, Race, Map. | Edit Swift with `apply_patch`; add/update focused tests under `Tests/WikiQuestTests`. |
+| 6. Local validation | `qa` where applicable | Run every check possible from Windows. | `corepack pnpm@10 run assets:wikiquest`; `corepack pnpm@10 run typecheck`; Railway smoke URLs; `git status --short`. |
+| 7. Native CI | GitHub Actions | Validate Swift/Xcode on macOS. | `gh run list --repo Zwin-ux/wikiquest-ios --limit 8`; inspect latest `iOS CI`. |
+| 8. Release gate | `ship` | Upload only after CI, backend, assets, and screenshots are ready. | Run TestFlight workflow with `confirm_backend_ready=true`; inspect IPA includes `WikiQuestClip.app`. |
+
+Do not start with `ship`. Shipping a weak flow faster is not the right bottleneck.
 
 ## Why This Skill
 
@@ -22,7 +39,7 @@ This is closer to game HUD/product design than standard app redesign.
 1. `game-studio:game-ui-frontend`
    Define the playable surfaces: Quest Deck, Mystery, Race, Map, App Clip, HUD strips, and command areas.
 2. `design-consultation`
-   Tighten the visual direction: photo treatment, Archive Compass usage, typography, color, and spacing.
+   Tighten the visual direction: photo treatment, blue `W` usage, typography, color, and spacing.
 3. `plan-design-review`
    Cut weak copy, excess panels, generic mobile patterns, and low-value motion before implementation.
 4. `plan-eng-review`
@@ -30,7 +47,35 @@ This is closer to game HUD/product design than standard app redesign.
 5. `ship`
    Run public CI, TestFlight archive, device screenshots, and release notes only after the visual pass exists.
 
-Do not start with `ship`. Shipping a weak flow faster is not the right bottleneck.
+## Immediate Execution Target
+
+Build **Quest Deck V2 + Mystery V2** first. This gives the whole product a new feel without touching every screen at once.
+
+Implementation order:
+
+1. Onboarding preview:
+   - logo-first boot
+   - blurred photo clue
+   - three choices
+   - result
+   - Apple sign-in CTA
+2. Today deck:
+   - one large daily visual card
+   - compact XP/streak/rank strip
+   - Mystery/Race/Map command entries
+3. Mystery:
+   - photo stage owns the screen
+   - HUD overlay handles hints/score/time
+   - input/suggestions directly below stage
+   - result stamp and media credit after reveal
+4. Race:
+   - current article stage first
+   - target tile and path trail second
+   - link rows subordinate to the route
+5. Map:
+   - MapKit first
+   - bottom command sheet only
+   - reveal photo after guess
 
 ## Next Implementation Target
 
@@ -46,7 +91,7 @@ First shipped slice:
 
 ### First Launch
 
-- boot tick: Archive Compass mark, `WikiQuest`, short system pulse
+- boot tick: simple blue `W`, `WikiQuest`, short system pulse
 - playable preview: one blurred Wikipedia image clue, three choices, one reveal
 - primary action after result: `Sign in with Apple`
 - legal links visible before sign-in
