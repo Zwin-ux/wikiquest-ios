@@ -82,7 +82,15 @@ private struct MysteryCommandDeck: View {
                 .accessibilityIdentifier("MysteryModeSwitch")
 
             if let error {
-                InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
+                RecoveryNotice(
+                    title: "ERROR",
+                    detail: error,
+                    actionTitle: "Retry puzzle",
+                    tint: WikiTheme.red
+                ) {
+                    Task { await viewModel.load(signedIn: isSignedIn) }
+                }
+                .accessibilityIdentifier("MysteryRecoveryNotice")
             }
 
             if viewModel.isLoading {

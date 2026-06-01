@@ -16,7 +16,16 @@ struct LinkRaceView: View {
     var body: some View {
         WikiScreen(navigationTitle: "Link Race", showsWindowHeader: false) {
             if let error = viewModel.error {
-                InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
+                RecoveryNotice(
+                    title: "ROUTE ERROR",
+                    detail: error,
+                    actionTitle: "New race",
+                    tint: WikiTheme.red
+                ) {
+                    liveActivities.endLinkRaceIfNeeded()
+                    Task { await viewModel.newRace() }
+                }
+                .accessibilityIdentifier("RaceRecoveryNotice")
             }
 
             if let loadingTitle = viewModel.loadingTitle {

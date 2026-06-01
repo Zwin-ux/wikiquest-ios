@@ -789,6 +789,23 @@ struct InlineNotice: View {
     }
 }
 
+struct RecoveryNotice: View {
+    let title: String
+    let detail: String
+    var actionTitle = "Retry"
+    var icon = "arrow.clockwise"
+    var tint: Color = WikiTheme.red
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            InlineNotice(title: title, detail: detail, tint: tint)
+            CommandButton(title: actionTitle, icon: icon, tint: tint, action: action)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 struct ModeTileButton: View {
     let title: String
     let detail: String

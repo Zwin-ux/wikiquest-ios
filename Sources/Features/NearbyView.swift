@@ -102,7 +102,21 @@ struct NearbyView: View {
                         }
 
                         if let error = viewModel.error {
-                            InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
+                            RecoveryNotice(
+                                title: "MAP ERROR",
+                                detail: error,
+                                actionTitle: "Retry map",
+                                tint: WikiTheme.red
+                            ) {
+                                Task {
+                                    await viewModel.load(
+                                        center: viewModel.region.center,
+                                        label: viewModel.centerLabel,
+                                        denied: location.authorizationDenied
+                                    )
+                                }
+                            }
+                            .accessibilityIdentifier("NearbyRecoveryNotice")
                         }
 
                         if viewModel.phase == .loading || viewModel.phase == .locating {

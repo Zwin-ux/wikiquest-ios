@@ -11,7 +11,7 @@
 
 ## Near Term
 
-- Clearer API no-network and retry recovery.
+- Retry recovery for non-game account and ranking screens.
 - Game Center achievement polish.
 - Widget snapshot refinement.
 - App Clip invocation after production domain setup.

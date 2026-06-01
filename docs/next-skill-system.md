@@ -141,6 +141,7 @@ First shipped slice:
 - verification cleanup shipped: photo stage, command deck, clue stack, guess field, hint action, refresh action, and suggestion rail now expose stable accessibility IDs for screenshot QA
 - responsive HUD cleanup shipped: Mystery uses the shared game HUD cluster, so dense stage metrics collapse before crowding the photo
 - fallback polish shipped: locked or missing Mystery media uses the clue fallback surface and keeps the answer hidden until reveal
+- recovery cleanup shipped: Mystery errors now include a direct `Retry puzzle` command inside the command deck
 
 ### Race
 
@@ -159,6 +160,7 @@ First shipped slice:
 - responsive HUD cleanup shipped: Race uses the shared game HUD cluster for click/time state
 - trail motion cleanup shipped: Race path now reads as numbered route nodes with current-article emphasis, fresh connector feedback, sweep motion, and automatic scroll-to-latest behavior
 - fallback polish shipped: current, target, and link-choice image failures now fall back to the article archive surface
+- recovery cleanup shipped: Race route errors now include a `New race` command that also clears any live activity
 
 ### Map
 
@@ -177,6 +179,7 @@ First shipped slice:
 - responsive HUD cleanup shipped: Map uses the shared game HUD cluster for pages, score, and distance
 - command/reveal polish shipped: Map now gives Reveal/Next the primary command width, demotes Locate to an icon utility, and shows distance/XP as a result strip before the revealed article photo
 - fallback polish shipped: revealed targets without usable media now use the map fallback surface instead of a generic placeholder
+- recovery cleanup shipped: Map API/location load errors now include a `Retry map` command that reloads the current center
 
 ### App Clip
 
