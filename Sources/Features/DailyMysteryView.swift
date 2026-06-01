@@ -22,7 +22,11 @@ struct DailyMysteryView: View {
                 shareText: mysteryShareText
             )
 
-            MysteryClueStack(hints: viewModel.currentHints, guesses: viewModel.guessHistory)
+            MysteryClueStack(
+                hints: viewModel.currentHints,
+                totalHints: viewModel.totalHints,
+                guesses: viewModel.guessHistory
+            )
         }
         .task(id: session.isSignedIn) { await viewModel.load(signedIn: session.isSignedIn) }
         .onChange(of: viewModel.mode) { _, _ in
@@ -153,45 +157,161 @@ private struct MysteryPhotoStage: View {
                     GameHUDPill(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
                 }
                 .padding(14)
-            }
 
-            HStack(alignment: .center, spacing: 10) {
-                Kicker(text: viewModel.mode == .daily ? "Daily" : "Practice")
-                Text(viewModel.title)
-                    .font(.caption.weight(.black).monospaced())
-                    .foregroundStyle(WikiTheme.ink)
-                Spacer(minLength: 8)
-                Text("\(viewModel.guessesRemaining) guesses")
-                    .font(.caption.weight(.black).monospaced())
-                    .foregroundStyle(WikiTheme.violet)
-            }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Rectangle().fill(WikiTheme.rule.opacity(0.38)).frame(height: 3)
-                    Rectangle()
-                        .fill(WikiTheme.amber)
-                        .frame(width: geo.size.width * viewModel.progress, height: 3)
-                        .animation(WikiMotion.ticker, value: viewModel.progress)
+                if viewModel.isComplete {
+                    MysteryStageStamp(isCorrect: viewModel.isCorrect, score: viewModel.score)
+                        .padding(14)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                        .transition(.scale(scale: 0.92).combined(with: .opacity))
                 }
             }
-            .frame(height: 3)
+
+            MysteryStageRail(
+                modeTitle: viewModel.mode == .daily ? "Daily" : "Practice",
+                puzzleTitle: viewModel.title,
+                hintsRevealed: viewModel.hintsRevealed,
+                totalHints: viewModel.totalHints,
+                guessesRemaining: viewModel.guessesRemaining,
+                isComplete: viewModel.isComplete,
+                isCorrect: viewModel.isCorrect
+            )
 
             MediaCreditRow(media: viewModel.isComplete ? viewModel.mysteryMedia : viewModel.clueMedia)
         }
     }
 }
 
+private struct MysteryStageStamp: View {
+    let isCorrect: Bool
+    let score: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ResultStamp(
+                systemImage: isCorrect ? "checkmark.seal.fill" : "xmark.octagon.fill",
+                tint: tint,
+                value: score
+            )
+            Text(isCorrect ? "SOLVED" : "REVEALED")
+                .font(.caption.weight(.black).monospaced())
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.black.opacity(0.58))
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .resultPop(trigger: "\(isCorrect)-\(score)", tint: tint)
+    }
+
+    private var tint: Color {
+        isCorrect ? WikiTheme.green : WikiTheme.red
+    }
+}
+
+private struct MysteryStageRail: View {
+    let modeTitle: String
+    let puzzleTitle: String
+    let hintsRevealed: Int
+    let totalHints: Int
+    let guessesRemaining: Int
+    let isComplete: Bool
+    let isCorrect: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .center, spacing: 10) {
+                Kicker(text: modeTitle)
+                Text(puzzleTitle)
+                    .font(.caption.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.74)
+                Spacer(minLength: 8)
+                Text(statusText)
+                    .font(.caption.weight(.black).monospaced())
+                    .foregroundStyle(statusTint)
+                    .lineLimit(1)
+            }
+
+            HStack(spacing: 7) {
+                ForEach(0..<pipCount, id: \.self) { index in
+                    MysteryCluePip(
+                        index: index,
+                        isOpen: index < hintsRevealed,
+                        isComplete: isComplete,
+                        tint: statusTint
+                    )
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(hintsRevealed) of \(totalHints) clues revealed")
+        }
+        .padding(.vertical, 10)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .motionTick(trigger: "\(hintsRevealed)-\(guessesRemaining)-\(isComplete)", tint: statusTint)
+    }
+
+    private var pipCount: Int {
+        max(totalHints, 1)
+    }
+
+    private var statusText: String {
+        if isComplete {
+            return isCorrect ? "solved" : "revealed"
+        }
+        return "\(guessesRemaining) guesses"
+    }
+
+    private var statusTint: Color {
+        if isComplete {
+            return isCorrect ? WikiTheme.green : WikiTheme.red
+        }
+        return WikiTheme.amber
+    }
+}
+
+private struct MysteryCluePip: View {
+    let index: Int
+    let isOpen: Bool
+    let isComplete: Bool
+    let tint: Color
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(isOpen ? tint : WikiTheme.surfaceStrong.opacity(0.88))
+            Text("\(index + 1)")
+                .font(.caption2.weight(.black).monospacedDigit())
+                .foregroundStyle(isOpen ? Color.white : WikiTheme.subtle)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 24)
+        .overlay {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .stroke(isOpen ? tint.opacity(0.0) : WikiTheme.hairline, lineWidth: 1)
+        }
+        .scaleEffect(isOpen && !isComplete && !motion.reduceMotion ? 1.02 : 1)
+        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: isOpen)
+    }
+}
+
 private struct MysteryClueStack: View {
     let hints: [WikiHint]
+    let totalHints: Int
     let guesses: [GuessRecord]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Kicker(text: "Clues")
+                Kicker(text: "Clue timeline")
                 Spacer(minLength: 8)
-                Text("\(hints.count) open")
+                Text("\(hints.count)/\(totalHints) open")
                     .font(.caption2.weight(.black).monospaced())
                     .foregroundStyle(WikiTheme.amber)
             }
@@ -201,7 +321,7 @@ private struct MysteryClueStack: View {
             } else {
                 ForEach(Array(hints.enumerated()), id: \.element.id) { index, hint in
                     PanelReveal(delay: Double(index) * 0.035) {
-                        HintRow(hint: hint)
+                        HintRow(hint: hint, position: index + 1, total: totalHints)
                     }
                 }
             }
@@ -260,27 +380,70 @@ private struct MysteryModeSwitch: View {
 
 private struct HintRow: View {
     let hint: WikiHint
+    let position: Int
+    let total: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Kicker(text: "Hint \(hint.index) / \(hint.type)")
-            if let media = hintMedia {
-                ArticleHeroImage(media: media, title: "Photo clue", visualState: .clue, height: 150, tint: WikiTheme.amber)
-                MediaCreditRow(media: media)
-            } else {
-                Text(rendered)
-                    .foregroundStyle(WikiTheme.ink)
-                    .font(.body)
-                    .lineSpacing(3)
+        HStack(alignment: .top, spacing: 12) {
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle().fill(accent)
+                    Text("\(position)")
+                        .font(.caption.weight(.black).monospacedDigit())
+                        .foregroundStyle(.white)
+                }
+                .frame(width: 30, height: 30)
+
+                Rectangle()
+                    .fill(position < total ? WikiTheme.hairline : Color.clear)
+                    .frame(width: 2)
+                    .frame(height: 42)
+            }
+            .frame(width: 32)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Kicker(text: hintLabel)
+                    Spacer(minLength: 8)
+                    Text("\(position)/\(total)")
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(accent)
+                }
+
+                if let media = hintMedia {
+                    ArticleHeroImage(media: media, title: "Photo clue", visualState: .clue, height: 150, tint: WikiTheme.amber)
+                    MediaCreditRow(media: media)
+                } else {
+                    Text(rendered)
+                        .foregroundStyle(WikiTheme.ink)
+                        .font(.body)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 12)
-        .overlay(alignment: .leading) {
-            Rectangle().fill(accent).frame(width: 3)
-        }
+        .padding(.vertical, 10)
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.rule.opacity(0.6)).frame(height: 1)
+        }
+        .motionTick(trigger: "\(hint.id)-\(hint.type)", tint: accent)
+    }
+
+    private var hintLabel: String {
+        switch hint.type.lowercased() {
+        case "thumbnail":
+            return "Photo clue"
+        case "categories":
+            return "Category trail"
+        case "fingerprint":
+            return "Article shape"
+        case "description":
+            return "Description"
+        case "redacted":
+            return "Redacted clue"
+        default:
+            return hint.type
         }
     }
 

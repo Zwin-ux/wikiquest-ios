@@ -128,6 +128,7 @@ First shipped slice:
 - next design cleanup: make the photo stage the first object, remove duplicate score metrics, and keep the hint/guess commands directly under the playfield
 - cleanup shipped: old intro header removed, mode switch moved under the stage, time joined the HUD, and the duplicate status strip was removed
 - command cleanup shipped: guess field, reveal hint, refresh, suggestions, and result now sit directly under the photo stage before the clue log
+- clue-stage polish shipped: linear progress bar replaced by numbered clue pips, photo stage gets a completion stamp, and revealed hints now read as a timeline
 
 ### Race
 
