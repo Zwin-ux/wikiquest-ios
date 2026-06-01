@@ -122,6 +122,7 @@ First shipped slice:
 - discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
 - smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
+- shared HUD cleanup in progress: Quest Deck now uses the same compact game HUD cluster as the mode screens
 
 ### Mystery
 
@@ -135,7 +136,7 @@ First shipped slice:
 - command cleanup shipped: guess field, reveal hint, refresh, suggestions, and result now sit directly under the photo stage before the clue log
 - clue-stage polish shipped: linear progress bar replaced by numbered clue pips, photo stage gets a completion stamp, and revealed hints now read as a timeline
 - verification cleanup shipped: photo stage, command deck, clue stack, guess field, hint action, refresh action, and suggestion rail now expose stable accessibility IDs for screenshot QA
-- responsive HUD cleanup in progress: Mystery uses the shared game HUD cluster, so dense stage metrics collapse before crowding the photo
+- responsive HUD cleanup shipped: Mystery uses the shared game HUD cluster, so dense stage metrics collapse before crowding the photo
 
 ### Race
 
@@ -151,7 +152,7 @@ First shipped slice:
 - finish cleanup shipped: completion now has a dedicated finish panel with clicks, time, XP, share, new race, and success haptic feedback
 - route feedback shipped: link choices now have numbered lane markers, route-locked loading feedback, visited checks, and loading motion without adding another panel
 - verification cleanup shipped: route photo stage, objective strip, trail, link choice list, per-link buttons, and completion panel now expose stable accessibility IDs for screenshot QA
-- responsive HUD cleanup in progress: Race uses the shared game HUD cluster for click/time state
+- responsive HUD cleanup shipped: Race uses the shared game HUD cluster for click/time state
 
 ### Map
 
@@ -167,7 +168,7 @@ First shipped slice:
 - reveal cleanup shipped: revealed target now reads as photo + distance/XP moment instead of duplicating title and description below the card
 - pin feedback shipped: dropping a guess now arms the command sheet, updates the reveal action, and pulses once without duplicate haptic taps
 - verification cleanup shipped: map stage, status, pin feedback, command sheet, action row, reveal panel, and city rail now expose stable accessibility IDs for screenshot QA
-- responsive HUD cleanup in progress: Map uses the shared game HUD cluster for pages, score, and distance
+- responsive HUD cleanup shipped: Map uses the shared game HUD cluster for pages, score, and distance
 
 ### App Clip
 
