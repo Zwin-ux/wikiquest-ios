@@ -142,6 +142,7 @@ First shipped slice:
 - cleanup shipped: old route copy removed, unused route header components removed, and the trail now lives inside the route stage
 - command cleanup shipped: next-link rows now read as a compact route command list with haptic tap feedback instead of a generic section
 - finish cleanup shipped: completion now has a dedicated finish panel with clicks, time, XP, share, new race, and success haptic feedback
+- route feedback shipped: link choices now have numbered lane markers, route-locked loading feedback, visited checks, and loading motion without adding another panel
 
 ### Map
 
