@@ -202,7 +202,11 @@ private struct PreviewQuestPanel: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(quest.choices.enumerated()), id: \.element.id) { index, choice in
                     Button {
-                        Haptics.light()
+                        if choice.isCorrect {
+                            Haptics.success()
+                        } else {
+                            Haptics.error()
+                        }
                         withAnimation(WikiMotion.active(WikiMotion.result, reduceMotion: motion.reduceMotion)) {
                             session.choose(choiceID: choice.id, in: quest)
                         }
@@ -215,6 +219,7 @@ private struct PreviewQuestPanel: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("PreviewChoice-\(index + 1)")
                     .disabled(session.hasSelection)
                 }
             }
@@ -271,12 +276,13 @@ private struct PreviewQuestHUD: View {
     let tint: Color
 
     var body: some View {
-        HStack(spacing: 12) {
-            PreviewHUDMetric(label: "Clues", value: "\(session.visibleClues(in: quest).count)/\(quest.clues.count)", tint: WikiTheme.blue)
-            PreviewHUDMetric(label: "Choices", value: "\(quest.choices.count)", tint: WikiTheme.amber)
-            PreviewHUDMetric(label: "XP", value: session.result(in: quest) == nil ? "120" : xpText, tint: tint)
-        }
+        GameHUDCluster(items: [
+            GameHUDItem(label: "Clues", value: "\(session.visibleClues(in: quest).count)/\(quest.clues.count)", systemImage: "eye", tint: WikiTheme.blue),
+            GameHUDItem(label: "Choices", value: "\(quest.choices.count)", systemImage: "list.number", tint: WikiTheme.amber, flashesOnChange: false),
+            GameHUDItem(label: "XP", value: session.result(in: quest) == nil ? "120" : xpText, systemImage: "star.fill", tint: tint)
+        ], alignment: .leading)
         .padding(.vertical, 1)
+        .accessibilityIdentifier("PreviewQuestHUD")
         .motionTick(trigger: "\(session.visibleClues(in: quest).count)-\(session.selectedChoiceID ?? "open")", tint: tint)
     }
 
@@ -288,29 +294,6 @@ private struct PreviewQuestHUD: View {
             return "0"
         case nil:
             return "120"
-        }
-    }
-}
-
-private struct PreviewHUDMetric: View {
-    let label: String
-    let value: String
-    let tint: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Kicker(text: label)
-            Text(value)
-                .font(.system(.callout, design: .monospaced).weight(.black))
-                .foregroundStyle(tint)
-                .lineLimit(1)
-                .minimumScaleFactor(0.76)
-                .contentTransition(.numericText())
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 8)
-        .overlay(alignment: .top) {
-            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
     }
 }

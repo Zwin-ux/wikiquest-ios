@@ -110,6 +110,7 @@ First shipped slice:
 - legal links visible before sign-in
 - no dock while signed out
 - preview HUD shipped: first launch now shows clue/choice/XP counters and numbered answer routes so the preview reads like a game round, not a static form
+- preview HUD polish in progress: onboarding now uses the shared game HUD cluster, result-specific haptics, and stable preview choice identifiers
 
 ### Signed-In Today
 

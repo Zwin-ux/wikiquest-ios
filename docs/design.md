@@ -96,6 +96,7 @@ Pass scores:
 - Design system reuse: 8/10 -> target 8.5/10 with one shared stage/HUD rule.
 - Responsive readiness: 6.5/10 -> target 8/10 after small-iPhone HUD rules are explicit.
 - Shared HUD cleanup: Quest Deck, Mystery, Race, and Map use one `GameHUDCluster` rule now. Dense clusters collapse labels before covering the playfield, while accessibility labels keep the metrics understandable.
+- Onboarding preview cleanup: the first playable round uses the same HUD language and result-specific haptics as the signed-in game surfaces.
 
 Not in scope for this cleanup:
 
