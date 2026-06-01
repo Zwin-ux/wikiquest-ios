@@ -605,19 +605,24 @@ struct GameHUDCluster: View {
     let items: [GameHUDItem]
     var alignment: HorizontalAlignment = .trailing
     var compactAfterCount = 2
+    var columns = 1
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: alignment, spacing: isCompact ? 5 : 7) {
-            ForEach(items) { item in
-                GameHUDPill(
-                    label: item.label,
-                    value: item.value,
-                    systemImage: item.systemImage,
-                    tint: item.tint,
-                    flashesOnChange: item.flashesOnChange,
-                    compact: isCompact
-                )
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: isCompact ? 5 : 7) {
+                    ForEach(row) { item in
+                        GameHUDPill(
+                            label: item.label,
+                            value: item.value,
+                            systemImage: item.systemImage,
+                            tint: item.tint,
+                            flashesOnChange: item.flashesOnChange,
+                            compact: isCompact
+                        )
+                    }
+                }
             }
         }
         .accessibilityElement(children: .contain)
@@ -625,6 +630,14 @@ struct GameHUDCluster: View {
 
     private var isCompact: Bool {
         items.count > compactAfterCount || dynamicTypeSize.isAccessibilitySize
+    }
+
+    private var rows: [[GameHUDItem]] {
+        let columnCount = max(columns, 1)
+        guard columnCount > 1 else { return items.map { [$0] } }
+        return stride(from: 0, to: items.count, by: columnCount).map { start in
+            Array(items[start..<min(start + columnCount, items.count)])
+        }
     }
 }
 
@@ -1129,54 +1142,36 @@ struct QuestDeckCard: View {
     @ViewBuilder
     private var metricCluster: some View {
         if !hudMetrics.isEmpty {
-            VStack(alignment: .trailing, spacing: 6) {
-                metricRow(Array(hudMetrics.prefix(2)))
-                metricRow(Array(hudMetrics.dropFirst(2).prefix(2)))
-            }
+            GameHUDCluster(
+                items: hudMetrics.map { deckHUDItem(for: $0) },
+                compactAfterCount: 2,
+                columns: 2
+            )
         }
     }
 
-    private func metricRow(_ metrics: [WikiMetric]) -> some View {
-        HStack(spacing: 6) {
-            ForEach(metrics) { metric in
-                DeckMetricBadge(metric: metric)
-            }
-        }
-    }
-}
-
-private struct DeckMetricBadge: View {
-    let metric: WikiMetric
-
-    var body: some View {
-        VStack(alignment: .trailing, spacing: 3) {
-            Text(metric.label.uppercased())
-                .font(.caption2.weight(.black).monospaced())
-                .foregroundStyle(.white.opacity(0.66))
-            metricValue
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.black.opacity(0.54))
-        .overlay(alignment: .leading) {
-            Rectangle().fill(metric.tint).frame(width: 2)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
-        .motionTick(trigger: metric.value ?? 0, tint: metric.tint, enabled: metric.value != nil)
+    private func deckHUDItem(for metric: WikiMetric) -> GameHUDItem {
+        GameHUDItem(
+            label: metric.label,
+            value: metric.value.map(String.init) ?? metric.text ?? "-",
+            systemImage: deckHUDIcon(for: metric.label),
+            tint: metric.tint,
+            flashesOnChange: metric.value != nil
+        )
     }
 
-    @ViewBuilder
-    private var metricValue: some View {
-        if let value = metric.value {
-            TickerNumberText(value: value, font: .system(.callout, design: .monospaced).weight(.black))
-                .foregroundStyle(.white)
-        } else {
-            Text(metric.text ?? "-")
-                .font(.system(.callout, design: .monospaced).weight(.black))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .contentTransition(.numericText())
+    private func deckHUDIcon(for label: String) -> String {
+        switch label.lowercased() {
+        case "reset":
+            return "timer"
+        case "streak":
+            return "flame.fill"
+        case "xp":
+            return "star.fill"
+        case "level":
+            return "chart.bar.fill"
+        default:
+            return "circle.fill"
         }
     }
 }
