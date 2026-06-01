@@ -41,6 +41,7 @@ struct HomeView: View {
             ) {
                 navigate(.mystery)
             }
+            .accessibilityIdentifier("QuestDeckCard")
 
             MediaCreditRow(media: deckArticle?.media)
 
@@ -50,6 +51,7 @@ struct HomeView: View {
                 deckMedia: deckArticle?.media,
                 navigate: navigate
             )
+            .accessibilityIdentifier("HomeModeRail")
 
             DiscoveryPhotoRail(
                 items: discoveryItems,
@@ -57,6 +59,7 @@ struct HomeView: View {
                 detail: "Random pages",
                 showsTrailMarkers: true
             )
+            .accessibilityIdentifier("HomeDiscoveryRail")
 
             ReminderPanel(store: reminders)
         }
@@ -152,6 +155,7 @@ private struct HomeModeRail: View {
                         }
                         .buttonStyle(ArcadePressStyle())
                         .motionTick(trigger: selectedModeID == mode.id ? selectedModeID : nil, tint: mode.color)
+                        .accessibilityIdentifier("HomeMode-\(mode.id)")
                     }
                 }
             }
