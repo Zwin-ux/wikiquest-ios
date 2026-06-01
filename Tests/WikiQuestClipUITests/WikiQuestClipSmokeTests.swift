@@ -34,9 +34,17 @@ final class WikiQuestClipSmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["ClipQuestChoice-great-wave"].waitForExistence(timeout: Self.launchTimeout))
         app.buttons["ClipQuestChoice-great-wave"].tap()
 
-        app.swipeUp()
-        XCTAssertTrue(app.descendants(matching: .any)["ClipQuestResultBanner"].waitForExistence(timeout: 8))
-        XCTAssertTrue(openFullAppCTA(in: app).waitForExistence(timeout: 8))
+        let resultBanner = app.descendants(matching: .any)["ClipQuestResultBanner"]
+        if !resultBanner.waitForExistence(timeout: 4) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(resultBanner.waitForExistence(timeout: 8))
+
+        let cta = openFullAppCTA(in: app)
+        if !cta.waitForExistence(timeout: 4) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(cta.waitForExistence(timeout: 8))
     }
 
     private func makeApp() -> XCUIApplication {
