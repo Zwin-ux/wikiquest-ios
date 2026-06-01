@@ -1165,32 +1165,76 @@ struct VisualBreadcrumb: View {
 
 struct DiscoveryPhotoRail: View {
     let items: [QuestDeckItem]
+    var title = "Discovered"
+    var detail: String?
+    var showsTrailMarkers = false
 
     var body: some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                Kicker(text: "Discovered")
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Kicker(text: title)
+                    if let detail {
+                        Text(detail.uppercased())
+                            .font(.caption2.weight(.black).monospaced())
+                            .foregroundStyle(WikiTheme.subtle)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                }
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        ForEach(items) { item in
-                            VStack(alignment: .leading, spacing: 7) {
-                                ArticleHeroImage(media: item.media, title: item.title, height: 112, tint: item.tint)
-                                Text(item.title)
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(WikiTheme.ink)
-                                    .lineLimit(2)
-                                Text(item.detail)
-                                    .font(.caption2)
-                                    .foregroundStyle(WikiTheme.muted)
-                                    .lineLimit(1)
+                        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                            PanelReveal(delay: Double(index) * 0.04) {
+                                DiscoveryRailCard(
+                                    item: item,
+                                    index: index + 1,
+                                    showsTrailMarker: showsTrailMarkers
+                                )
                             }
-                            .frame(width: 156, alignment: .leading)
                         }
                     }
                     .padding(.vertical, 2)
                 }
             }
         }
+    }
+}
+
+private struct DiscoveryRailCard: View {
+    let item: QuestDeckItem
+    let index: Int
+    let showsTrailMarker: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            ZStack(alignment: .topLeading) {
+                ArticleHeroImage(media: item.media, title: item.title, height: 112, tint: item.tint)
+                if showsTrailMarker {
+                    Text(String(format: "%02d", index))
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 4)
+                        .background(item.tint.opacity(0.90))
+                        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+                        .padding(8)
+                }
+            }
+            Text(item.title)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(WikiTheme.ink)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+            Text(item.detail)
+                .font(.caption2)
+                .foregroundStyle(WikiTheme.muted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+        }
+        .frame(width: 156, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.title), \(item.detail)")
     }
 }
 

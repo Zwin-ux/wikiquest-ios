@@ -51,7 +51,12 @@ struct HomeView: View {
                 navigate: navigate
             )
 
-            DiscoveryPhotoRail(items: discoveryItems)
+            DiscoveryPhotoRail(
+                items: discoveryItems,
+                title: "Wiki drift",
+                detail: "Random pages",
+                showsTrailMarkers: true
+            )
 
             ReminderPanel(store: reminders)
         }
