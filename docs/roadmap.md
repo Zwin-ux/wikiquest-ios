@@ -11,7 +11,6 @@
 
 ## Near Term
 
-- Game Center achievement polish.
 - Widget snapshot refinement.
 - App Clip invocation after production domain setup.
 

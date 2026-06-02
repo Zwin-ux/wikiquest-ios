@@ -806,6 +806,93 @@ struct RecoveryNotice: View {
     }
 }
 
+struct GameCenterRewardRibbon: View {
+    let event: GameCenterRewardEvent?
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        ZStack {
+            if let event {
+                HStack(spacing: 11) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(tint.opacity(0.12))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(tint.opacity(0.42), lineWidth: 1)
+                            }
+
+                        Image(systemName: event.systemImage)
+                            .font(.callout.weight(.black))
+                            .foregroundStyle(tint)
+                            .wikiBounce(enabled: !motion.reduceMotion, value: event.id)
+                    }
+                    .frame(width: 42, height: 42)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Kicker(text: "Game Center")
+                        Text(event.title)
+                            .font(.callout.weight(.black))
+                            .foregroundStyle(WikiTheme.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.78)
+                        Text(event.detail)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(WikiTheme.muted)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.74)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    if let score = event.score {
+                        TickerNumberText(
+                            value: score,
+                            font: .system(.headline, design: .monospaced).weight(.black)
+                        )
+                        .foregroundStyle(tint)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(WikiTheme.surfaceStrong.opacity(0.98))
+                .overlay(alignment: .top) {
+                    Rectangle().fill(tint).frame(height: 3)
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                        .stroke(WikiTheme.hairline, lineWidth: 1)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous))
+                .shadow(color: WikiTheme.ink.opacity(0.12), radius: 12, y: 6)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("GameCenterRewardRibbon")
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .motionTick(trigger: event.id, tint: tint)
+            }
+        }
+        .animation(WikiMotion.active(WikiMotion.panel, reduceMotion: motion.reduceMotion), value: event?.id)
+        .allowsHitTesting(false)
+    }
+
+    private var tint: Color {
+        switch event?.kind {
+        case .daily:
+            return WikiTheme.amber
+        case .streak:
+            return WikiTheme.red
+        case .race:
+            return WikiTheme.blue
+        case .nearby:
+            return WikiTheme.green
+        case .member:
+            return WikiTheme.violet
+        case nil:
+            return WikiTheme.blue
+        }
+    }
+}
+
 struct ModeTileButton: View {
     let title: String
     let detail: String

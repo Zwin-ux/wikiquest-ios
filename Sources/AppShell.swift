@@ -12,6 +12,7 @@ enum AppTab: Hashable, CaseIterable {
 struct AppShell: View {
     let api: WikiQuestAPIClient
     @EnvironmentObject private var session: SessionStore
+    @EnvironmentObject private var gameCenter: GameCenterStore
     @State private var selectedTab: AppTab = .home
     @Environment(\.scenePhase) private var scenePhase
 
@@ -75,6 +76,14 @@ struct AppShell: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             WikiDock(selection: $selectedTab, select: select)
         }
+        .overlay(alignment: .top) {
+            GameCenterRewardRibbon(event: gameCenter.rewardEvent)
+                .padding(.horizontal, WikiTheme.screenPadding)
+                .padding(.top, WikiTheme.osBarHeight + 8)
+        }
+        .onChange(of: gameCenter.rewardEvent?.id) { _, eventID in
+            scheduleRewardDismissal(for: eventID)
+        }
     }
 
     private func select(_ tab: AppTab) {
@@ -85,6 +94,16 @@ struct AppShell: View {
         Haptics.light()
         withAnimation(WikiMotion.dock) {
             selectedTab = tab
+        }
+    }
+
+    private func scheduleRewardDismissal(for eventID: UUID?) {
+        guard let eventID else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+            guard gameCenter.rewardEvent?.id == eventID else { return }
+            withAnimation(WikiMotion.panel) {
+                gameCenter.clearReward()
+            }
         }
     }
 
