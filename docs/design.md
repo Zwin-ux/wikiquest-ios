@@ -107,6 +107,7 @@ Pass scores:
 - Mystery clue filmstrip cleanup: the stage progress strip now shows clue-type symbols for opened hints and locked slots for the rest, so the reveal loop reads more like a playable case board than a generic counter row.
 - Race route-lane cleanup: blue-link choices now read as marker + lane + article thumbnail + compact action badge, improving the sense that each tap advances a route rather than opens a normal list item.
 - Race route-verb cleanup: Link Race now uses `Pick next exit`, `Take`, `Trace`, and route-tracing loading states instead of browser-like `Choose`, `Open`, or `GO` labels.
+- Race objective cleanup: the current article photo now carries a `START`/`ROUTE` badge and the target strip shows route state instead of active-round `0 XP`; XP stays reserved for finish/reward surfaces.
 - Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
 - First-impression cleanup: onboarding now leads with a compact `WikiQuest` cartridge header, keeps the photo preview as the main object, and pins Sign in with Apple as a bottom command bar so small phones always expose the account action without turning the screen into a form.
 - Onboarding boot pulse cleanup: the first-launch header uses a tiny live `READY` ticker beside the blue `W`, making the app feel like a playable system without adding copy or extra chrome.
