@@ -138,6 +138,7 @@ Pass scores:
 - Command-lane motion cleanup: onboarding answers, Mystery guesses, Race exits, and Map reveal/next now share one short command pulse, making taps feel accepted without adding cinematic motion or new dependencies.
 - Quest Deck motion consistency: the Daily card and Mystery/Race/Map mode tiles now use the same command pulse as gameplay lanes, so Today feels like the start of play rather than an app menu.
 - Dock feedback cleanup: signed-in tab changes now use the same compact command pulse and expose stable dock identifiers for screenshot QA, keeping navigation tactile without bringing back a tall active column.
+- Simple W brand cleanup: AppIcon, BrandMark, BrandGlyph, favicons, and web logo now use one optically centered path-based blue `W` with no compass ornament, SVG text, or font dependency. The mark should stay plain so the photo-led game surfaces carry the visual richness.
 
 Not in scope for this cleanup:
 
