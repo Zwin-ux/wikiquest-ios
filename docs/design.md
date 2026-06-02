@@ -117,6 +117,7 @@ Pass scores:
 - Quest Deck command-badge cleanup: mode verbs now render as compact colored action badges on the photo tile, making each quest choice read as a playable command instead of low-contrast metadata.
 - Mystery command cleanup: Reveal hint is now the dominant gameplay command, while Refresh is a compact utility icon. This keeps the command area closer to a game verb row and stops maintenance controls from competing with the solve loop.
 - Mystery suggestion rail cleanup: title suggestions now use horizontal numbered `GUESS` chips, keeping the solve command deck compact and making suggestions feel like playable guesses instead of stacked app rows.
+- Mystery stage-HUD cleanup: the photo stage now carries a `LOCKED`/`CLUE`/`SOLVED`/`REVEALED` badge, active rounds show hints/guesses/time instead of premature score, and score stays reserved for reward/result moments.
 - Race exit-lane cleanup: blue-link choices now have a full route-lane shell with `EXIT 01` metadata, thumbnail, connector, and action badge, making each tap read like advancing the route rather than selecting a generic list row.
 - Mystery result cleanup: the failed result now reads as `REVEALED`, matching the stage stamp, and sharing is a compact utility icon instead of a full text action under the result banner.
 - Race completion cleanup: New race remains the primary post-result command, while Share route is now a compact utility icon with haptic feedback. The result screen reads as one outcome plus one next play action, not a mini settings panel.

@@ -149,6 +149,7 @@ First shipped slice:
 - fallback polish shipped: locked or missing Mystery media uses the clue fallback surface and keeps the answer hidden until reveal
 - recovery cleanup shipped: Mystery errors now include a direct `Retry puzzle` command inside the command deck
 - clue filmstrip shipped: opened Mystery hints now use type-specific symbols and locked slots instead of generic numbered boxes, making the reveal loop feel more like a game board
+- stage-HUD polish shipped: Mystery photo stages now expose `LOCKED`/`CLUE`/`SOLVED`/`REVEALED` directly on the image, active rounds show hints/guesses/time, and score is reserved for result/reward surfaces
 
 ### Race
 

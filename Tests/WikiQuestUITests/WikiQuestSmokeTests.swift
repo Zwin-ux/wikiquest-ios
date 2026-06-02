@@ -75,6 +75,17 @@ final class WikiQuestSmokeTests: XCTestCase {
         app.wikiElement("WikiDock-race").tap()
         XCTAssertTrue(app.wikiElement(containingLabel: "SPECIAL:LINK-RACE").waitForExistence(timeout: 6))
     }
+
+    func testSignedInDockNavigatesToMystery() {
+        let app = XCUIApplication()
+        app.launchEnvironment["WIKIQUEST_SESSION_TOKEN"] = "ui-test-token"
+        app.launch()
+
+        XCTAssertTrue(app.wikiElement("WikiDock-mystery").waitForExistence(timeout: 6))
+        app.wikiElement("WikiDock-mystery").tap()
+        XCTAssertTrue(app.wikiElement("MysteryPhotoStage").waitForExistence(timeout: 6))
+        XCTAssertTrue(app.wikiElement("MysteryCommandDeck").exists)
+    }
 }
 
 private extension XCUIApplication {
