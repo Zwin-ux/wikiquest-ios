@@ -164,6 +164,7 @@ First shipped slice:
 - trail motion cleanup shipped: Race path now reads as numbered route nodes with current-article emphasis, fresh connector feedback, sweep motion, and automatic scroll-to-latest behavior
 - fallback polish shipped: current, target, and link-choice image failures now fall back to the article archive surface
 - recovery cleanup shipped: Race route errors now include a `New race` command that also clears any live activity
+- route-lane cleanup shipped: blue-link choices now use compact route connectors and GO/OPEN/SEEN badges so the next move feels like a route action instead of a generic row tap
 
 ### Map
 

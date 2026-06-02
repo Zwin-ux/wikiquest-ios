@@ -527,6 +527,17 @@ private enum LinkChoiceState: Equatable {
             return "visited"
         }
     }
+
+    var actionText: String {
+        switch self {
+        case .available:
+            return "GO"
+        case .loading:
+            return "OPEN"
+        case .visited:
+            return "SEEN"
+        }
+    }
 }
 
 private struct LinkChoiceRow: View {
@@ -537,11 +548,13 @@ private struct LinkChoiceRow: View {
     @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 9) {
             RaceChoiceMarker(index: index, state: state)
+            RaceChoiceConnector(state: state)
+                .frame(width: 14)
 
             ArticleHeroImage(media: media, title: title, height: 48, tint: state == .visited ? WikiTheme.muted : WikiTheme.blue)
-                .frame(width: 58)
+                .frame(width: 52)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -555,12 +568,9 @@ private struct LinkChoiceRow: View {
                         .foregroundStyle(WikiTheme.muted)
                 }
             }
+            .layoutPriority(1)
             Spacer(minLength: 8)
-            Image(systemName: trailingIcon)
-                .font(.callout.weight(.bold))
-                .foregroundStyle(state == .visited ? WikiTheme.muted : WikiTheme.blue)
-                .rotationEffect(.degrees(state == .loading && !motion.reduceMotion ? 18 : 0))
-                .wikiBounce(enabled: state == .loading && !motion.reduceMotion, value: state.motionKey)
+            RaceChoiceActionBadge(state: state)
         }
         .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
         .padding(.vertical, 7)
@@ -575,15 +585,81 @@ private struct LinkChoiceRow: View {
         .opacity(state == .visited ? 0.62 : 1)
         .motionTick(trigger: state.motionKey, tint: WikiTheme.blue, enabled: state == .loading)
     }
+}
 
-    private var trailingIcon: String {
+private struct RaceChoiceConnector: View {
+    let state: LinkChoiceState
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(WikiTheme.hairline)
+                .frame(height: 1)
+            Rectangle()
+                .fill(state.tint.opacity(state == .available ? 0.72 : 0.38))
+                .frame(height: state == .loading ? 2 : 1)
+                .padding(.horizontal, 2)
+            if state == .loading {
+                Circle()
+                    .fill(WikiTheme.blue)
+                    .frame(width: 5, height: 5)
+                    .offset(x: motion.reduceMotion ? 0 : 7)
+                    .wikiBounce(enabled: !motion.reduceMotion, value: state.motionKey)
+            }
+        }
+    }
+}
+
+private struct RaceChoiceActionBadge: View {
+    let state: LinkChoiceState
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text(state.actionText)
+                .font(.caption2.weight(.black).monospaced())
+            Image(systemName: systemImage)
+                .font(.caption.weight(.black))
+                .rotationEffect(.degrees(state == .loading && !motion.reduceMotion ? 18 : 0))
+                .wikiBounce(enabled: state == .loading && !motion.reduceMotion, value: state.motionKey)
+        }
+        .foregroundStyle(foreground)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 5)
+        .background(background)
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .accessibilityHidden(true)
+    }
+
+    private var systemImage: String {
         switch state {
         case .available:
-            return "chevron.right"
+            return "arrow.right"
         case .loading:
             return "arrow.triangle.2.circlepath"
         case .visited:
             return "checkmark"
+        }
+    }
+
+    private var foreground: Color {
+        switch state {
+        case .available, .loading:
+            return .white
+        case .visited:
+            return WikiTheme.muted
+        }
+    }
+
+    private var background: Color {
+        switch state {
+        case .available:
+            return WikiTheme.blue
+        case .loading:
+            return WikiTheme.blue.opacity(0.82)
+        case .visited:
+            return WikiTheme.surface
         }
     }
 }
