@@ -116,6 +116,7 @@ Pass scores:
 - Quest Deck motion cleanup: the main deck card now has a tiny route pulse in the HUD corner, giving the signed-in start screen a live game-system feel while preserving the one-object layout.
 - Quest Deck command cleanup: mode tiles now end with specific game verbs instead of a generic `Open` label, so Today reads like choosing the next quest rather than browsing app tabs.
 - Quest Deck command-badge cleanup: mode verbs now render as compact colored action badges on the photo tile, making each quest choice read as a playable command instead of low-contrast metadata.
+- Quest Deck daily-state cleanup: the primary Daily card now uses the actual daily puzzle state, staying locked before the thumbnail hint, switching to clue media only when revealed, and showing answer/source only after completion.
 - Mystery command cleanup: Reveal hint is now the dominant gameplay command, while Refresh is a compact utility icon. This keeps the command area closer to a game verb row and stops maintenance controls from competing with the solve loop.
 - Mystery suggestion rail cleanup: title suggestions now use horizontal numbered `GUESS` chips, keeping the solve command deck compact and making suggestions feel like playable guesses instead of stacked app rows.
 - Mystery stage-HUD cleanup: the photo stage now carries a `LOCKED`/`CLUE`/`SOLVED`/`REVEALED` badge, active rounds show hints/guesses/time instead of premature score, and score stays reserved for reward/result moments.

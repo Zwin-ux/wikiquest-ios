@@ -132,6 +132,7 @@ First shipped slice:
 - dock command feedback shipped: the custom dock now has per-tab QA identifiers and uses the same compact command pulse on tab changes
 - smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
 - shared HUD cleanup shipped: Quest Deck now uses the same compact game HUD cluster as the mode screens
+- daily-state polish shipped: Today now drives the primary Daily card from `/api/daily-random/today`, using locked/clue/revealed media states instead of borrowing a random discovery photo.
 
 ### Mystery
 
