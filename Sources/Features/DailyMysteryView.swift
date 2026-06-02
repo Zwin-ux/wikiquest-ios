@@ -618,19 +618,95 @@ private struct EmptyMysteryState: View {
 private struct SuggestionRail: View {
     let suggestions: [String]
     let choose: (String) -> Void
+    @State private var selectedSuggestion: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Kicker(text: "Suggestions")
-            ForEach(Array(suggestions.enumerated()), id: \.element) { index, suggestion in
-                PanelReveal(delay: Double(index) * 0.025) {
-                    CommandRow(title: suggestion, systemImage: "arrow.up.forward", tint: WikiTheme.blue, playsHaptic: false) {
-                        choose(suggestion)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Kicker(text: "Suggestions")
+                Spacer(minLength: 8)
+                Text("\(suggestions.count) matches")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.blue)
+                    .lineLimit(1)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(suggestions.enumerated()), id: \.element) { index, suggestion in
+                        PanelReveal(delay: Double(index) * 0.025) {
+                            Button {
+                                Haptics.light()
+                                selectedSuggestion = suggestion
+                                choose(suggestion)
+                            } label: {
+                                MysterySuggestionChip(
+                                    index: index + 1,
+                                    title: suggestion,
+                                    isSelected: selectedSuggestion == suggestion
+                                )
+                            }
+                            .buttonStyle(ArcadePressStyle())
+                            .motionTick(trigger: selectedSuggestion == suggestion ? selectedSuggestion : nil, tint: WikiTheme.blue)
+                            .accessibilityIdentifier("MysterySuggestion-\(index + 1)")
+                        }
                     }
                 }
+                .padding(.vertical, 2)
             }
+            .scrollIndicators(.hidden)
         }
         .transition(.move(edge: .top).combined(with: .opacity))
+    }
+}
+
+private struct MysterySuggestionChip: View {
+    let index: Int
+    let title: String
+    let isSelected: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 8) {
+                Text(String(format: "%02d", index))
+                    .font(.caption2.weight(.black).monospacedDigit())
+                    .foregroundStyle(isSelected ? .white : WikiTheme.blue)
+                    .frame(width: 32, height: 30)
+                    .background(isSelected ? WikiTheme.blue : WikiTheme.blue.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+
+                Text("GUESS")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(isSelected ? WikiTheme.green : WikiTheme.blue)
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "arrow.up.forward")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(isSelected ? WikiTheme.green : WikiTheme.blue)
+            }
+
+            Text(title)
+                .font(.callout.weight(.bold))
+                .foregroundStyle(WikiTheme.ink)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(width: 214, alignment: .leading)
+        .frame(minHeight: 82, alignment: .leading)
+        .padding(10)
+        .background(WikiTheme.surfaceStrong.opacity(0.88))
+        .overlay(alignment: .top) {
+            Rectangle().fill(isSelected ? WikiTheme.green : WikiTheme.blue).frame(height: 3)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                .stroke(isSelected ? WikiTheme.green.opacity(0.70) : WikiTheme.hairline, lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Suggestion \(index), \(title)")
     }
 }
 

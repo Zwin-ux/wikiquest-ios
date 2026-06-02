@@ -114,6 +114,7 @@ Pass scores:
 - Quest Deck command cleanup: mode tiles now end with specific game verbs instead of a generic `Open` label, so Today reads like choosing the next quest rather than browsing app tabs.
 - Quest Deck command-badge cleanup: mode verbs now render as compact colored action badges on the photo tile, making each quest choice read as a playable command instead of low-contrast metadata.
 - Mystery command cleanup: Reveal hint is now the dominant gameplay command, while Refresh is a compact utility icon. This keeps the command area closer to a game verb row and stops maintenance controls from competing with the solve loop.
+- Mystery suggestion rail cleanup: title suggestions now use horizontal numbered `GUESS` chips, keeping the solve command deck compact and making suggestions feel like playable guesses instead of stacked app rows.
 - Mystery result cleanup: the failed result now reads as `REVEALED`, matching the stage stamp, and sharing is a compact utility icon instead of a full text action under the result banner.
 - Race completion cleanup: New race remains the primary post-result command, while Share route is now a compact utility icon with haptic feedback. The result screen reads as one outcome plus one next play action, not a mini settings panel.
 - Map reveal action cleanup: Next stays the primary post-result command, while Share result joins Locate as a compact utility icon. This keeps the lower command sheet focused on replaying the map rather than stacking secondary text actions.
