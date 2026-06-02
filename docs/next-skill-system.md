@@ -117,6 +117,7 @@ First shipped slice:
 - reveal-loop polish shipped: the preview photo now shows `CLUE`/`REVEALED` state directly on the image, the HUD tracks photo state instead of a static choices count, and first-launch copy stays short beside the simple blue `W`
 - boot-sequence polish shipped: the first-launch boot now advances through Mystery/Race/Map `READY` rows with mode accents instead of generic loading copy.
 - boot-handoff polish shipped: the first boot now ends on a flat `Boot ready` / `Start preview` command with a rail tick instead of a generic `Continue` label.
+- path-strip polish shipped: signed-out Mystery/Race/Map rows now use PATH metadata, command badges, and a small ticker rail, keeping onboarding game-like without adding another photo grid.
 
 ### Signed-In Today
 
