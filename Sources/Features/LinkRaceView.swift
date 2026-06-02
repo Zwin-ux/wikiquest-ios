@@ -169,14 +169,10 @@ private struct RaceCompletionPanel: View {
                 RaceFinishMetric(label: "XP", value: "\(score)", tint: WikiTheme.green)
             }
 
-            CommandButton(title: "New race", icon: "arrow.clockwise", tint: WikiTheme.blue, action: newRace)
-
-            ShareLink(item: shareText) {
-                Label("Share route", systemImage: "square.and.arrow.up")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(WikiTheme.blue)
+            HStack(spacing: 10) {
+                CommandButton(title: "New race", icon: "arrow.clockwise", tint: WikiTheme.blue, action: newRace)
+                RaceShareButton(shareText: shareText)
             }
-            .buttonStyle(ArcadePressStyle())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 2)
@@ -185,6 +181,32 @@ private struct RaceCompletionPanel: View {
         }
         .accessibilityIdentifier("RaceCompletionPanel")
         .motionTick(trigger: "\(target)-\(score)-\(clicks)-\(elapsed)", tint: WikiTheme.green)
+    }
+}
+
+private struct RaceShareButton: View {
+    let shareText: String
+    @State private var tapToken = 0
+
+    var body: some View {
+        ShareLink(item: shareText) {
+            Image(systemName: "square.and.arrow.up")
+                .font(.callout.weight(.black))
+                .foregroundStyle(WikiTheme.blue)
+                .frame(width: 46, height: 46)
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .stroke(WikiTheme.blue.opacity(0.82), lineWidth: 1)
+                }
+        }
+        .buttonStyle(ArcadePressStyle())
+        .simultaneousGesture(TapGesture().onEnded {
+            Haptics.light()
+            tapToken &+= 1
+        })
+        .accessibilityLabel("Share route")
+        .accessibilityIdentifier("RaceShareRouteButton")
+        .motionTick(trigger: tapToken, tint: WikiTheme.blue)
     }
 }
 
