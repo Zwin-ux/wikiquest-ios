@@ -120,8 +120,18 @@ private struct MysteryCommandDeck: View {
                     isCorrect: viewModel.isCorrect,
                     score: viewModel.score,
                     answer: viewModel.answerTitle,
-                    shareText: shareText
-                )
+                    shareText: shareText,
+                    nextActionTitle: viewModel.mode == .daily ? "Practice run" : "New practice",
+                    nextActionIcon: viewModel.mode == .daily ? "target" : "arrow.clockwise"
+                ) {
+                    Task {
+                        if viewModel.mode == .daily {
+                            await viewModel.setMode(.practice, signedIn: isSignedIn)
+                        } else {
+                            await viewModel.load(signedIn: isSignedIn)
+                        }
+                    }
+                }
             } else {
                 MysteryGuessLane(
                     text: $viewModel.guess,
@@ -940,6 +950,9 @@ struct ResultPanel: View {
     let score: Int
     let answer: String?
     var shareText: String?
+    var nextActionTitle: String?
+    var nextActionIcon = "arrow.clockwise"
+    var nextAction: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -950,8 +963,19 @@ struct ResultPanel: View {
                 tint: isCorrect ? WikiTheme.green : WikiTheme.red,
                 systemImage: isCorrect ? "checkmark.seal.fill" : "xmark.octagon.fill"
             )
-            if let shareText {
-                MysteryShareButton(shareText: shareText)
+            HStack(spacing: 10) {
+                if let nextActionTitle, let nextAction {
+                    CommandButton(
+                        title: nextActionTitle,
+                        icon: nextActionIcon,
+                        tint: isCorrect ? WikiTheme.green : WikiTheme.amber,
+                        action: nextAction
+                    )
+                    .accessibilityIdentifier("MysteryNextRunButton")
+                }
+                if let shareText {
+                    MysteryShareButton(shareText: shareText)
+                }
             }
         }
         .animation(WikiMotion.result, value: isCorrect)

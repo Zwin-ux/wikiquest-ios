@@ -155,6 +155,7 @@ First shipped slice:
 - clue filmstrip shipped: opened Mystery hints now use type-specific symbols and locked slots instead of generic numbered boxes, making the reveal loop feel more like a game board
 - stage-HUD polish shipped: Mystery photo stages now expose `LOCKED`/`CLUE`/`SOLVED`/`REVEALED` directly on the image, active rounds show hints/guesses/time, and score is reserved for result/reward surfaces
 - command-lane polish shipped: Mystery now has a compact command status strip and article guess lane with submit feedback, keeping the solve action tactile without turning the input into a form island
+- result-loop polish shipped: completed Daily Mystery now exposes a `Practice run` command and completed Practice exposes `New practice`, while share remains a compact utility action.
 
 ### Race
 
