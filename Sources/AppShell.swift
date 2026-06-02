@@ -261,6 +261,8 @@ struct WikiDock: View {
                 .buttonStyle(ArcadePressStyle())
                 .accessibilityLabel(item.accessibilityTitle)
                 .accessibilityAddTraits(selection == item.tab ? .isSelected : [])
+                .accessibilityIdentifier(item.dockIdentifier)
+                .commandLanePulse(trigger: selection, tint: item.accent, enabled: selection == item.tab)
             }
         }
         .padding(.horizontal, 10)
@@ -271,6 +273,26 @@ struct WikiDock: View {
         .overlay(alignment: .top) {
             Rectangle().fill(WikiTheme.surfaceStrong.opacity(0.20)).frame(height: 1)
         }
+        .accessibilityIdentifier("WikiDock")
         .animation(WikiMotion.active(WikiMotion.dock, reduceMotion: motion.reduceMotion), value: selection)
+    }
+}
+
+private extension DockItem {
+    var dockIdentifier: String {
+        switch tab {
+        case .home:
+            return "WikiDock-today"
+        case .mystery:
+            return "WikiDock-mystery"
+        case .race:
+            return "WikiDock-race"
+        case .nearby:
+            return "WikiDock-map"
+        case .leaderboard:
+            return "WikiDock-ranks"
+        case .profile:
+            return "WikiDock-profile"
+        }
     }
 }

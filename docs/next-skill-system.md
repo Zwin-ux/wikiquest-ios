@@ -113,6 +113,7 @@ First shipped slice:
 - no dock while signed out
 - preview HUD shipped: first launch now shows clue/choice/XP counters and numbered answer routes so the preview reads like a game round, not a static form
 - preview HUD polish shipped: onboarding now uses the shared game HUD cluster, result-specific haptics, and stable preview choice identifiers
+- signed-out dock gate verified: UI smoke tests keep the custom dock out of the onboarding flow
 
 ### Signed-In Today
 
@@ -127,6 +128,7 @@ First shipped slice:
 - discovery rail density shipped: Today now pulls a broader concurrent random-page batch and shows a five-card Wiki drift rail with tighter reveal timing
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
 - deck command motion shipped: the Daily card and mode tiles now use the shared command-lane pulse, matching the tactile feedback used inside Mystery, Race, and Map
+- dock command feedback shipped: the custom dock now has per-tab QA identifiers and uses the same compact command pulse on tab changes
 - smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
 - shared HUD cleanup shipped: Quest Deck now uses the same compact game HUD cluster as the mode screens
 
