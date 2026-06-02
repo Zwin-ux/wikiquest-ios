@@ -44,7 +44,8 @@ struct HomeView: View {
                 stateLabel: dailyDeckVisual.stateLabel,
                 stateSystemImage: dailyDeckVisual.stateSystemImage,
                 hudMetrics: deckMetrics,
-                commandText: "Play daily",
+                commandText: dailyDeckVisual.commandText,
+                commandSystemImage: dailyDeckVisual.commandSystemImage,
                 tint: WikiTheme.amber
             ) {
                 navigate(.mystery)
