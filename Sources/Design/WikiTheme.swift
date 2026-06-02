@@ -1149,7 +1149,7 @@ private enum StageMediaSignal {
     }
 }
 
-private struct StageSignalBadge: View {
+struct StageSignalBadge: View {
     let label: String
     let systemImage: String
     let tint: Color

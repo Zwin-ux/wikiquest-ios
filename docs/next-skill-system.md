@@ -205,6 +205,7 @@ First shipped slice:
 - survey-strip polish shipped: Map lower status now uses compact center/phase/pages/pin-distance chips with responsive stacking, keeping the command sheet from reading like explanatory app copy.
 - reveal-grade polish shipped: Map reveal now grades the result with the same distance bands as scoring and shows a compact pin -> target -> XP rail before the article photo.
 - playfield cleanup shipped: Map no longer places a bottom-left instruction panel over MapKit; the live stage keeps phase + HUD only, and instructions/commands stay in the lower command sheet.
+- phase-signal polish shipped: the top-left Map phase chip now uses the shared scan badge for locating, loading, pin, reveal, and empty states, matching the live photo-stage language without covering the map.
 
 ### Ranks / Me
 

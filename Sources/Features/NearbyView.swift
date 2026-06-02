@@ -337,18 +337,18 @@ private struct MapControlSheet<Content: View>: View {
 
 private struct MapStatusBadge: View {
     let phase: NearbyPhase
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var pulse = false
 
     var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: phase == .revealed ? "eye" : "mappin")
-            Text(label)
-                .font(.caption.weight(.bold).monospaced())
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .foregroundStyle(.white)
-        .background(phase == .revealed ? WikiTheme.red : WikiTheme.ink)
-        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        StageSignalBadge(
+            label: label,
+            systemImage: systemImage,
+            tint: tint,
+            isActive: pulse || motion.reduceMotion
+        )
+        .task { await runPulse() }
+        .accessibilityLabel("Map phase \(label)")
     }
 
     private var label: String {
@@ -363,6 +363,48 @@ private struct MapStatusBadge: View {
             return "REVEALED"
         case .empty:
             return "EMPTY"
+        }
+    }
+
+    private var systemImage: String {
+        switch phase {
+        case .locating:
+            return "location.viewfinder"
+        case .loading:
+            return "map"
+        case .guess, .denied:
+            return "mappin"
+        case .revealed:
+            return "eye"
+        case .empty:
+            return "exclamationmark.circle"
+        }
+    }
+
+    private var tint: Color {
+        switch phase {
+        case .revealed:
+            return WikiTheme.red
+        case .guess, .denied:
+            return WikiTheme.blue
+        case .locating, .loading:
+            return WikiTheme.green
+        case .empty:
+            return WikiTheme.muted
+        }
+    }
+
+    @MainActor
+    private func runPulse() async {
+        if motion.reduceMotion {
+            pulse = true
+            return
+        }
+        while !Task.isCancelled {
+            withAnimation(WikiMotion.tick) {
+                pulse.toggle()
+            }
+            try? await Task.sleep(nanoseconds: 620_000_000)
         }
     }
 }
