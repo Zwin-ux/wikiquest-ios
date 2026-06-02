@@ -671,21 +671,42 @@ struct ResultPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ResultBanner(
-                title: isCorrect ? "SOLVED" : "FAILED",
+                title: isCorrect ? "SOLVED" : "REVEALED",
                 detail: answer ?? "Answer hidden",
                 score: score,
                 tint: isCorrect ? WikiTheme.green : WikiTheme.red,
                 systemImage: isCorrect ? "checkmark.seal.fill" : "xmark.octagon.fill"
             )
             if let shareText {
-                ShareLink(item: shareText) {
-                    Label("Share result", systemImage: "square.and.arrow.up")
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(WikiTheme.blue)
-                }
-                .buttonStyle(ArcadePressStyle())
+                MysteryShareButton(shareText: shareText)
             }
         }
         .animation(WikiMotion.result, value: isCorrect)
+    }
+}
+
+private struct MysteryShareButton: View {
+    let shareText: String
+    @State private var tapToken = 0
+
+    var body: some View {
+        ShareLink(item: shareText) {
+            Image(systemName: "square.and.arrow.up")
+                .font(.callout.weight(.black))
+                .foregroundStyle(WikiTheme.blue)
+                .frame(width: 46, height: 46)
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .stroke(WikiTheme.blue.opacity(0.82), lineWidth: 1)
+                }
+        }
+        .buttonStyle(ArcadePressStyle())
+        .simultaneousGesture(TapGesture().onEnded {
+            Haptics.light()
+            tapToken &+= 1
+        })
+        .accessibilityLabel("Share result")
+        .accessibilityIdentifier("MysteryShareResultButton")
+        .motionTick(trigger: tapToken, tint: WikiTheme.blue)
     }
 }
