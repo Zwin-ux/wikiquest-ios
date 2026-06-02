@@ -87,10 +87,6 @@ struct NearbyView: View {
                     )
                     .padding(12)
                 }
-                .overlay(alignment: .bottomLeading) {
-                    MapCommandOverlay(title: mapOverlayTitle, detail: mapOverlayDetail, tint: phaseTint)
-                        .padding(12)
-                }
                 .overlay(alignment: .bottom) {
                     Rectangle().fill(WikiTheme.hairline).frame(height: 1)
                 }
@@ -236,49 +232,6 @@ struct NearbyView: View {
             return WikiTheme.muted
         default:
             return WikiTheme.ink
-        }
-    }
-
-    private var mapOverlayTitle: String {
-        switch viewModel.phase {
-        case .locating:
-            return "Locating"
-        case .loading:
-            return "Loading map"
-        case .guess, .denied:
-            return "Place pin"
-        case .revealed:
-            return "Distance"
-        case .empty:
-            return "No articles"
-        }
-    }
-
-    private var mapOverlayDetail: String {
-        if viewModel.phase == .revealed, let distance = viewModel.distanceMeters {
-            return NearbyScoring.format(distance)
-        }
-        return phaseDetail
-    }
-
-    private var phaseDetail: String {
-        switch viewModel.phase {
-        case .locating:
-            return "Finding your map center."
-        case .loading:
-            return "Loading nearby Wikipedia coordinates."
-        case .guess, .denied:
-            if viewModel.guess != nil {
-                return "Pin set. Reveal the target or tap the map to move it."
-            }
-            return "Tap the map where you think the hidden article belongs."
-        case .revealed:
-            if let distance = viewModel.distanceMeters {
-                return "Your pin landed \(NearbyScoring.format(distance)) from the target."
-            }
-            return "Target revealed."
-        case .empty:
-            return "Try another map center."
         }
     }
 
