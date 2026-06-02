@@ -305,23 +305,80 @@ private extension ModeTile {
 
 private struct ReminderPanel: View {
     @ObservedObject var store: ReminderStore
+    @State private var tapToken = 0
 
     var body: some View {
-        FlatSection(title: "Reminder") {
-            CommandRow(
-                title: store.isEnabled ? "Daily reminder on" : "Turn on daily reminder",
-                detail: store.statusText,
-                systemImage: store.isEnabled ? "bell.fill" : "bell",
-                tint: store.isEnabled ? WikiTheme.green : WikiTheme.amber
-            ) {
-                Task {
-                    if store.isEnabled {
-                        store.disableDailyReminders()
-                    } else {
-                        await store.enableDailyReminders()
-                    }
+        Button {
+            tapToken &+= 1
+            Task {
+                if store.isEnabled {
+                    store.disableDailyReminders()
+                } else {
+                    await store.enableDailyReminders()
                 }
             }
+        } label: {
+            HStack(alignment: .center, spacing: 11) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .fill(tint.opacity(0.12))
+                    Image(systemName: store.isEnabled ? "bell.fill" : "bell")
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(tint)
+                }
+                .frame(width: 42, height: 42)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 7) {
+                        Kicker(text: "Daily signal")
+                        Text(store.isEnabled ? "ON" : "OFF")
+                            .font(.caption2.weight(.black).monospaced())
+                            .foregroundStyle(tint)
+                    }
+                    Text(store.isEnabled ? "Reminder armed" : "Arm daily reminder")
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(WikiTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
+                    Text(store.statusText)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WikiTheme.muted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                }
+
+                Spacer(minLength: 8)
+
+                HStack(spacing: 5) {
+                    Text(store.isEnabled ? "DISARM" : "ARM")
+                        .font(.caption2.weight(.black).monospaced())
+                        .lineLimit(1)
+                    Image(systemName: store.isEnabled ? "xmark" : "arrow.up.forward")
+                        .font(.caption2.weight(.black))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(tint)
+                .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+            }
+            .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
+            .padding(.vertical, 8)
+            .overlay(alignment: .top) {
+                Rectangle().fill(tint.opacity(0.74)).frame(height: 2)
+            }
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+            }
         }
+        .buttonStyle(ArcadePressStyle())
+        .commandLanePulse(trigger: tapToken, tint: tint, enabled: tapToken > 0)
+        .motionTick(trigger: "\(store.isEnabled)-\(store.statusText)", tint: tint)
+        .accessibilityIdentifier("HomeReminderCommand")
+        .accessibilityLabel(store.isEnabled ? "Daily reminder on" : "Turn on daily reminder")
+    }
+
+    private var tint: Color {
+        store.isEnabled ? WikiTheme.green : WikiTheme.amber
     }
 }

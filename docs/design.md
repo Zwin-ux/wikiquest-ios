@@ -144,6 +144,7 @@ Pass scores:
 - Race trail primitive cleanup: the old generic trail panels were removed from the shared design system; Race keeps its dedicated route rail so path feedback stays attached to gameplay instead of becoming another boxed section.
 - Photo-stage signal cleanup: large article stages now expose a tiny `PHOTO`/`CLUE`/`ARCHIVE`/`LOCKED` scan badge, giving onboarding, Deck, Mystery, Race, and reveal previews a live game-object feel without adding new panels or noisy animation.
 - Map phase-signal cleanup: the MapKit stage now uses the same scan-badge language for locating, loading, pin, reveal, and empty states, keeping Map visually alive without adding a bottom-left instruction overlay.
+- Quest Deck reminder cleanup: the daily notification control is now a compact command strip instead of a `Reminder` card section, keeping Today focused on the play loop while still exposing the retention action.
 
 Not in scope for this cleanup:
 
