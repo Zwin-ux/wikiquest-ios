@@ -139,20 +139,14 @@ struct NearbyView: View {
                             }
                         }
 
-                        if viewModel.phase == .revealed, let article = viewModel.selected {
-                            NearbyRevealPanel(
-                                article: article,
-                                distanceText: viewModel.distanceMeters.map(NearbyScoring.format) ?? "Unknown",
-                                score: viewModel.savedXP ?? viewModel.localScore ?? 0
-                            )
-                        }
-
                         MapActionRow(
+                            phase: viewModel.phase,
                             tint: phaseTint,
                             revealTitle: revealActionTitle,
                             revealIcon: revealActionIcon,
                             revealDisabled: revealDisabled,
                             revealPlaysHaptic: true,
+                            hasGuess: viewModel.guess != nil,
                             shareText: mapShareText,
                             reveal: {
                                 Task {
@@ -167,6 +161,14 @@ struct NearbyView: View {
                                 location.request()
                             }
                         )
+
+                        if viewModel.phase == .revealed, let article = viewModel.selected {
+                            NearbyRevealPanel(
+                                article: article,
+                                distanceText: viewModel.distanceMeters.map(NearbyScoring.format) ?? "Unknown",
+                                score: viewModel.savedXP ?? viewModel.localScore ?? 0
+                            )
+                        }
 
                         CityRail(cities: cities) { city in
                             Task { await loadCity(city) }
@@ -282,15 +284,29 @@ struct NearbyView: View {
     }
 
     private var revealActionTitle: String {
-        if viewModel.phase == .revealed { return "Next" }
-        if viewModel.guess != nil { return "Reveal target" }
-        return "Reveal"
+        switch viewModel.phase {
+        case .locating, .loading:
+            return "Loading map"
+        case .empty:
+            return "Choose city"
+        case .revealed:
+            return "Next"
+        case .guess, .denied:
+            return viewModel.guess != nil ? "Reveal target" : "Reveal"
+        }
     }
 
     private var revealActionIcon: String {
-        if viewModel.phase == .revealed { return "arrow.clockwise" }
-        if viewModel.guess != nil { return "scope" }
-        return "mappin.and.ellipse"
+        switch viewModel.phase {
+        case .locating, .loading:
+            return "map"
+        case .empty:
+            return "location"
+        case .revealed:
+            return "arrow.clockwise"
+        case .guess, .denied:
+            return viewModel.guess != nil ? "scope" : "mappin.and.ellipse"
+        }
     }
 
     private var mapShareText: String? {
@@ -567,23 +583,27 @@ private struct MapPinFeedbackStrip: View {
 }
 
 private struct MapActionRow: View {
+    let phase: NearbyPhase
     let tint: Color
     let revealTitle: String
     let revealIcon: String
     let revealDisabled: Bool
     let revealPlaysHaptic: Bool
+    let hasGuess: Bool
     let shareText: String?
     let reveal: () -> Void
     let locate: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
-            CommandButton(
+            MapPrimaryActionLane(
+                phase: phase,
                 title: revealTitle,
                 icon: revealIcon,
                 tint: tint,
                 isDisabled: revealDisabled,
                 playsHaptic: revealPlaysHaptic,
+                hasGuess: hasGuess,
                 action: reveal
             )
             if let shareText {
@@ -593,6 +613,172 @@ private struct MapActionRow: View {
         }
         .padding(.top, 2)
         .accessibilityIdentifier("NearbyActionRow")
+        .motionTick(trigger: "\(phase)-\(hasGuess)-\(shareText != nil)", tint: tint)
+    }
+}
+
+private struct MapPrimaryActionLane: View {
+    let phase: NearbyPhase
+    let title: String
+    let icon: String
+    let tint: Color
+    let isDisabled: Bool
+    let playsHaptic: Bool
+    let hasGuess: Bool
+    let action: () -> Void
+    @State private var tapToken = 0
+
+    var body: some View {
+        Button {
+            if playsHaptic {
+                Haptics.light()
+            }
+            tapToken &+= 1
+            action()
+        } label: {
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(iconFill)
+                    Image(systemName: icon)
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(iconColor)
+                }
+                .frame(width: 38, height: 38)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(kicker)
+                            .font(.caption2.weight(.black).monospaced())
+                            .foregroundStyle(kickerColor)
+                        Rectangle()
+                            .fill(kickerColor.opacity(isDisabled ? 0.24 : 0.48))
+                            .frame(width: 18, height: 1)
+                    }
+
+                    Text(title)
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(titleColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
+
+                    Text(detail)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WikiTheme.muted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.74)
+                }
+                .layoutPriority(1)
+
+                Spacer(minLength: 8)
+
+                Text(commandCode)
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(commandColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(commandBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+            }
+            .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(laneBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                    .stroke(laneStroke, lineWidth: phase == .revealed ? 1.4 : 1)
+            }
+            .overlay(alignment: .topLeading) {
+                Rectangle()
+                    .fill(kickerColor.opacity(isDisabled ? 0.18 : 0.72))
+                    .frame(width: 52, height: 2)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous))
+        }
+        .disabled(isDisabled)
+        .buttonStyle(ArcadePressStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title). \(detail)")
+        .motionTick(trigger: tapToken, tint: tint, enabled: !isDisabled)
+    }
+
+    private var kicker: String {
+        switch phase {
+        case .locating, .loading:
+            return "MAP"
+        case .guess, .denied:
+            return hasGuess ? "PIN READY" : "DROP PIN"
+        case .revealed:
+            return "RESULT"
+        case .empty:
+            return "EMPTY"
+        }
+    }
+
+    private var detail: String {
+        switch phase {
+        case .locating:
+            return "Finding your map center."
+        case .loading:
+            return "Loading Wikipedia pages."
+        case .guess, .denied:
+            return hasGuess ? "Reveal target or move the pin." : "Tap the map to arm reveal."
+        case .revealed:
+            return "Load another hidden article."
+        case .empty:
+            return "Try a city jump below."
+        }
+    }
+
+    private var commandCode: String {
+        switch phase {
+        case .locating, .loading:
+            return "WAIT"
+        case .guess, .denied:
+            return hasGuess ? "REVEAL" : "PIN"
+        case .revealed:
+            return "NEXT"
+        case .empty:
+            return "JUMP"
+        }
+    }
+
+    private var laneBackground: Color {
+        if isDisabled {
+            return WikiTheme.surfaceStrong.opacity(0.68)
+        }
+        return tint.opacity(phase == .revealed ? 0.10 : 0.07)
+    }
+
+    private var laneStroke: Color {
+        if isDisabled {
+            return WikiTheme.rule.opacity(0.78)
+        }
+        return tint.opacity(phase == .revealed ? 0.70 : 0.42)
+    }
+
+    private var iconFill: Color {
+        isDisabled ? WikiTheme.surface : tint
+    }
+
+    private var iconColor: Color {
+        isDisabled ? WikiTheme.muted : .white
+    }
+
+    private var kickerColor: Color {
+        isDisabled ? WikiTheme.muted : tint
+    }
+
+    private var titleColor: Color {
+        isDisabled ? WikiTheme.muted : WikiTheme.ink
+    }
+
+    private var commandColor: Color {
+        isDisabled ? WikiTheme.muted : .white
+    }
+
+    private var commandBackground: Color {
+        isDisabled ? WikiTheme.surface : tint
     }
 }
 
