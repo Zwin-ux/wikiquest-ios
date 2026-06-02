@@ -173,6 +173,7 @@ struct NearbyView: View {
                             NearbyRevealPanel(
                                 article: article,
                                 distanceText: viewModel.distanceMeters.map(NearbyScoring.format) ?? "Unknown",
+                                distanceMeters: viewModel.distanceMeters,
                                 score: viewModel.savedXP ?? viewModel.localScore ?? 0
                             )
                         }
@@ -957,11 +958,17 @@ private struct MapLocateButton: View {
 private struct NearbyRevealPanel: View {
     let article: NearbyArticle
     let distanceText: String
+    let distanceMeters: Double?
     let score: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            NearbyRevealSummary(title: article.title, distanceText: distanceText, score: score)
+            NearbyRevealSummary(
+                title: article.title,
+                distanceText: distanceText,
+                distanceMeters: distanceMeters,
+                score: score
+            )
 
             PhotoClueCard(
                 kicker: "Target revealed",
@@ -996,50 +1003,209 @@ private struct NearbyRevealPanel: View {
 private struct NearbyRevealSummary: View {
     let title: String
     let distanceText: String
+    let distanceMeters: Double?
     let score: Int
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            ResultStamp(systemImage: "scope", tint: WikiTheme.red, value: score)
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .center, spacing: 12) {
+                ResultStamp(systemImage: grade.systemImage, tint: grade.tint, value: score)
 
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
-                    Image(systemName: "mappin.circle.fill")
-                    Rectangle()
-                        .fill(WikiTheme.red.opacity(0.46))
-                        .frame(width: 22, height: 2)
-                    Image(systemName: "scope")
+                VStack(alignment: .leading, spacing: 3) {
+                    MapRevealGradeBadge(grade: grade)
+
+                    Kicker(text: "Pin to target")
+                    Text(distanceText)
+                        .font(.system(.title3, design: .monospaced).weight(.black))
+                        .foregroundStyle(WikiTheme.violet)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WikiTheme.muted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
                 }
-                .font(.caption2.weight(.black))
-                .foregroundStyle(WikiTheme.red)
-                .accessibilityHidden(true)
 
-                Kicker(text: "Pin to target")
-                Text(distanceText)
-                    .font(.system(.title3, design: .monospaced).weight(.black))
-                    .foregroundStyle(WikiTheme.violet)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WikiTheme.muted)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.76)
+                Spacer(minLength: 8)
             }
 
-            Spacer(minLength: 8)
-
-            VStack(alignment: .trailing, spacing: 3) {
-                Kicker(text: "XP")
-                TickerNumberText(value: score, font: .system(.headline, design: .monospaced).weight(.black))
-                    .foregroundStyle(WikiTheme.green)
-            }
+            MapRevealResultRail(grade: grade, distanceText: distanceText, score: score)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
-        .resultPop(trigger: "\(title)-\(distanceText)-\(score)", tint: WikiTheme.red)
+        .resultPop(trigger: "\(title)-\(distanceText)-\(score)-\(grade.label)", tint: grade.tint)
+    }
+
+    private var grade: MapRevealGrade {
+        MapRevealGrade(distanceMeters: distanceMeters)
+    }
+}
+
+private enum MapRevealGrade: Equatable {
+    case bullseye
+    case close
+    case near
+    case found
+    case wide
+    case unknown
+
+    init(distanceMeters: Double?) {
+        guard let distanceMeters else {
+            self = .unknown
+            return
+        }
+
+        switch distanceMeters {
+        case 0..<50:
+            self = .bullseye
+        case 50..<150:
+            self = .close
+        case 150..<500:
+            self = .near
+        case 500..<1_500:
+            self = .found
+        default:
+            self = .wide
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .bullseye:
+            return "Bullseye"
+        case .close:
+            return "Close"
+        case .near:
+            return "Near"
+        case .found:
+            return "Found"
+        case .wide:
+            return "Wide"
+        case .unknown:
+            return "Found"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .bullseye:
+            return "scope"
+        case .close:
+            return "location.north.line.fill"
+        case .near:
+            return "mappin.circle.fill"
+        case .found, .unknown:
+            return "mappin.and.ellipse"
+        case .wide:
+            return "ruler"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .bullseye:
+            return WikiTheme.green
+        case .close:
+            return WikiTheme.blue
+        case .near:
+            return WikiTheme.violet
+        case .found, .unknown:
+            return WikiTheme.amber
+        case .wide:
+            return WikiTheme.red
+        }
+    }
+}
+
+private struct MapRevealGradeBadge: View {
+    let grade: MapRevealGrade
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: grade.systemImage)
+                .font(.caption2.weight(.black))
+            Text(grade.label.uppercased())
+                .font(.caption2.weight(.black).monospaced())
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 5)
+        .background(grade.tint)
+        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .accessibilityLabel("Map result \(grade.label)")
+    }
+}
+
+private struct MapRevealResultRail: View {
+    let grade: MapRevealGrade
+    let distanceText: String
+    let score: Int
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 0) {
+                MapRevealRailNode(systemImage: "mappin.circle.fill", label: "PIN", tint: WikiTheme.blue)
+                MapRevealRailConnector(tint: grade.tint)
+                MapRevealRailNode(systemImage: grade.systemImage, label: distanceText, tint: grade.tint)
+                MapRevealRailConnector(tint: WikiTheme.green)
+                MapRevealRailNode(systemImage: "star.fill", label: "\(score) XP", tint: WikiTheme.green)
+            }
+
+            HStack(spacing: 0) {
+                MapRevealRailNode(systemImage: "mappin.circle.fill", label: "PIN", tint: WikiTheme.blue)
+                MapRevealRailConnector(tint: grade.tint)
+                MapRevealRailNode(systemImage: grade.systemImage, label: grade.label, tint: grade.tint)
+                MapRevealRailConnector(tint: WikiTheme.green)
+                MapRevealRailNode(systemImage: "star.fill", label: "\(score)", tint: WikiTheme.green)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 2)
+        .revealSweep(trigger: "\(grade.label)-\(distanceText)-\(score)", tint: grade.tint)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Pin to target, \(distanceText), \(score) XP")
+    }
+}
+
+private struct MapRevealRailNode: View {
+    let systemImage: String
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(.caption2.weight(.black))
+            Text(label.uppercased())
+                .font(.system(size: 9, weight: .black, design: .monospaced))
+                .lineLimit(1)
+                .minimumScaleFactor(0.68)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+    }
+}
+
+private struct MapRevealRailConnector: View {
+    let tint: Color
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(WikiTheme.hairline)
+                .frame(height: 1)
+            Rectangle()
+                .fill(tint.opacity(0.55))
+                .frame(height: 2)
+                .padding(.horizontal, 4)
+        }
+        .frame(width: 24)
     }
 }
