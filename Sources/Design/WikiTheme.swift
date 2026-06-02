@@ -1528,17 +1528,44 @@ private struct QuestDeckStateBadge: View {
 private struct QuestDeckPulseRail: View {
     let tint: Color
     let isActive: Bool
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var activeIndex = 0
 
     var body: some View {
         HStack(spacing: 5) {
             ForEach(0..<4, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 2, style: .continuous)
-                    .fill(index == 0 ? tint : .white.opacity(isActive ? 0.78 : 0.36))
-                    .frame(width: index == 0 ? 18 : 9, height: 4)
-                    .opacity(isActive ? 1 : 0.52)
+                    .fill(index == currentIndex ? tint : .white.opacity(isActive ? 0.78 : 0.36))
+                    .frame(width: index == currentIndex ? 18 : 9, height: 4)
+                    .opacity(index == currentIndex || isActive ? 1 : 0.52)
             }
         }
+        .task { await runTicker() }
+        .motionTick(trigger: activeIndex, tint: tint, enabled: isActive)
         .accessibilityHidden(true)
+    }
+
+    private var currentIndex: Int {
+        motion.reduceMotion || !isActive ? 0 : activeIndex
+    }
+
+    @MainActor
+    private func runTicker() async {
+        if motion.reduceMotion {
+            activeIndex = 0
+            return
+        }
+        while !Task.isCancelled {
+            guard isActive else {
+                activeIndex = 0
+                try? await Task.sleep(nanoseconds: 520_000_000)
+                continue
+            }
+            withAnimation(WikiMotion.tick) {
+                activeIndex = (activeIndex + 1) % 4
+            }
+            try? await Task.sleep(nanoseconds: 520_000_000)
+        }
     }
 }
 
