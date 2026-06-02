@@ -174,6 +174,7 @@ First shipped slice:
 - recovery cleanup shipped: Race route errors now include a `New race` command that also clears any live activity
 - route-lane cleanup shipped: blue-link choices now use compact route connectors and GO/OPEN/SEEN badges so the next move feels like a route action instead of a generic row tap
 - objective polish shipped: the Race photo stage now shows `START`/`ROUTE` on the current article image, and the target strip reports route state instead of showing active-round `0 XP`
+- exit-command polish shipped: Race link choices now start with a compact command header showing open exits, seen exits, and tracing state, so the next move reads as game instrumentation instead of a generic section header
 
 ### Map
 
