@@ -201,12 +201,12 @@ private struct ModeDeckTile: View {
             ArticleHeroImage(
                 media: media,
                 title: mode.title,
-                height: 108,
+                height: 118,
                 tint: mode.color,
                 fallbackStyle: mode.fallbackStyle
             )
 
-            VStack(alignment: .leading, spacing: 7) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image(systemName: mode.icon)
                         .font(.callout.weight(.black))
@@ -221,7 +221,7 @@ private struct ModeDeckTile: View {
                         .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
                 }
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 4)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(mode.title)
@@ -234,15 +234,25 @@ private struct ModeDeckTile: View {
                         .foregroundStyle(.white.opacity(0.78))
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
-                    Text(mode.command)
-                        .font(.caption2.weight(.black).monospaced())
-                        .foregroundStyle(.white.opacity(0.66))
-                        .lineLimit(1)
                 }
+
+                HStack(spacing: 6) {
+                    Text(mode.command.uppercased())
+                        .font(.caption2.weight(.black).monospaced())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.70)
+                    Image(systemName: "arrow.right")
+                        .font(.caption2.weight(.black))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(mode.color.opacity(0.88))
+                .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
             }
             .padding(10)
         }
-        .frame(maxWidth: .infinity, minHeight: 108, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 118, alignment: .leading)
         .overlay(alignment: .topLeading) {
             Rectangle()
                 .fill(mode.color)
