@@ -35,9 +35,9 @@ struct OnboardingGate: View {
     @State private var previewSession = PreviewQuestSession()
 
     private let modes = [
-        OnboardingMode(title: "Mystery", detail: "Solve a hidden article", assetName: "ModeMysteryMark", tint: WikiTheme.amber),
-        OnboardingMode(title: "Race", detail: "Follow blue links fast", assetName: "ModeRaceMark", tint: WikiTheme.blue),
-        OnboardingMode(title: "Map", detail: "Place the pin", assetName: "ModeNearbyMark", tint: WikiTheme.green)
+        OnboardingMode(title: "Mystery", detail: "Decode photo clues", assetName: "ModeMysteryMark", tint: WikiTheme.amber),
+        OnboardingMode(title: "Race", detail: "Take blue links", assetName: "ModeRaceMark", tint: WikiTheme.blue),
+        OnboardingMode(title: "Map", detail: "Drop the pin", assetName: "ModeNearbyMark", tint: WikiTheme.green)
     ]
 
     var body: some View {
@@ -223,7 +223,7 @@ private struct OnboardingSignInStatus: View {
             return error
         }
         if hasPlayedPreview {
-            return "Keep XP, streaks, Race paths, and Map pins."
+            return "Save XP, streaks, routes, and pins."
         }
         return "Sign in anytime; the preview stays playable."
     }
@@ -512,12 +512,35 @@ private struct PreviewResultBanner: View {
             case .missed(_, let correctTitle):
                 ResultBanner(title: "REVEALED", detail: correctTitle, score: 0, tint: WikiTheme.amber, systemImage: "eye.fill")
             }
-            Button("Try preview again", action: reset)
-                .font(.caption.weight(.bold))
-                .foregroundStyle(WikiTheme.blue)
-                .buttonStyle(ArcadePressStyle())
+            PreviewReplayButton(reset: reset)
         }
         .transition(.scale(scale: 0.98).combined(with: .opacity))
+    }
+}
+
+private struct PreviewReplayButton: View {
+    let reset: () -> Void
+    @State private var tapToken = 0
+
+    var body: some View {
+        Button {
+            Haptics.light()
+            tapToken &+= 1
+            reset()
+        } label: {
+            Image(systemName: "arrow.clockwise")
+                .font(.callout.weight(.black))
+                .foregroundStyle(WikiTheme.blue)
+                .frame(width: 46, height: 46)
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .stroke(WikiTheme.blue.opacity(0.82), lineWidth: 1)
+                }
+        }
+        .buttonStyle(ArcadePressStyle())
+        .accessibilityLabel("Replay preview")
+        .accessibilityIdentifier("PreviewReplayButton")
+        .motionTick(trigger: tapToken, tint: WikiTheme.blue)
     }
 }
 

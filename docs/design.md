@@ -97,6 +97,7 @@ Pass scores:
 - Responsive readiness: 6.5/10 -> target 8/10 after small-iPhone HUD rules are explicit.
 - Shared HUD cleanup: Quest Deck, Mystery, Race, and Map use one `GameHUDCluster` rule now. Dense clusters collapse labels before covering the playfield, while accessibility labels keep the metrics understandable.
 - Onboarding preview cleanup: the first playable round uses the same HUD language and result-specific haptics as the signed-in game surfaces.
+- Onboarding result cleanup: preview replay is now a compact utility icon and mode rows use signed-in game verbs, keeping Sign in with Apple as the only large first-launch command.
 - Race trail cleanup: the path now reads as a moving route rail with numbered visited nodes, a current-article marker, fresh connector feedback, and automatic scroll-to-latest behavior.
 - Map reveal cleanup: the command sheet now gives Reveal/Next priority, keeps Locate as a small utility control, and turns distance/XP into a clear result strip before the revealed article photo.
 - Media fallback cleanup: every shared image surface now has a mode-aware archive fallback, so no-image and image-load failure states still look like WikiQuest rather than broken media.
