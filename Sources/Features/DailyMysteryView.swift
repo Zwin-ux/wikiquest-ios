@@ -750,7 +750,7 @@ private struct MysteryClueStack: View {
             }
 
             if hints.isEmpty {
-                EmptyMysteryState()
+                EmptyMysteryState(totalHints: totalHints)
             } else {
                 ForEach(Array(hints.enumerated()), id: \.element.id) { index, hint in
                     PanelReveal(delay: Double(index) * 0.035) {
@@ -926,11 +926,104 @@ private struct HintRow: View {
 }
 
 private struct EmptyMysteryState: View {
+    let totalHints: Int
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var pulse = false
+
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            BrandMarkView(variant: .glyph, size: 34, animated: false)
-            InlineNotice(title: "READY", detail: "Reveal a hint or take the first shot.", tint: WikiTheme.amber)
+            StageSignalBadge(
+                label: "LOCKED",
+                systemImage: "lock.fill",
+                tint: WikiTheme.amber,
+                isActive: pulse || motion.reduceMotion
+            )
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Kicker(text: "Clue file")
+                    Text("READY")
+                        .font(.caption2.weight(.black).monospaced())
+                        .foregroundStyle(WikiTheme.amber)
+                }
+
+                Text("Reveal a hint to open the first slot, or take a blind shot.")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
+
+                MysteryLockedClueRail(totalHints: totalHints, isActive: pulse || motion.reduceMotion)
+                    .padding(.top, 2)
+            }
+            .layoutPriority(1)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.rule.opacity(0.6)).frame(height: 1)
+        }
+        .task { await runPulse() }
+        .motionTick(trigger: pulse, tint: WikiTheme.amber)
+        .accessibilityElement(children: .combine)
+    }
+
+    @MainActor
+    private func runPulse() async {
+        if motion.reduceMotion {
+            pulse = true
+            return
+        }
+        while !Task.isCancelled {
+            withAnimation(WikiMotion.tick) {
+                pulse.toggle()
+            }
+            try? await Task.sleep(nanoseconds: 620_000_000)
+        }
+    }
+}
+
+private struct MysteryLockedClueRail: View {
+    let totalHints: Int
+    let isActive: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<slotCount, id: \.self) { index in
+                HStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(index == activeIndex && isActive ? WikiTheme.amber.opacity(0.16) : WikiTheme.surfaceStrong)
+                        .frame(width: index == activeIndex && isActive ? 24 : 18, height: 18)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                .stroke(index == activeIndex && isActive ? WikiTheme.amber.opacity(0.72) : WikiTheme.rule.opacity(0.72), lineWidth: 1)
+                        }
+                        .overlay {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 7, weight: .black))
+                                .foregroundStyle(index == activeIndex && isActive ? WikiTheme.amber : WikiTheme.subtle)
+                        }
+
+                    if index < slotCount - 1 {
+                        Rectangle()
+                            .fill(WikiTheme.hairline)
+                            .frame(width: 12, height: 1)
+                    }
+                }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var slotCount: Int {
+        max(min(totalHints, 6), 1)
+    }
+
+    private var activeIndex: Int {
+        0
     }
 }
 

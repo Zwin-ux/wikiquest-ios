@@ -160,6 +160,7 @@ First shipped slice:
 - result-loop polish shipped: completed Daily Mystery now exposes a `Practice run` command and completed Practice exposes `New practice`, while share remains a compact utility action.
 - photo-stage signal shipped: Mystery and preview photo clues now use the shared scan badge so clue/fallback/image states read as live stage instrumentation, not passive image labels.
 - loading-strip polish shipped: Mystery puzzle loading now stays inside the command deck as a `SYNC` strip with clue/shot metadata and a tiny rail, replacing the generic loading glyph.
+- empty-clue polish shipped: Mystery's unrevealed clue timeline now starts as a locked clue rail with a live `LOCKED` badge instead of a generic `READY` notice.
 
 ### Race
 

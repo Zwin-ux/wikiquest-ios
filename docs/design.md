@@ -148,6 +148,7 @@ Pass scores:
 - Race boot-stage cleanup: pre-route `READY`/`ROUTING` states now render as a Link Race stage with a scan badge, tiny HUD, and route pulse instead of a generic loading glyph above the game flow.
 - Mystery loading cleanup: the puzzle-loading state now stays inside the command deck as a `SYNC` strip with clue/shot metadata and a tiny rail, instead of inserting a generic loading component under the photo stage.
 - Map loading cleanup: locating/loading now stays inside the lower command sheet as a `LOCATE`/`SCAN` strip with page count and a tiny rail, instead of adding a generic loading block below the MapKit stage.
+- Mystery empty-clue cleanup: the clue timeline now opens as a locked clue rail with a live `LOCKED` badge instead of a generic `READY` notice, so the first unrevealed state still reads as game instrumentation.
 
 Not in scope for this cleanup:
 
