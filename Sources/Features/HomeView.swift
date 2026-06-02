@@ -7,6 +7,7 @@ private struct ModeTile: Identifiable {
     let id: String
     let title: String
     let detail: String
+    let command: String
     let icon: String
     let color: Color
     let tab: AppTab
@@ -26,9 +27,9 @@ struct HomeView: View {
     private let discoveryRailLimit = 5
 
     private let modes = [
-        ModeTile(id: "mystery", title: "Mystery", detail: "Decode", icon: "questionmark.circle", color: WikiTheme.amber, tab: .mystery),
-        ModeTile(id: "race", title: "Race", detail: "Link fast", icon: "link", color: WikiTheme.blue, tab: .race),
-        ModeTile(id: "nearby", title: "Map", detail: "Pin it", icon: "mappin.and.ellipse", color: WikiTheme.green, tab: .nearby)
+        ModeTile(id: "mystery", title: "Mystery", detail: "Photo clues", command: "Decode", icon: "questionmark.circle", color: WikiTheme.amber, tab: .mystery),
+        ModeTile(id: "race", title: "Race", detail: "Blue links", command: "Run", icon: "link", color: WikiTheme.blue, tab: .race),
+        ModeTile(id: "nearby", title: "Map", detail: "Map pins", command: "Drop pin", icon: "mappin.and.ellipse", color: WikiTheme.green, tab: .nearby)
     ]
 
     var body: some View {
@@ -38,6 +39,7 @@ struct HomeView: View {
                 detail: "Find the hidden Wikipedia page before reset.",
                 media: deckArticle?.media,
                 hudMetrics: deckMetrics,
+                commandText: "Play daily",
                 tint: WikiTheme.amber
             ) {
                 navigate(.mystery)
@@ -161,7 +163,7 @@ private struct HomeModeRail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Kicker(text: "Choose route")
+            Kicker(text: "Choose quest")
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
                     PanelReveal(delay: Double(index) * 0.035) {
@@ -232,7 +234,7 @@ private struct ModeDeckTile: View {
                         .foregroundStyle(.white.opacity(0.78))
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
-                    Text("Open")
+                    Text(mode.command)
                         .font(.caption2.weight(.black).monospaced())
                         .foregroundStyle(.white.opacity(0.66))
                         .lineLimit(1)
@@ -249,7 +251,7 @@ private struct ModeDeckTile: View {
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(mode.title), \(mode.detail)")
+        .accessibilityLabel("\(mode.title), \(mode.detail), \(mode.command)")
     }
 }
 
