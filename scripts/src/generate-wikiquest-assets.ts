@@ -58,20 +58,21 @@ function tabs(width = 1024): string {
 
 function simpleWPath(viewBoxSize = 1024): string {
   const scale = viewBoxSize / 1024;
+  // Optical W mark: compact enough for iOS masking, open enough for 20px icons.
   const points = [
-    [128, 248],
-    [238, 248],
-    [330, 686],
-    [442, 404],
-    [522, 404],
-    [636, 686],
-    [786, 248],
-    [898, 248],
-    [680, 804],
-    [586, 804],
-    [480, 540],
-    [374, 804],
-    [278, 804],
+    [196, 304],
+    [306, 304],
+    [386, 668],
+    [480, 430],
+    [546, 430],
+    [640, 668],
+    [724, 304],
+    [836, 304],
+    [686, 760],
+    [586, 760],
+    [514, 558],
+    [438, 760],
+    [334, 760],
   ]
     .map(([x, y]) => `${Math.round(x * scale)} ${Math.round(y * scale)}`)
     .join("L");
@@ -92,7 +93,7 @@ function appIconSvg(size: number): string {
 function compactSvg(size: number): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 256 256">
   <rect width="256" height="256" rx="44" fill="${colors.paperLight}"/>
-  <path d="M32 62L60 62L82 172L111 101L132 101L160 172L197 62L224 62L170 201L146 201L121 135L94 201L70 201Z" fill="${colors.wikiBlue}"/>
+  ${simpleWMark(256)}
 </svg>`;
 }
 
@@ -105,7 +106,7 @@ function brandMarkSvg(size: number): string {
 
 function brandGlyphSvg(size: number): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 256 256">
-  <path d="M32 62L60 62L82 172L111 101L132 101L160 172L197 62L224 62L170 201L146 201L121 135L94 201L70 201Z" fill="${colors.wikiBlue}"/>
+  ${simpleWMark(256)}
 </svg>`;
 }
 

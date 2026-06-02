@@ -216,6 +216,13 @@ First shipped slice:
 - no account, purchases, XP, or full app shell
 - install/open full app CTA after result
 
+### Brand
+
+- simple blue `W` only
+- paper tile background
+- no compass ornament, mascot, SVG text, or font-rendered monogram
+- let Wikipedia photos, map state, and game HUD motion provide the richness
+
 ## Implementation Constraints
 
 - SwiftUI only.
