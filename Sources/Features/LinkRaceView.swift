@@ -574,42 +574,93 @@ private struct LinkChoiceRow: View {
     @EnvironmentObject private var motion: MotionSettings
 
     var body: some View {
-        HStack(spacing: 9) {
-            RaceChoiceMarker(index: index, state: state)
-            RaceChoiceConnector(state: state)
-                .frame(width: 14)
+        ZStack(alignment: .leading) {
+            RaceChoiceLane(state: state)
 
-            ArticleHeroImage(media: media, title: title, height: 48, tint: state == .visited ? WikiTheme.muted : WikiTheme.blue)
-                .frame(width: 52)
+            HStack(spacing: 9) {
+                RaceChoiceMarker(index: index, state: state)
+                RaceChoiceConnector(state: state)
+                    .frame(width: 14)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(state == .visited ? WikiTheme.subtle : WikiTheme.ink)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.82)
-                if let statusText = state.statusText {
-                    Text(statusText)
-                        .font(.caption.weight(.bold).monospaced())
-                        .foregroundStyle(WikiTheme.muted)
+                ArticleHeroImage(media: media, title: title, height: 48, tint: state == .visited ? WikiTheme.muted : WikiTheme.blue)
+                    .frame(width: 52)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text("EXIT \(String(format: "%02d", index))")
+                            .font(.caption2.weight(.black).monospacedDigit())
+                            .foregroundStyle(state.tint)
+                        Rectangle()
+                            .fill(state.tint.opacity(state == .available ? 0.48 : 0.24))
+                            .frame(width: 18, height: 1)
+                    }
+
+                    Text(title)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(state == .visited ? WikiTheme.subtle : WikiTheme.ink)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+                    if let statusText = state.statusText {
+                        Text(statusText)
+                            .font(.caption.weight(.bold).monospaced())
+                            .foregroundStyle(WikiTheme.muted)
+                    }
                 }
+                .layoutPriority(1)
+                Spacer(minLength: 8)
+                RaceChoiceActionBadge(state: state)
             }
-            .layoutPriority(1)
-            Spacer(minLength: 8)
-            RaceChoiceActionBadge(state: state)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 7)
         }
         .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
-        .padding(.vertical, 7)
         .overlay(alignment: .leading) {
             Rectangle()
                 .fill(state == .loading ? WikiTheme.blue : .clear)
                 .frame(width: 2)
         }
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
-        }
         .opacity(state == .visited ? 0.62 : 1)
         .motionTick(trigger: state.motionKey, tint: WikiTheme.blue, enabled: state == .loading)
+    }
+}
+
+private struct RaceChoiceLane: View {
+    let state: LinkChoiceState
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+            .fill(fill)
+            .overlay {
+                RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                    .stroke(stroke, lineWidth: state == .loading ? 1.4 : 1)
+            }
+            .overlay(alignment: .topLeading) {
+                Rectangle()
+                    .fill(state.tint.opacity(state == .visited ? 0.18 : 0.68))
+                    .frame(width: 46, height: 2)
+            }
+    }
+
+    private var fill: Color {
+        switch state {
+        case .available:
+            return WikiTheme.blue.opacity(0.045)
+        case .loading:
+            return WikiTheme.blue.opacity(0.10)
+        case .visited:
+            return WikiTheme.surface.opacity(0.58)
+        }
+    }
+
+    private var stroke: Color {
+        switch state {
+        case .available:
+            return WikiTheme.blue.opacity(0.28)
+        case .loading:
+            return WikiTheme.blue.opacity(0.70)
+        case .visited:
+            return WikiTheme.hairline
+        }
     }
 }
 
