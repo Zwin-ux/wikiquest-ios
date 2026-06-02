@@ -813,19 +813,7 @@ private struct BootupIntroView: View {
 
             Spacer(minLength: 24)
 
-            Button {
-                complete()
-            } label: {
-                Text("Continue")
-                    .font(.callout.weight(.bold))
-                    .foregroundStyle(WikiTheme.blue)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 12)
-                    .overlay(alignment: .top) {
-                        Rectangle().fill(WikiTheme.hairline).frame(height: 1)
-                    }
-            }
-            .buttonStyle(.plain)
+            BootupContinueCommand(complete: complete)
             .accessibilityIdentifier("BootupContinue")
         }
         .padding(WikiTheme.screenPadding)
@@ -859,6 +847,89 @@ private struct BootupIntroView: View {
         await MainActor.run {
             complete()
         }
+    }
+}
+
+private struct BootupContinueCommand: View {
+    let complete: () -> Void
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var tapToken = 0
+    @State private var activeIndex = 0
+
+    var body: some View {
+        Button {
+            Haptics.light()
+            tapToken &+= 1
+            complete()
+        } label: {
+            HStack(alignment: .center, spacing: 11) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 7) {
+                        Kicker(text: "Boot ready")
+                        Text("PLAY")
+                            .font(.caption2.weight(.black).monospaced())
+                            .foregroundStyle(WikiTheme.blue)
+                    }
+                    Text("Start preview")
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(WikiTheme.ink)
+                }
+                .layoutPriority(1)
+
+                Spacer(minLength: 8)
+
+                BootupCommandRail(activeIndex: currentIndex)
+
+                Image(systemName: "arrow.right")
+                    .font(.callout.weight(.black))
+                    .foregroundStyle(WikiTheme.blue)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+            .overlay(alignment: .top) {
+                Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+            }
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(WikiTheme.blue.opacity(0.42)).frame(height: 1)
+            }
+        }
+        .buttonStyle(.plain)
+        .task { await runTicker() }
+        .motionTick(trigger: tapToken, tint: WikiTheme.blue)
+        .accessibilityLabel("Start preview")
+    }
+
+    private var currentIndex: Int {
+        motion.reduceMotion ? 0 : activeIndex
+    }
+
+    @MainActor
+    private func runTicker() async {
+        if motion.reduceMotion {
+            activeIndex = 0
+            return
+        }
+        while !Task.isCancelled {
+            withAnimation(WikiMotion.tick) {
+                activeIndex = (activeIndex + 1) % 3
+            }
+            try? await Task.sleep(nanoseconds: 520_000_000)
+        }
+    }
+}
+
+private struct BootupCommandRail: View {
+    let activeIndex: Int
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(index == activeIndex ? WikiTheme.blue : WikiTheme.ink.opacity(0.22))
+                    .frame(width: index == activeIndex ? 16 : 9, height: 4)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
