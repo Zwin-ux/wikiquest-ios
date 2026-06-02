@@ -436,55 +436,181 @@ private struct PreviewChoiceRow: View {
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
-            PreviewChoiceMarker(index: index, tint: tint, isSelected: isSelected, isLocked: result != nil)
+        ZStack(alignment: .leading) {
+            PreviewChoiceLane(tint: tint, isLocked: isLocked, isSelected: isSelected, isCorrect: isCorrectAfterResult)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(choice.title)
-                    .font(.callout.weight(.bold))
-                    .foregroundStyle(WikiTheme.ink)
-                    .lineLimit(2)
-                Text(choice.detail)
-                    .font(.caption)
-                    .foregroundStyle(WikiTheme.muted)
-                    .lineLimit(1)
+            HStack(spacing: 10) {
+                PreviewChoiceMarker(index: index, tint: tint, isSelected: isSelected, choiceIsCorrect: choice.isCorrect, result: result)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text("ANSWER \(String(format: "%02d", index))")
+                            .font(.caption2.weight(.black).monospacedDigit())
+                            .foregroundStyle(tint)
+                        Rectangle()
+                            .fill(tint.opacity(isLocked && !isSelected && !isCorrectAfterResult ? 0.22 : 0.48))
+                            .frame(width: 18, height: 1)
+                    }
+
+                    Text(choice.title)
+                        .font(.callout.weight(.black))
+                        .foregroundStyle(titleColor)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.78)
+                    Text(choice.detail)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WikiTheme.muted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.76)
+                }
+                .layoutPriority(1)
+
+                Spacer(minLength: 8)
+
+                PreviewChoiceCommandBadge(
+                    text: commandText,
+                    iconName: iconName,
+                    tint: tint,
+                    isSubdued: isLocked && !isSelected && !isCorrectAfterResult
+                )
             }
-            Spacer(minLength: 8)
-            Image(systemName: iconName)
-                .font(.callout.weight(.bold))
-                .foregroundStyle(tint)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 7)
         }
         .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
-        .padding(.vertical, 6)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
-        }
         .contentShape(Rectangle())
         .motionTick(trigger: "\(choice.id)-\(isSelected)-\(result != nil)", tint: tint, enabled: isSelected)
     }
 
+    private var isLocked: Bool {
+        result != nil
+    }
+
+    private var isCorrectAfterResult: Bool {
+        isLocked && choice.isCorrect
+    }
+
     private var tint: Color {
-        guard isSelected else { return WikiTheme.blue }
-        switch result {
-        case .correct:
+        if isCorrectAfterResult {
             return WikiTheme.green
-        case .missed:
-            return WikiTheme.amber
-        case nil:
-            return WikiTheme.blue
         }
+        if isSelected {
+            switch result {
+            case .correct:
+                return WikiTheme.green
+            case .missed:
+                return WikiTheme.amber
+            case nil:
+                return WikiTheme.blue
+            }
+        }
+        if isLocked {
+            return WikiTheme.muted
+        }
+        return WikiTheme.blue
+    }
+
+    private var titleColor: Color {
+        isLocked && !isSelected && !isCorrectAfterResult ? WikiTheme.subtle : WikiTheme.ink
+    }
+
+    private var commandText: String {
+        guard isLocked else {
+            return "PICK"
+        }
+        if isCorrectAfterResult {
+            return "HIT"
+        }
+        return isSelected ? "MISS" : "LOCKED"
     }
 
     private var iconName: String {
-        guard isSelected else { return "chevron.right" }
-        switch result {
-        case .correct:
-            return "checkmark.seal.fill"
-        case .missed:
-            return "xmark.octagon.fill"
-        case nil:
-            return "target"
+        guard isLocked else {
+            return "scope"
         }
+        if isCorrectAfterResult {
+            return "checkmark.seal.fill"
+        }
+        return isSelected ? "xmark.octagon.fill" : "lock.fill"
+    }
+}
+
+private struct PreviewChoiceLane: View {
+    let tint: Color
+    let isLocked: Bool
+    let isSelected: Bool
+    let isCorrect: Bool
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+            .fill(fill)
+            .overlay {
+                RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
+                    .stroke(stroke, lineWidth: isSelected || isCorrect ? 1.35 : 1)
+            }
+            .overlay(alignment: .topLeading) {
+                Rectangle()
+                    .fill(tint.opacity(isLocked && !isSelected && !isCorrect ? 0.18 : 0.70))
+                    .frame(width: 48, height: 2)
+            }
+    }
+
+    private var fill: Color {
+        if isSelected || isCorrect {
+            return tint.opacity(0.10)
+        }
+        if isLocked {
+            return WikiTheme.surface.opacity(0.56)
+        }
+        return WikiTheme.blue.opacity(0.045)
+    }
+
+    private var stroke: Color {
+        if isSelected || isCorrect {
+            return tint.opacity(0.68)
+        }
+        if isLocked {
+            return WikiTheme.hairline
+        }
+        return WikiTheme.blue.opacity(0.28)
+    }
+}
+
+private struct PreviewChoiceCommandBadge: View {
+    let text: String
+    let iconName: String
+    let tint: Color
+    let isSubdued: Bool
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text(text)
+                .font(.caption2.weight(.black).monospaced())
+                .lineLimit(1)
+                .minimumScaleFactor(0.70)
+            Image(systemName: iconName)
+                .font(.caption2.weight(.black))
+        }
+        .foregroundStyle(foreground)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(background)
+        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .accessibilityHidden(true)
+    }
+
+    private var foreground: Color {
+        if isSubdued {
+            return WikiTheme.muted
+        }
+        return .white
+    }
+
+    private var background: Color {
+        if isSubdued {
+            return WikiTheme.surface
+        }
+        return tint
     }
 }
 
@@ -492,34 +618,69 @@ private struct PreviewChoiceMarker: View {
     let index: Int
     let tint: Color
     let isSelected: Bool
-    let isLocked: Bool
+    let choiceIsCorrect: Bool
+    let result: PreviewQuestResult?
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill(isSelected ? tint : WikiTheme.blue.opacity(0.07))
+                .fill(fill)
                 .overlay {
                     RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .stroke(isSelected ? tint : WikiTheme.blue.opacity(0.35), lineWidth: 1)
+                        .stroke(stroke, lineWidth: 1)
                 }
 
             markerContent
         }
         .frame(width: 38, height: 44)
-        .opacity(!isSelected && isLocked ? 0.46 : 1)
+        .opacity(!isSelected && result != nil && !choiceIsCorrect ? 0.54 : 1)
     }
 
     @ViewBuilder
     private var markerContent: some View {
-        if isSelected {
+        if result != nil && choiceIsCorrect {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.white)
+        } else if result != nil && isSelected {
+            Image(systemName: "xmark.octagon.fill")
+                .font(.caption.weight(.black))
+                .foregroundStyle(.white)
+        } else if isSelected {
             Image(systemName: "scope")
                 .font(.caption.weight(.black))
                 .foregroundStyle(.white)
         } else {
             Text(String(format: "%02d", index))
                 .font(.caption.weight(.black).monospacedDigit())
-                .foregroundStyle(WikiTheme.blue)
+                .foregroundStyle(result == nil ? WikiTheme.blue : WikiTheme.muted)
         }
+    }
+
+    private var fill: Color {
+        if result != nil && choiceIsCorrect {
+            return WikiTheme.green
+        }
+        if isSelected {
+            return tint
+        }
+        if result != nil {
+            return WikiTheme.surface
+        }
+        return WikiTheme.blue.opacity(0.07)
+    }
+
+    private var stroke: Color {
+        if result != nil && choiceIsCorrect {
+            return WikiTheme.green.opacity(0.80)
+        }
+        if isSelected {
+            return tint
+        }
+        if result != nil {
+            return WikiTheme.hairline
+        }
+        return WikiTheme.blue.opacity(0.35)
     }
 }
 
