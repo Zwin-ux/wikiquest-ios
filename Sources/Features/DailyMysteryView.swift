@@ -738,7 +738,8 @@ private struct HintRow: View {
                         visualState: .clue,
                         height: 150,
                         tint: WikiTheme.amber,
-                        fallbackStyle: .mystery
+                        fallbackStyle: .mystery,
+                        showsMediaSignal: true
                     )
                     MediaCreditRow(media: media)
                 } else {

@@ -136,6 +136,7 @@ First shipped slice:
 - shared HUD cleanup shipped: Quest Deck now uses the same compact game HUD cluster as the mode screens
 - daily-state polish shipped: Today now drives the primary Daily card from `/api/daily-random/today`, using locked/clue/revealed media states instead of borrowing a random discovery photo.
 - next-action polish shipped: Today now changes the Daily card command by state: load daily, reveal first clue, finish mystery, or review result.
+- photo-stage signal shipped: the Daily card now carries a compact `PHOTO`/`CLUE`/`ARCHIVE`/`LOCKED` scan badge beside the WikiQuest label instead of adding another metric strip.
 
 ### Mystery
 
@@ -156,6 +157,7 @@ First shipped slice:
 - stage-HUD polish shipped: Mystery photo stages now expose `LOCKED`/`CLUE`/`SOLVED`/`REVEALED` directly on the image, active rounds show hints/guesses/time, and score is reserved for result/reward surfaces
 - command-lane polish shipped: Mystery now has a compact command status strip and article guess lane with submit feedback, keeping the solve action tactile without turning the input into a form island
 - result-loop polish shipped: completed Daily Mystery now exposes a `Practice run` command and completed Practice exposes `New practice`, while share remains a compact utility action.
+- photo-stage signal shipped: Mystery and preview photo clues now use the shared scan badge so clue/fallback/image states read as live stage instrumentation, not passive image labels.
 
 ### Race
 
@@ -179,6 +181,7 @@ First shipped slice:
 - objective polish shipped: the Race photo stage now shows `START`/`ROUTE` on the current article image, and the target strip reports route state instead of showing active-round `0 XP`
 - exit-command polish shipped: Race link choices now start with a compact command header showing open exits, seen exits, and tracing state, so the next move reads as game instrumentation instead of a generic section header
 - transition stability shipped: once the current article stage is visible, route tracing stays inside the exit header and selected exit lane instead of pushing a loading glyph above the playfield.
+- photo-stage signal shipped: the current article stage now reports whether the route is using a real Wikipedia photo or archive fallback without crowding the target strip.
 
 ### Map
 

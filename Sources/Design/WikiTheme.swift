@@ -1006,7 +1006,10 @@ struct ArticleHeroImage: View {
     var height: CGFloat = 220
     var tint: Color = WikiTheme.blue
     var fallbackStyle: MediaFallbackStyle = .article
+    var showsMediaSignal = false
+    var mediaSignalAlignment: Alignment = .bottomTrailing
     @EnvironmentObject private var motion: MotionSettings
+    @State private var signalPulse = false
 
     var body: some View {
         ZStack {
@@ -1035,9 +1038,22 @@ struct ArticleHeroImage: View {
             RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous)
                 .stroke(tint.opacity(0.60), lineWidth: 1)
         }
+        .overlay(alignment: mediaSignalAlignment) {
+            if showsMediaSignal {
+                StageSignalBadge(
+                    label: StageMediaSignal.label(media: media, visualState: visualState, fallbackStyle: fallbackStyle),
+                    systemImage: StageMediaSignal.systemImage(media: media, visualState: visualState, fallbackStyle: fallbackStyle),
+                    tint: tint,
+                    isActive: signalPulse || motion.reduceMotion
+                )
+                .padding(10)
+                .accessibilityHidden(true)
+            }
+        }
         .animation(WikiMotion.active(WikiMotion.panel, reduceMotion: motion.reduceMotion), value: visualState)
         .revealSweep(trigger: visualState, tint: tint, enabled: visualState != .locked)
         .accessibilityLabel(title)
+        .onAppear(perform: startSignalPulse)
     }
 
     @ViewBuilder
@@ -1097,6 +1113,70 @@ struct ArticleHeroImage: View {
         case .revealed:
             return 0
         }
+    }
+
+    private func startSignalPulse() {
+        guard showsMediaSignal else { return }
+        if motion.reduceMotion {
+            signalPulse = true
+            return
+        }
+        withAnimation(.easeInOut(duration: 0.72).repeatForever(autoreverses: true)) {
+            signalPulse = true
+        }
+    }
+}
+
+private enum StageMediaSignal {
+    static func label(media: WikiMedia?, visualState: ArticleVisualState, fallbackStyle: MediaFallbackStyle) -> String {
+        if visualState == .locked {
+            return "Locked"
+        }
+        if media?.bestURL != nil {
+            return visualState == .clue ? "Clue" : "Photo"
+        }
+        return (media?.fallbackStyle ?? fallbackStyle).displayLabel
+    }
+
+    static func systemImage(media: WikiMedia?, visualState: ArticleVisualState, fallbackStyle: MediaFallbackStyle) -> String {
+        if visualState == .locked {
+            return "lock.fill"
+        }
+        if media?.bestURL != nil {
+            return visualState == .clue ? "camera.aperture" : "photo.fill"
+        }
+        return (media?.fallbackStyle ?? fallbackStyle).systemImage
+    }
+}
+
+private struct StageSignalBadge: View {
+    let label: String
+    let systemImage: String
+    let tint: Color
+    let isActive: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemImage)
+                .font(.caption2.weight(.black))
+            Text(label.uppercased())
+                .font(.caption2.weight(.black).monospaced())
+                .lineLimit(1)
+            HStack(spacing: 3) {
+                ForEach(0..<3, id: \.self) { index in
+                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                        .fill(index == 0 ? tint : Color.white.opacity(isActive ? 0.74 : 0.36))
+                        .frame(width: index == 0 && isActive ? 12 : 7, height: 3)
+                        .opacity(isActive ? 1 : 0.58)
+                }
+            }
+            .accessibilityHidden(true)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(.black.opacity(0.58))
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
     }
 }
 
@@ -1191,7 +1271,8 @@ struct PhotoClueCard: View {
                 visualState: visualState,
                 height: 248,
                 tint: tint,
-                fallbackStyle: fallbackStyle
+                fallbackStyle: fallbackStyle,
+                showsMediaSignal: true
             )
             VStack(alignment: .leading, spacing: 5) {
                 Text(kicker.uppercased())
@@ -1298,9 +1379,19 @@ struct QuestDeckCard: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("WIKIQUEST")
-                                .font(.caption.weight(.black).monospaced())
-                                .foregroundStyle(.white.opacity(0.76))
+                            HStack(spacing: 7) {
+                                Text("WIKIQUEST")
+                                    .font(.caption.weight(.black).monospaced())
+                                    .foregroundStyle(.white.opacity(0.76))
+                                StageSignalBadge(
+                                    label: StageMediaSignal.label(media: media, visualState: visualState, fallbackStyle: fallbackStyle),
+                                    systemImage: StageMediaSignal.systemImage(media: media, visualState: visualState, fallbackStyle: fallbackStyle),
+                                    tint: tint,
+                                    isActive: pulsePhase || motion.reduceMotion
+                                )
+                                .scaleEffect(0.86, anchor: .leading)
+                                .accessibilityHidden(true)
+                            }
                             Text("Today's run")
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(.white.opacity(0.82))
@@ -1634,7 +1725,7 @@ struct ArticlePreview: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ArticleHeroImage(media: article.media, title: article.title, height: 202, tint: tint, fallbackStyle: .article)
+            ArticleHeroImage(media: article.media, title: article.title, height: 202, tint: tint, fallbackStyle: .article, showsMediaSignal: true)
             Kicker(text: "Article")
             Text(article.title)
                 .font(.title2.weight(.bold))

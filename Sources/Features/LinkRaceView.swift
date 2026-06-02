@@ -247,7 +247,13 @@ private struct RacePhotoStage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ZStack(alignment: .topTrailing) {
-                ArticleHeroImage(media: current.media, title: current.title, height: 292, tint: WikiTheme.blue)
+                ArticleHeroImage(
+                    media: current.media,
+                    title: current.title,
+                    height: 292,
+                    tint: WikiTheme.blue,
+                    showsMediaSignal: true
+                )
 
                 RaceStageBadge(clicks: clicks)
                     .padding(14)
