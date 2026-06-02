@@ -110,6 +110,7 @@ Pass scores:
 - Race objective cleanup: the current article photo now carries a `START`/`ROUTE` badge and the target strip shows route state instead of active-round `0 XP`; XP stays reserved for finish/reward surfaces.
 - Race exit-command cleanup: the blue-link list now has one compact command header with open/seen exit stats and tracing state, replacing the extra route-lock row with clearer next-action instrumentation.
 - Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
+- Map reveal-grade cleanup: the reveal panel now grades the pin distance using the existing scoring bands and shows a compact pin -> target -> XP rail before the revealed article photo.
 - First-impression cleanup: onboarding now leads with a compact `WikiQuest` cartridge header, keeps the photo preview as the main object, and pins Sign in with Apple as a bottom command bar so small phones always expose the account action without turning the screen into a form.
 - Onboarding boot pulse cleanup: the first-launch header uses a tiny live `READY` ticker beside the blue `W`, making the app feel like a playable system without adding copy or extra chrome.
 - Onboarding answer-lane cleanup: preview answers now read as game lanes with `ANSWER 01` metadata and `PICK`, `HIT`, `MISS`, or `LOCKED` badges, so first launch feels playable before Apple sign-in.
