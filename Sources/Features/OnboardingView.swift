@@ -109,7 +109,7 @@ struct OnboardingGate: View {
                         .minimumScaleFactor(0.70)
                         .lineLimit(1)
                         .accessibilityIdentifier("OnboardingTitle")
-                    Text("First quest ready")
+                    Text("First round")
                         .font(.caption.weight(.black).monospaced())
                         .foregroundStyle(WikiTheme.blue)
                         .lineLimit(1)
@@ -119,7 +119,7 @@ struct OnboardingGate: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Play one photo clue. Sign in to keep the run.")
+                Text("One photo. One answer. Then save the run.")
                     .font(.callout)
                     .foregroundStyle(WikiTheme.muted)
                     .lineSpacing(3)
@@ -246,9 +246,9 @@ private struct OnboardingSignInStatus: View {
             return error
         }
         if hasPlayedPreview {
-            return "Save XP, streaks, routes, and pins."
+            return "Keep XP, streaks, routes, and pins."
         }
-        return "Sign in anytime; the preview stays playable."
+        return "Play the preview first, then keep progress."
     }
 
     private var tint: Color {
@@ -267,14 +267,17 @@ private struct PreviewQuestPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             PhotoClueCard(
-                kicker: quest.kicker,
+                kicker: stageKicker,
                 title: title,
                 detail: detail,
                 media: quest.media,
                 visualState: visualState,
                 tint: resultTint,
-                fallbackStyle: .mystery
+                fallbackStyle: .mystery,
+                stateLabel: stageStateLabel,
+                stateSystemImage: stageStateIcon
             )
+            .accessibilityIdentifier("PreviewPhotoStage")
 
             PreviewQuestHUD(session: session, quest: quest, tint: resultTint)
 
@@ -295,16 +298,34 @@ private struct PreviewQuestPanel: View {
                         session.revealNext(in: quest)
                     }
                 } label: {
-                    Label("Reveal clue", systemImage: "plus.circle.fill")
-                        .font(.callout.weight(.black))
-                        .foregroundStyle(WikiTheme.blue)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 10)
-                        .overlay(alignment: .top) {
-                            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+                    HStack(spacing: 10) {
+                        Image(systemName: "eye.fill")
+                            .font(.callout.weight(.black))
+                            .foregroundStyle(.white)
+                            .frame(width: 34, height: 34)
+                            .background(WikiTheme.blue)
+                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Reveal clue")
+                                .font(.callout.weight(.black))
+                                .foregroundStyle(WikiTheme.ink)
+                            Text("CLUE \(String(format: "%02d", session.visibleClues(in: quest).count + 1))/\(String(format: "%02d", quest.clues.count))")
+                                .font(.caption2.weight(.black).monospacedDigit())
+                                .foregroundStyle(WikiTheme.blue)
                         }
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.down")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(WikiTheme.blue)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 10)
+                    .overlay(alignment: .top) {
+                        Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+                    }
                 }
                 .buttonStyle(ArcadePressStyle())
+                .accessibilityLabel("Reveal clue")
             }
 
             VStack(alignment: .leading, spacing: 0) {
@@ -348,6 +369,21 @@ private struct PreviewQuestPanel: View {
         session.hasSelection ? .revealed : .clue
     }
 
+    private var stageKicker: String {
+        session.hasSelection ? "ARTICLE REVEALED" : quest.kicker
+    }
+
+    private var stageStateLabel: String {
+        if session.hasSelection {
+            return "Revealed"
+        }
+        return "Clue \(session.visibleClues(in: quest).count)/\(quest.clues.count)"
+    }
+
+    private var stageStateIcon: String {
+        session.hasSelection ? "checkmark.seal.fill" : "eye.fill"
+    }
+
     private var resultTint: Color {
         switch session.result(in: quest) {
         case .correct:
@@ -372,7 +408,7 @@ private struct PreviewQuestPanel: View {
 
     private var detail: String {
         if session.hasSelection {
-            return "Now keep the run, streak, and score."
+            return "Article revealed. Keep the run after sign-in."
         }
         return quest.prompt
     }
@@ -386,7 +422,7 @@ private struct PreviewQuestHUD: View {
     var body: some View {
         GameHUDCluster(items: [
             GameHUDItem(label: "Clues", value: "\(session.visibleClues(in: quest).count)/\(quest.clues.count)", systemImage: "eye", tint: WikiTheme.blue),
-            GameHUDItem(label: "Choices", value: "\(quest.choices.count)", systemImage: "list.number", tint: WikiTheme.amber, flashesOnChange: false),
+            GameHUDItem(label: "Photo", value: photoText, systemImage: "photo", tint: tint),
             GameHUDItem(label: "XP", value: session.result(in: quest) == nil ? "120" : xpText, systemImage: "star.fill", tint: tint)
         ], alignment: .leading)
         .padding(.vertical, 1)
@@ -403,6 +439,10 @@ private struct PreviewQuestHUD: View {
         case nil:
             return "120"
         }
+    }
+
+    private var photoText: String {
+        session.hasSelection ? "OPEN" : "CLUE"
     }
 }
 

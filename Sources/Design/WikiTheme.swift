@@ -1180,6 +1180,8 @@ struct PhotoClueCard: View {
     var visualState: ArticleVisualState = .revealed
     var tint: Color = WikiTheme.blue
     var fallbackStyle: MediaFallbackStyle = .article
+    var stateLabel: String?
+    var stateSystemImage = "scope"
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -1212,6 +1214,23 @@ struct PhotoClueCard: View {
                 .fill(tint)
                 .frame(width: 54, height: 4)
                 .padding(12)
+        }
+        .overlay(alignment: .topTrailing) {
+            if let stateLabel {
+                HStack(spacing: 5) {
+                    Image(systemName: stateSystemImage)
+                        .font(.caption2.weight(.black))
+                    Text(stateLabel.uppercased())
+                        .font(.caption2.weight(.black).monospaced())
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 6)
+                .background(.black.opacity(0.58))
+                .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+                .padding(10)
+                .accessibilityHidden(true)
+            }
         }
     }
 }
