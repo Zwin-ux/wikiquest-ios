@@ -35,9 +35,9 @@ struct OnboardingGate: View {
     @State private var previewSession = PreviewQuestSession()
 
     private let modes = [
-        OnboardingMode(title: "Mystery", detail: "Decode photo clues", assetName: "ModeMysteryMark", tint: WikiTheme.amber),
-        OnboardingMode(title: "Race", detail: "Take blue links", assetName: "ModeRaceMark", tint: WikiTheme.blue),
-        OnboardingMode(title: "Map", detail: "Drop the pin", assetName: "ModeNearbyMark", tint: WikiTheme.green)
+        OnboardingMode(title: "Mystery", detail: "Decode photo clues", command: "Decode", assetName: "ModeMysteryMark", tint: WikiTheme.amber),
+        OnboardingMode(title: "Race", detail: "Take blue links", command: "Trace", assetName: "ModeRaceMark", tint: WikiTheme.blue),
+        OnboardingMode(title: "Map", detail: "Drop the pin", command: "Pin", assetName: "ModeNearbyMark", tint: WikiTheme.green)
     ]
 
     var body: some View {
@@ -1022,6 +1022,7 @@ private struct OnboardingLogoMark: View {
 private struct OnboardingMode: Identifiable {
     let title: String
     let detail: String
+    let command: String
     let assetName: String
     let tint: Color
 
@@ -1030,36 +1031,65 @@ private struct OnboardingMode: Identifiable {
 
 private struct OnboardingModeRow: View {
     let mode: OnboardingMode
+    let index: Int
+    let isActive: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(mode.assetName)
-                .resizable()
-                .interpolation(.high)
-                .scaledToFit()
-                .frame(width: 34, height: 34)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(mode.title)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(WikiTheme.ink)
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 11) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("PATH")
+                        .font(.caption2.weight(.black))
+                        .foregroundStyle(WikiTheme.subtle)
+                    Text(index < 10 ? "0\(index)" : "\(index)")
+                        .font(.caption.monospacedDigit().weight(.black))
+                        .foregroundStyle(isActive ? mode.tint : WikiTheme.muted)
+                }
+                .frame(width: 34, alignment: .leading)
+
+                Image(mode.assetName)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(width: 34, height: 34)
+                    .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(mode.title)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(WikiTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.82)
+                    Text(mode.detail)
+                        .font(.caption)
+                        .foregroundStyle(WikiTheme.muted)
+                        .lineLimit(2)
+                }
+
+                Spacer(minLength: 8)
+
+                Text(mode.command.uppercased())
+                    .font(.caption2.weight(.black))
+                    .foregroundStyle(isActive ? .white : mode.tint)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-                Text(mode.detail)
-                    .font(.caption)
-                    .foregroundStyle(WikiTheme.muted)
-                    .lineLimit(2)
+                    .minimumScaleFactor(0.74)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(isActive ? mode.tint : mode.tint.opacity(0.12))
+                    )
             }
-            Spacer(minLength: 8)
-            Capsule()
-                .fill(mode.tint)
-                .frame(width: 4, height: 32)
+
+            OnboardingModeRail(tint: mode.tint, isActive: isActive)
+                .padding(.leading, 45)
         }
-        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
-        .padding(.vertical, 7)
+        .frame(maxWidth: .infinity, minHeight: 62, alignment: .leading)
+        .padding(.vertical, 9)
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
+        .commandLanePulse(trigger: isActive, tint: mode.tint, enabled: isActive)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -1078,18 +1108,81 @@ private struct OnboardingModeRow: View {
     }
 }
 
+private struct OnboardingModeRail: View {
+    let tint: Color
+    let isActive: Bool
+
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<4, id: \.self) { step in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(fill(for: step))
+                    .frame(width: width(for: step), height: 4)
+                    .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: isActive)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func fill(for step: Int) -> Color {
+        guard isActive else { return WikiTheme.ink.opacity(0.16) }
+        return step == 0 ? tint : tint.opacity(motion.reduceMotion ? 0.44 : 0.28)
+    }
+
+    private func width(for step: Int) -> CGFloat {
+        guard isActive, !motion.reduceMotion else { return 13 }
+        return step == 0 ? 30 : 13
+    }
+}
+
 private struct OnboardingModeStrip: View {
     let modes: [OnboardingMode]
 
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var activeIndex = 0
+    @State private var didStart = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Kicker(text: "Modes")
+            HStack(alignment: .firstTextBaseline) {
+                Kicker(text: "Quest paths")
+                Spacer(minLength: 8)
+                Text("\(modes.count) routes")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.subtle)
+                    .lineLimit(1)
+            }
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
                     PanelReveal(delay: Double(index) * 0.035) {
-                        OnboardingModeRow(mode: mode)
+                        OnboardingModeRow(
+                            mode: mode,
+                            index: index + 1,
+                            isActive: index == activeIndex
+                        )
                     }
                 }
+            }
+        }
+        .task {
+            await runTicker()
+        }
+    }
+
+    @MainActor
+    private func runTicker() async {
+        guard !didStart else { return }
+        didStart = true
+        guard !motion.reduceMotion, modes.count > 1 else {
+            activeIndex = 0
+            return
+        }
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 820_000_000)
+            withAnimation(WikiMotion.tick) {
+                activeIndex = (activeIndex + 1) % modes.count
             }
         }
     }
