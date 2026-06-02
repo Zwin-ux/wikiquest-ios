@@ -103,6 +103,7 @@ Pass scores:
 - Discovery rail cleanup: Today pulls a wider random-page batch concurrently and shows more compact Wiki drift cards, giving the Deck more real Wikipedia texture without adding another panel.
 - Recovery cleanup: Mystery, Race, Map, Ranks, Me, and Game Center failures now show a direct retry command instead of passive error text, keeping both gameplay and account surfaces recoverable after API/network failures.
 - Game Center reward cleanup: completed Daily, Race, Map, and Member events now emit one compact top-edge reward ribbon when Game Center is connected, keeping reward motion visible without covering the playfield.
+- Mystery clue filmstrip cleanup: the stage progress strip now shows clue-type symbols for opened hints and locked slots for the rest, so the reveal loop reads more like a playable case board than a generic counter row.
 
 Not in scope for this cleanup:
 

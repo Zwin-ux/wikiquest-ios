@@ -144,6 +144,7 @@ First shipped slice:
 - responsive HUD cleanup shipped: Mystery uses the shared game HUD cluster, so dense stage metrics collapse before crowding the photo
 - fallback polish shipped: locked or missing Mystery media uses the clue fallback surface and keeps the answer hidden until reveal
 - recovery cleanup shipped: Mystery errors now include a direct `Retry puzzle` command inside the command deck
+- clue filmstrip shipped: opened Mystery hints now use type-specific symbols and locked slots instead of generic numbered boxes, making the reveal loop feel more like a game board
 
 ### Race
 
