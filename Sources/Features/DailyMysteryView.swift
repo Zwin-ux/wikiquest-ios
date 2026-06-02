@@ -70,12 +70,12 @@ struct DailyMysteryView: View {
 
     private var photoDetail: String {
         if viewModel.isComplete {
-            return viewModel.isCorrect ? "Solved and revealed." : "The answer is revealed."
+            return viewModel.isCorrect ? "Solved." : "Answer revealed."
         }
         if viewModel.clueMedia != nil {
-            return "The image is partly open. Use it carefully."
+            return "Photo clue open."
         }
-        return "Reveal clues until the image unlocks."
+        return "Photo locked. Reveal a clue."
     }
 }
 
@@ -199,15 +199,16 @@ private struct MysteryPhotoStage: View {
                     media: viewModel.mysteryMedia,
                     visualState: viewModel.photoVisualState,
                     tint: WikiTheme.amber,
-                    fallbackStyle: .mystery
+                    fallbackStyle: .mystery,
+                    stateLabel: stageBadgeText,
+                    stateSystemImage: stageBadgeIcon
                 )
 
-                GameHUDCluster(items: [
-                    GameHUDItem(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber),
-                    GameHUDItem(label: "Score", value: "\(viewModel.score)", systemImage: "star.fill", tint: WikiTheme.green),
-                    GameHUDItem(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
-                ])
-                .padding(14)
+                GameHUDCluster(items: stageHUDItems)
+                    .padding(.top, 48)
+                    .padding(.trailing, 14)
+                    .padding(.bottom, 14)
+                    .padding(.leading, 14)
 
                 if viewModel.isComplete {
                     MysteryStageStamp(isCorrect: viewModel.isCorrect, score: viewModel.score)
@@ -230,6 +231,39 @@ private struct MysteryPhotoStage: View {
 
             MediaCreditRow(media: viewModel.isComplete ? viewModel.mysteryMedia : viewModel.clueMedia)
         }
+    }
+
+    private var stageHUDItems: [GameHUDItem] {
+        if viewModel.isComplete {
+            return [
+                GameHUDItem(label: "Result", value: viewModel.isCorrect ? "SOLVED" : "OPEN", systemImage: viewModel.isCorrect ? "checkmark.seal.fill" : "eye.fill", tint: viewModel.isCorrect ? WikiTheme.green : WikiTheme.red),
+                GameHUDItem(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false),
+                GameHUDItem(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber)
+            ]
+        }
+
+        return [
+            GameHUDItem(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber),
+            GameHUDItem(label: "Guesses", value: "\(viewModel.guessesRemaining)", systemImage: "scope", tint: WikiTheme.blue),
+            GameHUDItem(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false)
+        ]
+    }
+
+    private var stageBadgeText: String {
+        if viewModel.isComplete {
+            return viewModel.isCorrect ? "Solved" : "Revealed"
+        }
+        if viewModel.clueMedia == nil {
+            return "Locked"
+        }
+        return "Clue \(max(viewModel.hintsRevealed, 1))/\(max(viewModel.totalHints, 1))"
+    }
+
+    private var stageBadgeIcon: String {
+        if viewModel.isComplete {
+            return viewModel.isCorrect ? "checkmark.seal.fill" : "eye.fill"
+        }
+        return viewModel.clueMedia == nil ? "lock.fill" : "camera.aperture"
     }
 }
 
@@ -327,7 +361,7 @@ private struct MysteryStageRail: View {
         if isComplete {
             return isCorrect ? "solved" : "revealed"
         }
-        return "\(guessesRemaining) guesses"
+        return hintsRevealed == 0 ? "locked" : "clue open"
     }
 
     private var statusTint: Color {
