@@ -33,6 +33,15 @@ struct NearbyView: View {
             VStack(spacing: 0) {
                 MapReader { proxy in
                     Map(position: $position) {
+                        if
+                            viewModel.phase == .revealed,
+                            let guess = viewModel.guess,
+                            let target = viewModel.selected?.coordinate
+                        {
+                            MapPolyline(coordinates: [guess, target])
+                                .stroke(WikiTheme.red.opacity(0.72), lineWidth: 3)
+                        }
+
                         if let guess = viewModel.guess {
                             Annotation("Guess", coordinate: guess) {
                                 Image(systemName: "mappin.circle.fill")
@@ -632,7 +641,18 @@ private struct NearbyRevealSummary: View {
             ResultStamp(systemImage: "scope", tint: WikiTheme.red, value: score)
 
             VStack(alignment: .leading, spacing: 3) {
-                Kicker(text: "Pin result")
+                HStack(spacing: 6) {
+                    Image(systemName: "mappin.circle.fill")
+                    Rectangle()
+                        .fill(WikiTheme.red.opacity(0.46))
+                        .frame(width: 22, height: 2)
+                    Image(systemName: "scope")
+                }
+                .font(.caption2.weight(.black))
+                .foregroundStyle(WikiTheme.red)
+                .accessibilityHidden(true)
+
+                Kicker(text: "Pin to target")
                 Text(distanceText)
                     .font(.system(.title3, design: .monospaced).weight(.black))
                     .foregroundStyle(WikiTheme.violet)

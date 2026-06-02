@@ -184,6 +184,7 @@ First shipped slice:
 - command/reveal polish shipped: Map now gives Reveal/Next the primary command width, demotes Locate to an icon utility, and shows distance/XP as a result strip before the revealed article photo
 - fallback polish shipped: revealed targets without usable media now use the map fallback surface instead of a generic placeholder
 - recovery cleanup shipped: Map API/location load errors now include a `Retry map` command that reloads the current center
+- result-line cleanup shipped: revealed Map rounds now draw the guess-to-target line directly on the MapKit stage and label the summary as `Pin to target`
 
 ### Ranks / Me
 
