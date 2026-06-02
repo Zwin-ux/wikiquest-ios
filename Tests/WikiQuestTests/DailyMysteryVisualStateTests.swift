@@ -49,6 +49,8 @@ final class DailyMysteryVisualStateTests: XCTestCase {
         XCTAssertEqual(visual.visualState, .locked)
         XCTAssertEqual(visual.stateLabel, "Locked")
         XCTAssertEqual(visual.stateSystemImage, "lock.fill")
+        XCTAssertEqual(visual.commandText, "Reveal first clue")
+        XCTAssertEqual(visual.commandSystemImage, "lock.open.fill")
         XCTAssertNil(visual.media)
     }
 
@@ -64,6 +66,8 @@ final class DailyMysteryVisualStateTests: XCTestCase {
         XCTAssertEqual(visual.visualState, .clue)
         XCTAssertEqual(visual.stateLabel, "Clue")
         XCTAssertEqual(visual.stateSystemImage, "camera.aperture")
+        XCTAssertEqual(visual.commandText, "Finish mystery")
+        XCTAssertEqual(visual.commandSystemImage, "scope")
         XCTAssertEqual(visual.media?.bestURL?.absoluteString, "https://upload.wikimedia.org/thumb.jpg")
         XCTAssertNil(visual.media?.sourceURL)
     }
@@ -82,6 +86,8 @@ final class DailyMysteryVisualStateTests: XCTestCase {
         XCTAssertEqual(visual.visualState, .revealed)
         XCTAssertEqual(visual.stateLabel, "Solved")
         XCTAssertEqual(visual.stateSystemImage, "checkmark.seal.fill")
+        XCTAssertEqual(visual.commandText, "Review result")
+        XCTAssertEqual(visual.commandSystemImage, "checkmark.seal.fill")
         XCTAssertEqual(visual.media?.sourceURL?.absoluteString, "https://en.wikipedia.org/wiki/Wikipedia")
     }
 
@@ -97,6 +103,16 @@ final class DailyMysteryVisualStateTests: XCTestCase {
         XCTAssertEqual(visual.visualState, .revealed)
         XCTAssertEqual(visual.stateLabel, "Revealed")
         XCTAssertEqual(visual.stateSystemImage, "eye.fill")
+        XCTAssertEqual(visual.commandText, "Review result")
+        XCTAssertEqual(visual.commandSystemImage, "eye.fill")
+    }
+
+    func testDailyDeckVisualLoadCommandWhenStateMissing() {
+        let visual = DailyDeckVisualState.make(from: nil)
+
+        XCTAssertEqual(visual.title, "Daily Mystery")
+        XCTAssertEqual(visual.commandText, "Load daily")
+        XCTAssertEqual(visual.commandSystemImage, "arrow.clockwise")
     }
 
     private var testAPI: WikiQuestAPIClient {

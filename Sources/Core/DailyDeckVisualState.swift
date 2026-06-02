@@ -7,6 +7,8 @@ struct DailyDeckVisualState: Equatable {
     let visualState: ArticleVisualState
     let stateLabel: String
     let stateSystemImage: String
+    let commandText: String
+    let commandSystemImage: String
 
     static func make(from daily: DailyRandomState?) -> DailyDeckVisualState {
         guard let daily else {
@@ -16,7 +18,9 @@ struct DailyDeckVisualState: Equatable {
                 media: nil,
                 visualState: .locked,
                 stateLabel: "Locked",
-                stateSystemImage: "lock.fill"
+                stateSystemImage: "lock.fill",
+                commandText: "Load daily",
+                commandSystemImage: "arrow.clockwise"
             )
         }
 
@@ -30,7 +34,9 @@ struct DailyDeckVisualState: Equatable {
                 media: thumbnailMedia,
                 visualState: .revealed,
                 stateLabel: daily.isCorrect ? "Solved" : "Revealed",
-                stateSystemImage: daily.isCorrect ? "checkmark.seal.fill" : "eye.fill"
+                stateSystemImage: daily.isCorrect ? "checkmark.seal.fill" : "eye.fill",
+                commandText: "Review result",
+                commandSystemImage: daily.isCorrect ? "checkmark.seal.fill" : "eye.fill"
             )
         }
 
@@ -41,7 +47,9 @@ struct DailyDeckVisualState: Equatable {
                 media: thumbnailMedia,
                 visualState: .clue,
                 stateLabel: "Clue",
-                stateSystemImage: "camera.aperture"
+                stateSystemImage: "camera.aperture",
+                commandText: "Finish mystery",
+                commandSystemImage: "scope"
             )
         }
 
@@ -51,7 +59,9 @@ struct DailyDeckVisualState: Equatable {
             media: nil,
             visualState: .locked,
             stateLabel: "Locked",
-            stateSystemImage: "lock.fill"
+            stateSystemImage: "lock.fill",
+            commandText: "Reveal first clue",
+            commandSystemImage: "lock.open.fill"
         )
     }
 
