@@ -28,6 +28,35 @@ struct ProfileView: View {
                 isSignedIn: session.isSignedIn
             )
 
+            if viewModel.isLoading {
+                WikiLoadingGlyph(title: "SYNCING", detail: "Refreshing account, XP, and discoveries.", tint: WikiTheme.blue)
+                    .accessibilityIdentifier("ProfileLoadingGlyph")
+            }
+            if let error = viewModel.error {
+                RecoveryNotice(
+                    title: "PROFILE OFFLINE",
+                    detail: error,
+                    actionTitle: "Retry profile",
+                    icon: "person.crop.circle.badge.exclamationmark",
+                    tint: WikiTheme.red
+                ) {
+                    Task { await viewModel.load(signedIn: session.isSignedIn) }
+                }
+                .accessibilityIdentifier("ProfileRecoveryNotice")
+            }
+            if let error = session.lastAuthError {
+                RecoveryNotice(
+                    title: "APPLE ID",
+                    detail: error,
+                    actionTitle: "Check account",
+                    icon: "apple.logo",
+                    tint: WikiTheme.red
+                ) {
+                    Task { await session.validateAppleCredentialState() }
+                }
+                .accessibilityIdentifier("ProfileAuthRecoveryNotice")
+            }
+
             ProfileStats(profile: viewModel.profile, entitlements: viewModel.entitlements)
             DiscoveryPhotoRail(items: viewModel.discoveredItems)
             ProfileEditor(viewModel: viewModel)
@@ -56,12 +85,6 @@ struct ProfileView: View {
 
             if let message = purchases.message {
                 InlineNotice(title: "STORE", detail: message, tint: purchases.storeEntitlementActive ? WikiTheme.green : WikiTheme.muted)
-            }
-            if let error = viewModel.error {
-                InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
-            }
-            if let error = session.lastAuthError {
-                InlineNotice(title: "AUTH", detail: error, tint: WikiTheme.red)
             }
             if let deleteMessage {
                 InlineNotice(title: "ACCOUNT", detail: deleteMessage, tint: WikiTheme.red)
@@ -220,9 +243,7 @@ private struct ProfileEditor: View {
             }
 
             if let saveError = viewModel.saveError {
-                Text(saveError)
-                    .font(.caption)
-                    .foregroundStyle(WikiTheme.red)
+                InlineNotice(title: "PROFILE", detail: saveError, tint: WikiTheme.red)
             }
         }
         .padding(.vertical, 10)
@@ -300,10 +321,16 @@ private struct GameCenterPanel: View {
                 store.authenticate()
             }
             if let error = store.lastError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(WikiTheme.red)
-                    .padding(.vertical, 8)
+                RecoveryNotice(
+                    title: "GAME CENTER",
+                    detail: error,
+                    actionTitle: "Try again",
+                    icon: "gamecontroller",
+                    tint: WikiTheme.violet
+                ) {
+                    store.authenticate()
+                }
+                .accessibilityIdentifier("GameCenterRecoveryNotice")
             }
         }
     }

@@ -22,15 +22,41 @@ struct LeaderboardView: View {
             LeaderboardBoardSwitch(selection: $viewModel.tab)
 
             if let error = viewModel.error {
-                InlineNotice(title: "ERROR", detail: error, tint: WikiTheme.red)
+                RecoveryNotice(
+                    title: "RANKS OFFLINE",
+                    detail: error,
+                    actionTitle: "Retry ranks",
+                    icon: "list.number",
+                    tint: WikiTheme.red
+                ) {
+                    Task { await load() }
+                }
+                .accessibilityIdentifier("LeaderboardRecoveryNotice")
+            }
+            if let error = entitlements.error {
+                RecoveryNotice(
+                    title: "MEMBER CHECK",
+                    detail: error,
+                    actionTitle: "Retry member state",
+                    icon: "person.crop.circle.badge.exclamationmark",
+                    tint: WikiTheme.amber
+                ) {
+                    Task { await load() }
+                }
+                .accessibilityIdentifier("LeaderboardEntitlementRecoveryNotice")
+            }
+
+            if viewModel.isLoading || entitlements.isLoading {
+                WikiLoadingGlyph(title: "SYNCING", detail: "Updating current ranks.", tint: WikiTheme.blue)
+                    .accessibilityIdentifier("LeaderboardLoadingGlyph")
             }
 
             if viewModel.tab == 0 && entitlements.summary != nil && !entitlements.isMember {
                 InlineNotice(title: "MEMBER", detail: "The XP leaderboard is a Member surface. Daily ranks stay visible.", tint: WikiTheme.amber)
             } else if viewModel.tab == 0 {
-                RankList(rows: xpRows)
+                RankList(rows: xpRows, isLoading: viewModel.isLoading || entitlements.isLoading, hasError: hasRecoveryError, refresh: load)
             } else {
-                RankList(rows: dailyRows)
+                RankList(rows: dailyRows, isLoading: viewModel.isLoading || entitlements.isLoading, hasError: hasRecoveryError, refresh: load)
             }
         }
         .task(id: session.isSignedIn) { await load() }
@@ -47,6 +73,10 @@ struct LeaderboardView: View {
         viewModel.dailyRows.map { row in
             RankDisplayRow(rank: row.rank, title: row.displayName, detail: "\(row.hintsRevealed) hints / \(WikiDisplayFormat.time(milliseconds: row.timeMs))", score: row.score)
         }
+    }
+
+    private var hasRecoveryError: Bool {
+        viewModel.error != nil || entitlements.error != nil
     }
 
     private func load() async {
@@ -117,11 +147,24 @@ private struct RankDisplayRow: Identifiable {
 
 private struct RankList: View {
     let rows: [RankDisplayRow]
+    let isLoading: Bool
+    let hasError: Bool
+    let refresh: () async -> Void
 
     var body: some View {
         LazyVStack(alignment: .leading, spacing: 0) {
-            if rows.isEmpty {
-                InlineNotice(title: "EMPTY", detail: "No runs yet.", tint: WikiTheme.muted)
+            if rows.isEmpty && !isLoading && !hasError {
+                RecoveryNotice(
+                    title: "NO RUNS YET",
+                    detail: "Fresh scores appear here after completed quests.",
+                    actionTitle: "Refresh ranks",
+                    icon: "arrow.clockwise",
+                    tint: WikiTheme.blue
+                ) {
+                    Task { await refresh() }
+                }
+                .padding(.vertical, 2)
+                .accessibilityIdentifier("LeaderboardEmptyRecoveryNotice")
             }
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 PanelReveal(delay: Double(index) * 0.025) {
