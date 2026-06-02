@@ -11,6 +11,7 @@ final class WikiQuestSmokeTests: XCTestCase {
         XCTAssertTrue(app.wikiElement("BootupTitle").exists)
         XCTAssertTrue(app.wikiElement("OnboardingTitle").waitForExistence(timeout: 6))
         XCTAssertTrue(app.wikiElement("PlayablePreviewQuest").waitForExistence(timeout: 6))
+        XCTAssertTrue(app.wikiElement("PreviewPhotoStage").exists)
         XCTAssertTrue(app.wikiElement("PreviewQuestHUD").exists)
         XCTAssertTrue(app.buttons["Sign in with Apple"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.buttons["Reveal clue"].waitForExistence(timeout: 6))
@@ -22,6 +23,7 @@ final class WikiQuestSmokeTests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.wikiElement("OnboardingTitle").waitForExistence(timeout: 6))
+        XCTAssertTrue(app.wikiElement("PreviewPhotoStage").exists)
         XCTAssertTrue(app.wikiElement("PreviewQuestHUD").exists)
         XCTAssertTrue(app.wikiElement("PreviewChoice-1").exists)
         XCTAssertTrue(app.buttons["Sign in with Apple"].waitForExistence(timeout: 6))
