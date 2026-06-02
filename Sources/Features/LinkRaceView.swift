@@ -29,7 +29,7 @@ struct LinkRaceView: View {
             }
 
             if let loadingTitle = viewModel.loadingTitle {
-                WikiLoadingGlyph(title: "LOADING", detail: loadingTitle, tint: WikiTheme.blue)
+                WikiLoadingGlyph(title: "ROUTING", detail: loadingDetail(for: loadingTitle), tint: WikiTheme.blue)
             }
 
             if let current = viewModel.current {
@@ -122,6 +122,10 @@ struct LinkRaceView: View {
             return "Played WikiQuest Link Race."
         }
         return "Finished WikiQuest Link Race: \(targets.start) -> \(targets.target) in \(viewModel.clickCount) clicks and \(viewModel.elapsedSeconds(now: now))s."
+    }
+
+    private func loadingDetail(for title: String) -> String {
+        title == "Picking route" ? title : "Tracing \(title)"
     }
 
     private var pathTail: [String] {
@@ -260,7 +264,7 @@ private struct RacePhotoStage: View {
                         .foregroundStyle(.white)
                         .lineLimit(2)
                         .minimumScaleFactor(0.70)
-                    Text(current.description ?? "Choose the next blue link.")
+                    Text(current.description ?? "Take the next blue link.")
                         .font(.callout.weight(.semibold))
                         .foregroundStyle(.white.opacity(0.84))
                         .lineLimit(2)
@@ -333,7 +337,7 @@ private struct RaceTrailInline: View {
             }
 
             if path.isEmpty {
-                Text("Choose a blue link to start the route.")
+                Text("Take a blue link to draw the route.")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(WikiTheme.muted)
                     .padding(.vertical, 7)
@@ -468,9 +472,9 @@ private struct LinkChoiceList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Kicker(text: routeLocked ? "Route locked" : "Choose next link")
+                Kicker(text: routeLocked ? "Tracing route" : "Pick next exit")
                 Spacer(minLength: 8)
-                Text(routeLocked ? "Opening" : "\(links.count) exits")
+                Text(routeLocked ? "Tracing" : "\(links.count) exits")
                     .font(.caption2.weight(.black).monospaced())
                     .foregroundStyle(WikiTheme.blue)
             }
@@ -533,7 +537,7 @@ private enum LinkChoiceState: Equatable {
         case .available:
             return nil
         case .loading:
-            return "Opening route"
+            return "Tracing route"
         case .visited:
             return "Already visited"
         }
@@ -553,9 +557,9 @@ private enum LinkChoiceState: Equatable {
     var actionText: String {
         switch self {
         case .available:
-            return "GO"
+            return "TAKE"
         case .loading:
-            return "OPEN"
+            return "TRACE"
         case .visited:
             return "SEEN"
         }
