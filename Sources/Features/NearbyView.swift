@@ -98,7 +98,14 @@ struct NearbyView: View {
 
                 ScrollView {
                     MapControlSheet(tint: phaseTint) {
-                        MapQuestStatus(title: viewModel.targetTitle, detail: phaseDetail, phase: viewModel.phase, centerLabel: viewModel.centerLabel)
+                        MapQuestStatus(
+                            title: mapSurveyTitle,
+                            phase: viewModel.phase,
+                            centerLabel: viewModel.centerLabel,
+                            articleCount: viewModel.articles.count,
+                            hasGuess: viewModel.guess != nil,
+                            distanceText: viewModel.distanceMeters.map(NearbyScoring.format)
+                        )
                             .accessibilityIdentifier("NearbyQuestStatus")
 
                         if shouldShowPinFeedback {
@@ -274,6 +281,21 @@ struct NearbyView: View {
         }
     }
 
+    private var mapSurveyTitle: String {
+        switch viewModel.phase {
+        case .locating:
+            return "Finding map center"
+        case .loading:
+            return "Loading nearby pages"
+        case .guess, .denied:
+            return viewModel.guess == nil ? "Drop a pin" : "Pin armed"
+        case .revealed:
+            return viewModel.selected?.title ?? "Target revealed"
+        case .empty:
+            return "Try another city"
+        }
+    }
+
     private var revealDisabled: Bool {
         if viewModel.phase == .revealed { return false }
         return viewModel.guess == nil || viewModel.selected == nil
@@ -415,18 +437,21 @@ private struct MapHUDCluster: View {
 
 private struct MapQuestStatus: View {
     let title: String
-    let detail: String
     let phase: NearbyPhase
     let centerLabel: String?
+    let articleCount: Int
+    let hasGuess: Bool
+    let distanceText: String?
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 10) {
             Image("ModeNearbyMark")
                 .resizable()
                 .interpolation(.high)
                 .scaledToFit()
-                .frame(width: 48, height: 48)
+                .frame(width: 38, height: 38)
                 .accessibilityHidden(true)
+
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Kicker(text: centerLabel ?? "Map")
@@ -435,23 +460,28 @@ private struct MapQuestStatus: View {
                         .foregroundStyle(phaseTint)
                 }
                 Text(title)
-                    .font(.system(.title3, design: .serif).weight(.black))
+                    .font(.headline.weight(.black))
                     .foregroundStyle(WikiTheme.ink)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                Text(detail)
-                    .font(.callout)
-                    .foregroundStyle(WikiTheme.muted)
-                    .lineLimit(3)
-                    .lineSpacing(3)
+
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) {
+                        surveyChips
+                    }
+                    VStack(alignment: .leading, spacing: 5) {
+                        surveyChips
+                    }
+                }
             }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .overlay(alignment: .bottom) {
             Rectangle().fill(WikiTheme.hairline).frame(height: 1)
         }
+        .motionTick(trigger: "\(phase)-\(hasGuess)-\(distanceText ?? "none")-\(articleCount)", tint: phaseTint)
     }
 
     private var phaseLabel: String {
@@ -480,6 +510,95 @@ private struct MapQuestStatus: View {
         default:
             return WikiTheme.ink
         }
+    }
+
+    private var statusChipLabel: String {
+        switch phase {
+        case .locating, .loading:
+            return "State"
+        case .guess, .denied:
+            return "Pin"
+        case .revealed:
+            return "Distance"
+        case .empty:
+            return "Jump"
+        }
+    }
+
+    private var statusChipValue: String {
+        switch phase {
+        case .locating:
+            return "Find"
+        case .loading:
+            return "Load"
+        case .guess, .denied:
+            return hasGuess ? "Ready" : "Hidden"
+        case .revealed:
+            return distanceText ?? "Shown"
+        case .empty:
+            return "City"
+        }
+    }
+
+    private var statusChipIcon: String {
+        switch phase {
+        case .locating, .loading:
+            return "map"
+        case .guess, .denied:
+            return hasGuess ? "mappin.circle.fill" : "mappin.and.ellipse"
+        case .revealed:
+            return "ruler"
+        case .empty:
+            return "location"
+        }
+    }
+
+    private var statusChipTint: Color {
+        switch phase {
+        case .revealed:
+            return WikiTheme.violet
+        case .guess, .denied:
+            return hasGuess ? WikiTheme.blue : WikiTheme.muted
+        case .empty:
+            return WikiTheme.muted
+        default:
+            return WikiTheme.ink
+        }
+    }
+
+    @ViewBuilder
+    private var surveyChips: some View {
+        MapSurveyChip(label: "Pages", value: "\(articleCount)", systemImage: "doc.text.magnifyingglass", tint: WikiTheme.blue)
+        MapSurveyChip(label: statusChipLabel, value: statusChipValue, systemImage: statusChipIcon, tint: statusChipTint)
+    }
+}
+
+private struct MapSurveyChip: View {
+    let label: String
+    let value: String
+    let systemImage: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(.caption2.weight(.black))
+            Text(label.uppercased())
+                .font(.caption2.weight(.black).monospaced())
+            Text(value)
+                .font(.caption2.weight(.bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.07))
+        .overlay {
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .stroke(tint.opacity(0.26), lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
 }
 

@@ -191,6 +191,7 @@ First shipped slice:
 - fallback polish shipped: revealed targets without usable media now use the map fallback surface instead of a generic placeholder
 - recovery cleanup shipped: Map API/location load errors now include a `Retry map` command that reloads the current center
 - result-line cleanup shipped: revealed Map rounds now draw the guess-to-target line directly on the MapKit stage and label the summary as `Pin to target`
+- survey-strip polish shipped: Map lower status now uses compact center/phase/pages/pin-distance chips with responsive stacking, keeping the command sheet from reading like explanatory app copy.
 
 ### Ranks / Me
 

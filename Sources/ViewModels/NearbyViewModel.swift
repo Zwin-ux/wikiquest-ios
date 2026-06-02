@@ -35,10 +35,6 @@ final class NearbyViewModel: ObservableObject {
         self.wikipedia = wikipedia
     }
 
-    var targetTitle: String {
-        phase == .revealed ? selected?.title ?? "Unknown article" : "Hidden Wikipedia article"
-    }
-
     func load(center: CLLocationCoordinate2D, label: String? = nil, denied: Bool = false) async {
         phase = .loading
         centerLabel = label
