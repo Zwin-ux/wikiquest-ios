@@ -159,6 +159,7 @@ First shipped slice:
 - command-lane polish shipped: Mystery now has a compact command status strip and article guess lane with submit feedback, keeping the solve action tactile without turning the input into a form island
 - result-loop polish shipped: completed Daily Mystery now exposes a `Practice run` command and completed Practice exposes `New practice`, while share remains a compact utility action.
 - photo-stage signal shipped: Mystery and preview photo clues now use the shared scan badge so clue/fallback/image states read as live stage instrumentation, not passive image labels.
+- loading-strip polish shipped: Mystery puzzle loading now stays inside the command deck as a `SYNC` strip with clue/shot metadata and a tiny rail, replacing the generic loading glyph.
 
 ### Race
 

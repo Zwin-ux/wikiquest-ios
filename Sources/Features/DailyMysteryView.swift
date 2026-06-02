@@ -103,7 +103,12 @@ private struct MysteryCommandDeck: View {
             }
 
             if viewModel.isLoading {
-                WikiLoadingGlyph(title: "LOADING", detail: "Pulling the current puzzle.", tint: WikiTheme.blue)
+                MysteryCommandLoadingStrip(
+                    mode: viewModel.mode,
+                    totalHints: viewModel.totalHints,
+                    guessesRemaining: viewModel.guessesRemaining
+                )
+                .accessibilityIdentifier("MysteryCommandLoadingStrip")
             }
 
             MysteryCommandStatusStrip(
@@ -175,6 +180,113 @@ private struct MysteryCommandDeck: View {
             Rectangle().fill(WikiTheme.amber.opacity(0.72)).frame(height: 2)
         }
         .motionTick(trigger: "\(viewModel.mode.id)-\(viewModel.score)-\(viewModel.currentHints.count)-\(viewModel.isComplete)", tint: WikiTheme.amber)
+    }
+}
+
+private struct MysteryCommandLoadingStrip: View {
+    let mode: MysteryMode
+    let totalHints: Int
+    let guessesRemaining: Int
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var tick = 0
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            StageSignalBadge(
+                label: "SYNC",
+                systemImage: mode == .daily ? "calendar" : "sparkles",
+                tint: WikiTheme.amber,
+                isActive: true
+            )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Kicker(text: mode == .daily ? "Daily puzzle" : "Practice puzzle")
+                Text(mode == .daily ? "Opening today's clue file." : "Building a fresh clue file.")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 8)
+
+            MysteryLoadingRail(activeIndex: activeIndex)
+
+            HStack(spacing: 10) {
+                MysteryLoadingMetric(value: "\(safeHints)", label: "hints")
+                MysteryLoadingMetric(value: "\(safeGuesses)", label: "shots")
+            }
+        }
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .task { await runTicker() }
+        .motionTick(trigger: tick, tint: WikiTheme.amber)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var activeIndex: Int {
+        motion.reduceMotion ? 3 : tick
+    }
+
+    private var safeGuesses: Int {
+        max(guessesRemaining, 0)
+    }
+
+    private var safeHints: Int {
+        max(totalHints, 0)
+    }
+
+    @MainActor
+    private func runTicker() async {
+        if motion.reduceMotion {
+            tick = 3
+            return
+        }
+        while !Task.isCancelled {
+            withAnimation(WikiMotion.tick) {
+                tick = (tick + 1) % 4
+            }
+            try? await Task.sleep(nanoseconds: 420_000_000)
+        }
+    }
+}
+
+private struct MysteryLoadingMetric: View {
+    let value: String
+    let label: String
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text(value)
+                .font(.system(.title3, design: .monospaced).weight(.black))
+                .foregroundStyle(WikiTheme.amber)
+                .contentTransition(.numericText())
+            Text(label)
+                .font(.caption2.weight(.black).monospaced())
+                .foregroundStyle(WikiTheme.subtle)
+        }
+    }
+}
+
+private struct MysteryLoadingRail: View {
+    let activeIndex: Int
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<4, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(index <= activeIndex ? WikiTheme.amber : WikiTheme.hairline)
+                    .frame(width: index == activeIndex ? 18 : 8, height: 4)
+                    .opacity(index <= activeIndex ? 1 : 0.52)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
