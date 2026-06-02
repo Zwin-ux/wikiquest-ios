@@ -201,6 +201,7 @@ First shipped slice:
 - result-line cleanup shipped: revealed Map rounds now draw the guess-to-target line directly on the MapKit stage and label the summary as `Pin to target`
 - survey-strip polish shipped: Map lower status now uses compact center/phase/pages/pin-distance chips with responsive stacking, keeping the command sheet from reading like explanatory app copy.
 - reveal-grade polish shipped: Map reveal now grades the result with the same distance bands as scoring and shows a compact pin -> target -> XP rail before the article photo.
+- playfield cleanup shipped: Map no longer places a bottom-left instruction panel over MapKit; the live stage keeps phase + HUD only, and instructions/commands stay in the lower command sheet.
 
 ### Ranks / Me
 
