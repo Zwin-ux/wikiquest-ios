@@ -479,6 +479,11 @@ private struct PreviewChoiceRow: View {
         }
         .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
         .contentShape(Rectangle())
+        .commandLanePulse(
+            trigger: "\(isSelected)-\(isCorrectAfterResult)-\(result != nil)",
+            tint: tint,
+            enabled: isSelected || isCorrectAfterResult
+        )
         .motionTick(trigger: "\(choice.id)-\(isSelected)-\(result != nil)", tint: tint, enabled: isSelected)
     }
 

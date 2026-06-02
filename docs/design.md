@@ -122,6 +122,7 @@ Pass scores:
 - Map reveal action cleanup: Next stays the primary post-result command, while Share result joins Locate as a compact utility icon. This keeps the lower command sheet focused on replaying the map rather than stacking secondary text actions.
 - Map city rail cleanup: sample-city jumps now live in a horizontal command rail with selected-state feedback, keeping the lower sheet tappable on small iPhones instead of squeezing utility chips into one row.
 - Map command-deck cleanup: reveal/next now live in a Map-specific primary action lane above the revealed photo, with `PIN READY`, `REVEAL`, `NEXT`, and utility icons visible before the larger article card can push controls down.
+- Command-lane motion cleanup: onboarding answers, Mystery guesses, Race exits, and Map reveal/next now share one short command pulse, making taps feel accepted without adding cinematic motion or new dependencies.
 
 Not in scope for this cleanup:
 

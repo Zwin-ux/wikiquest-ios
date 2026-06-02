@@ -699,6 +699,7 @@ private struct MapPrimaryActionLane: View {
         .buttonStyle(ArcadePressStyle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title). \(detail)")
+        .commandLanePulse(trigger: tapToken, tint: tint, enabled: !isDisabled)
         .motionTick(trigger: tapToken, tint: tint, enabled: !isDisabled)
     }
 
