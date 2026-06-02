@@ -29,7 +29,12 @@ struct LinkRaceView: View {
             }
 
             if let loadingTitle = viewModel.loadingTitle, viewModel.current == nil {
-                WikiLoadingGlyph(title: "ROUTING", detail: loadingDetail(for: loadingTitle), tint: WikiTheme.blue)
+                RaceRouteBootStage(
+                    status: "ROUTING",
+                    detail: loadingDetail(for: loadingTitle),
+                    isTracing: true
+                )
+                .accessibilityIdentifier("RaceRouteBootStage")
             }
 
             if let current = viewModel.current {
@@ -69,7 +74,12 @@ struct LinkRaceView: View {
             }
 
             if viewModel.current == nil && viewModel.error == nil && viewModel.loadingTitle == nil {
-                WikiLoadingGlyph(title: "READY", detail: "Picking a start and target.", tint: WikiTheme.blue)
+                RaceRouteBootStage(
+                    status: "READY",
+                    detail: "Picking start and target.",
+                    isTracing: false
+                )
+                .accessibilityIdentifier("RaceRouteBootStage")
             }
         }
         .task { await viewModel.newRace() }
@@ -145,6 +155,115 @@ struct LinkRaceView: View {
             startedAt: startedAt,
             pathTail: pathTail
         )
+    }
+}
+
+private struct RaceRouteBootStage: View {
+    let status: String
+    let detail: String
+    let isTracing: Bool
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var pulse = false
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            ArticleHeroImage(
+                media: nil,
+                title: "Link Race",
+                height: 238,
+                tint: WikiTheme.blue,
+                fallbackStyle: .article
+            )
+
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top) {
+                    StageSignalBadge(
+                        label: status,
+                        systemImage: isTracing ? "arrow.triangle.2.circlepath" : "flag.checkered",
+                        tint: WikiTheme.blue,
+                        isActive: pulse || motion.reduceMotion
+                    )
+
+                    Spacer(minLength: 12)
+
+                    GameHUDCluster(
+                        items: [
+                            GameHUDItem(label: "Route", value: isTracing ? "TRACE" : "BOOT", systemImage: "link", tint: WikiTheme.blue),
+                            GameHUDItem(label: "Clicks", value: "0", systemImage: "cursorarrow.click", tint: WikiTheme.violet)
+                        ],
+                        compactAfterCount: 1
+                    )
+                }
+
+                Spacer(minLength: 42)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Link Race")
+                        .font(.system(.title, design: .serif).weight(.black))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Text(detail)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.84))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.78)
+                    RaceBootRail(isTracing: isTracing, isActive: pulse || motion.reduceMotion)
+                        .padding(.top, 2)
+                }
+            }
+            .padding(16)
+        }
+        .frame(maxWidth: .infinity)
+        .overlay(alignment: .topLeading) {
+            Rectangle()
+                .fill(WikiTheme.blue)
+                .frame(width: 54, height: 4)
+                .padding(12)
+        }
+        .task { await runPulse() }
+        .motionTick(trigger: "\(status)-\(detail)", tint: WikiTheme.blue)
+    }
+
+    @MainActor
+    private func runPulse() async {
+        if motion.reduceMotion {
+            pulse = true
+            return
+        }
+        while !Task.isCancelled {
+            withAnimation(WikiMotion.tick) {
+                pulse.toggle()
+            }
+            try? await Task.sleep(nanoseconds: 560_000_000)
+        }
+    }
+}
+
+private struct RaceBootRail: View {
+    let isTracing: Bool
+    let isActive: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<5, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(fill(for: index))
+                    .frame(width: index == activeIndex ? 22 : 10, height: 4)
+                    .opacity(index <= activeIndex ? 1 : 0.42)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var activeIndex: Int {
+        isTracing && isActive ? 3 : 0
+    }
+
+    private func fill(for index: Int) -> Color {
+        if index == activeIndex {
+            return WikiTheme.blue
+        }
+        return Color.white.opacity(isActive ? 0.68 : 0.36)
     }
 }
 

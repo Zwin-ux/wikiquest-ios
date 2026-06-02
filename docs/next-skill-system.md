@@ -183,6 +183,7 @@ First shipped slice:
 - exit-command polish shipped: Race link choices now start with a compact command header showing open exits, seen exits, and tracing state, so the next move reads as game instrumentation instead of a generic section header
 - transition stability shipped: once the current article stage is visible, route tracing stays inside the exit header and selected exit lane instead of pushing a loading glyph above the playfield.
 - photo-stage signal shipped: the current article stage now reports whether the route is using a real Wikipedia photo or archive fallback without crowding the target strip.
+- boot-stage polish shipped: Race `READY` and initial `ROUTING` states now use a route boot stage with scan badge, HUD, and pulse rail instead of a generic loading glyph.
 
 ### Map
 
