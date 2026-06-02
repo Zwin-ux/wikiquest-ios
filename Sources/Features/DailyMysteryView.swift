@@ -106,6 +106,15 @@ private struct MysteryCommandDeck: View {
                 WikiLoadingGlyph(title: "LOADING", detail: "Pulling the current puzzle.", tint: WikiTheme.blue)
             }
 
+            MysteryCommandStatusStrip(
+                mode: viewModel.mode,
+                hintsRevealed: viewModel.hintsRevealed,
+                totalHints: viewModel.totalHints,
+                guessesRemaining: viewModel.guessesRemaining,
+                isComplete: viewModel.isComplete,
+                isCorrect: viewModel.isCorrect
+            )
+
             if viewModel.isComplete {
                 ResultPanel(
                     isCorrect: viewModel.isCorrect,
@@ -114,7 +123,10 @@ private struct MysteryCommandDeck: View {
                     shareText: shareText
                 )
             } else {
-                CommandField(placeholder: "Type an article title", text: $viewModel.guess) {
+                MysteryGuessLane(
+                    text: $viewModel.guess,
+                    isSubmitting: viewModel.isSubmitting
+                ) {
                     Task { await viewModel.submitGuess(signedIn: isSignedIn) }
                 }
                 .accessibilityIdentifier("MysteryGuessField")
@@ -153,6 +165,156 @@ private struct MysteryCommandDeck: View {
             Rectangle().fill(WikiTheme.amber.opacity(0.72)).frame(height: 2)
         }
         .motionTick(trigger: "\(viewModel.mode.id)-\(viewModel.score)-\(viewModel.currentHints.count)-\(viewModel.isComplete)", tint: WikiTheme.amber)
+    }
+}
+
+private struct MysteryCommandStatusStrip: View {
+    let mode: MysteryMode
+    let hintsRevealed: Int
+    let totalHints: Int
+    let guessesRemaining: Int
+    let isComplete: Bool
+    let isCorrect: Bool
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.black))
+                .foregroundStyle(tint)
+                .frame(width: 28, height: 28)
+                .background(tint.opacity(0.10))
+                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Kicker(text: mode == .daily ? "Daily command" : "Practice command")
+                Text(statusText)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(isComplete ? resultLabel : "\(guessesRemaining)")
+                    .font(.system(.title3, design: .monospaced).weight(.black))
+                    .foregroundStyle(tint)
+                    .contentTransition(.numericText())
+                Text(isComplete ? "result" : "shots")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.subtle)
+            }
+        }
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .motionTick(trigger: "\(hintsRevealed)-\(guessesRemaining)-\(isComplete)-\(isCorrect)", tint: tint)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var statusText: String {
+        if isComplete {
+            return isCorrect ? "Solved. Share it or start another run." : "Answer opened. Study the page and try again."
+        }
+        if hintsRevealed == 0 {
+            return "Reveal a clue or take a first shot."
+        }
+        return "Use the clue trail to name the hidden article."
+    }
+
+    private var resultLabel: String {
+        isCorrect ? "WIN" : "OPEN"
+    }
+
+    private var systemImage: String {
+        if isComplete {
+            return isCorrect ? "checkmark.seal.fill" : "eye.fill"
+        }
+        return hintsRevealed == 0 ? "lock.open.fill" : "scope"
+    }
+
+    private var tint: Color {
+        if isComplete {
+            return isCorrect ? WikiTheme.green : WikiTheme.red
+        }
+        return hintsRevealed == 0 ? WikiTheme.amber : WikiTheme.blue
+    }
+}
+
+private struct MysteryGuessLane: View {
+    @Binding var text: String
+    let isSubmitting: Bool
+    let submit: () -> Void
+    @State private var tapToken = 0
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Kicker(text: "Article")
+                Spacer(minLength: 8)
+                Text(text.isEmpty ? "waiting" : "ready")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(text.isEmpty ? WikiTheme.subtle : WikiTheme.green)
+            }
+
+            HStack(spacing: 10) {
+                Text(">")
+                    .font(.callout.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.amber)
+                    .frame(width: 18)
+
+                TextField("Wikipedia title", text: $text)
+                    .font(.callout.weight(.semibold))
+                    .textInputAutocapitalization(.words)
+                    .submitLabel(.go)
+                    .onSubmit(runSubmit)
+                    .foregroundStyle(WikiTheme.ink)
+                    .tint(WikiTheme.blue)
+                    .lineLimit(1)
+                    .accessibilityIdentifier("MysteryGuessTextField")
+
+                Button(action: runSubmit) {
+                    HStack(spacing: 6) {
+                        Text("Guess")
+                            .font(.caption.weight(.black).monospaced())
+                        Image(systemName: "arrow.up.forward")
+                            .font(.caption.weight(.black))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(minWidth: 82)
+                    .padding(.vertical, 9)
+                    .background(isReady ? WikiTheme.blue : WikiTheme.muted.opacity(0.55))
+                    .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+                }
+                .buttonStyle(ArcadePressStyle())
+                .disabled(!isReady)
+                .accessibilityLabel("Submit article guess")
+            }
+            .padding(.vertical, 8)
+            .overlay(alignment: .top) {
+                Rectangle().fill(WikiTheme.rule.opacity(0.72)).frame(height: 1)
+            }
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(WikiTheme.rule.opacity(0.72)).frame(height: 1)
+            }
+        }
+        .commandLanePulse(trigger: tapToken, tint: WikiTheme.blue, enabled: tapToken > 0)
+    }
+
+    private var isReady: Bool {
+        !isSubmitting && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func runSubmit() {
+        guard isReady else { return }
+        Haptics.light()
+        tapToken &+= 1
+        submit()
     }
 }
 
