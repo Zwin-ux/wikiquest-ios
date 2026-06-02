@@ -1248,6 +1248,7 @@ struct QuestDeckCard: View {
     let detail: String
     let media: WikiMedia?
     let hudMetrics: [WikiMetric]
+    var commandText = "Start quest"
     var tint: Color = WikiTheme.blue
     let action: () -> Void
     @EnvironmentObject private var motion: MotionSettings
@@ -1298,7 +1299,7 @@ struct QuestDeckCard: View {
                             .lineLimit(2)
 
                         HStack(spacing: 10) {
-                            Label("Start quest", systemImage: "play.fill")
+                            Label(commandText, systemImage: "play.fill")
                                 .font(.callout.weight(.black))
                                 .foregroundStyle(.white)
                             Rectangle()

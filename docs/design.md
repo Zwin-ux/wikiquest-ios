@@ -108,6 +108,7 @@ Pass scores:
 - Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
 - First-impression cleanup: onboarding now leads with a compact `WikiQuest` cartridge header, keeps the photo preview as the main object, and pins Sign in with Apple as a bottom command bar so small phones always expose the account action without turning the screen into a form.
 - Quest Deck motion cleanup: the main deck card now has a tiny route pulse in the HUD corner, giving the signed-in start screen a live game-system feel while preserving the one-object layout.
+- Quest Deck command cleanup: mode tiles now end with specific game verbs instead of a generic `Open` label, so Today reads like choosing the next quest rather than browsing app tabs.
 - Mystery command cleanup: Reveal hint is now the dominant gameplay command, while Refresh is a compact utility icon. This keeps the command area closer to a game verb row and stops maintenance controls from competing with the solve loop.
 - Race completion cleanup: New race remains the primary post-result command, while Share route is now a compact utility icon with haptic feedback. The result screen reads as one outcome plus one next play action, not a mini settings panel.
 - Map reveal action cleanup: Next stays the primary post-result command, while Share result joins Locate as a compact utility icon. This keeps the lower command sheet focused on replaying the map rather than stacking secondary text actions.
