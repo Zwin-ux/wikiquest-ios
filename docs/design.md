@@ -113,6 +113,7 @@ Pass scores:
 - Onboarding boot pulse cleanup: the first-launch header uses a tiny live `READY` ticker beside the blue `W`, making the app feel like a playable system without adding copy or extra chrome.
 - Onboarding answer-lane cleanup: preview answers now read as game lanes with `ANSWER 01` metadata and `PICK`, `HIT`, `MISS`, or `LOCKED` badges, so first launch feels playable before Apple sign-in.
 - Onboarding reveal-loop cleanup: the preview photo now carries an explicit `CLUE`/`REVEALED` stage badge, the HUD tracks photo state instead of static choice count, and first-launch copy is shorter around the simple blue `W`.
+- Onboarding boot-sequence cleanup: the one-time boot now wakes Mystery, Race, and Map as compact mode-coded `READY` rows instead of generic loading sentences.
 - Quest Deck motion cleanup: the main deck card now has a tiny route pulse in the HUD corner, giving the signed-in start screen a live game-system feel while preserving the one-object layout.
 - Quest Deck command cleanup: mode tiles now end with specific game verbs instead of a generic `Open` label, so Today reads like choosing the next quest rather than browsing app tabs.
 - Quest Deck command-badge cleanup: mode verbs now render as compact colored action badges on the photo tile, making each quest choice read as a playable command instead of low-contrast metadata.

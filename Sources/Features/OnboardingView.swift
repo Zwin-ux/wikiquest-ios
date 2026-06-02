@@ -776,13 +776,13 @@ private struct PreviewReplayButton: View {
 private struct BootupIntroView: View {
     let complete: () -> Void
     @EnvironmentObject private var motion: MotionSettings
-    @State private var visibleLineCount = 0
+    @State private var visibleStepCount = 0
     @State private var didStart = false
 
-    private let lines = [
-        "Loading today's article",
-        "Preparing link race",
-        "Opening the map"
+    private let steps = [
+        BootupStep(code: "MYSTERY", detail: "Photo clue armed", systemImage: "questionmark.circle.fill", tint: WikiTheme.amber),
+        BootupStep(code: "RACE", detail: "Blue links routed", systemImage: "link", tint: WikiTheme.blue),
+        BootupStep(code: "MAP", detail: "Pins online", systemImage: "mappin.and.ellipse", tint: WikiTheme.green)
     ]
 
     var body: some View {
@@ -798,22 +798,16 @@ private struct BootupIntroView: View {
                     .minimumScaleFactor(0.72)
                     .accessibilityIdentifier("BootupTitle")
 
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
-                        if index < visibleLineCount {
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(WikiTheme.blue)
-                                    .frame(width: 6, height: 6)
-                                Text(line)
-                                    .font(.callout.weight(.semibold))
-                                    .foregroundStyle(WikiTheme.muted)
-                            }
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                VStack(alignment: .leading, spacing: 7) {
+                    ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                        if index < visibleStepCount {
+                            BootupStepRow(index: index + 1, step: step)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                                .accessibilityIdentifier("BootupStep-\(step.code)")
                         }
                     }
                 }
-                .frame(minHeight: 86, alignment: .topLeading)
+                .frame(minHeight: 112, alignment: .topLeading)
                 .accessibilityIdentifier("BootupLines")
             }
 
@@ -847,16 +841,16 @@ private struct BootupIntroView: View {
         didStart = true
 
         if motion.reduceMotion {
-            visibleLineCount = lines.count
+            visibleStepCount = steps.count
             return
         }
 
         let delay: UInt64 = OnboardingBootupPolicy.usesFastBootup ? 120_000_000 : 760_000_000
-        for lineIndex in 1...lines.count {
+        for stepIndex in 1...steps.count {
             try? await Task.sleep(nanoseconds: delay)
             await MainActor.run {
                 withAnimation(WikiMotion.panel) {
-                    visibleLineCount = lineIndex
+                    visibleStepCount = stepIndex
                 }
             }
         }
@@ -865,6 +859,62 @@ private struct BootupIntroView: View {
         await MainActor.run {
             complete()
         }
+    }
+}
+
+private struct BootupStep {
+    let code: String
+    let detail: String
+    let systemImage: String
+    let tint: Color
+}
+
+private struct BootupStepRow: View {
+    let index: Int
+    let step: BootupStep
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(String(format: "%02d", index))
+                .font(.caption.weight(.black).monospacedDigit())
+                .foregroundStyle(step.tint)
+                .frame(width: 28, alignment: .leading)
+
+            Image(systemName: step.systemImage)
+                .font(.caption.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(step.tint)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(step.code)
+                    .font(.caption.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(1)
+                Text(step.detail)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.76)
+            }
+
+            Spacer(minLength: 8)
+
+            Text("READY")
+                .font(.caption2.weight(.black).monospaced())
+                .foregroundStyle(step.tint)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(step.tint.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        }
+        .padding(.vertical, 7)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(step.code), \(step.detail), ready")
     }
 }
 
