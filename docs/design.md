@@ -102,6 +102,7 @@ Pass scores:
 - Map reveal cleanup: the command sheet now gives Reveal/Next priority, keeps Locate as a small utility control, and turns distance/XP into a clear result strip before the revealed article photo.
 - Media fallback cleanup: every shared image surface now has a mode-aware archive fallback, so no-image and image-load failure states still look like WikiQuest rather than broken media.
 - Discovery rail cleanup: Today pulls a wider random-page batch concurrently and shows more compact Wiki drift cards, giving the Deck more real Wikipedia texture without adding another panel.
+- Discovery scan cleanup: Wiki drift now renders as a compact scan surface with article/photo counts, drift stamps, and photo/archive badges, making the rail feel like game instrumentation rather than passive browsing.
 - Recovery cleanup: Mystery, Race, Map, Ranks, Me, and Game Center failures now show a direct retry command instead of passive error text, keeping both gameplay and account surfaces recoverable after API/network failures.
 - Game Center reward cleanup: completed Daily, Race, Map, and Member events now emit one compact top-edge reward ribbon when Game Center is connected, keeping reward motion visible without covering the playfield.
 - Mystery clue filmstrip cleanup: the stage progress strip now shows clue-type symbols for opened hints and locked slots for the rest, so the reveal loop reads more like a playable case board than a generic counter row.

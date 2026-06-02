@@ -128,6 +128,7 @@ First shipped slice:
 - deck HUD cleanup shipped: reset, streak, XP, and level now live on the photo card instead of a separate metric strip; mode tiles now use numbered route markers
 - discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
 - discovery rail density shipped: Today now pulls a broader concurrent random-page batch and shows a five-card Wiki drift rail with tighter reveal timing
+- discovery scan polish shipped: Wiki drift now shows article/photo scan counts, per-card drift stamps, and photo/archive badges so the rail reads as a game-system scan instead of passive browsing.
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
 - deck command motion shipped: the Daily card and mode tiles now use the shared command-lane pulse, matching the tactile feedback used inside Mystery, Race, and Map
 - dock command feedback shipped: the custom dock now has per-tab QA identifiers and uses the same compact command pulse on tab changes

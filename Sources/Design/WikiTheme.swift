@@ -1498,17 +1498,15 @@ struct DiscoveryPhotoRail: View {
 
     var body: some View {
         if !items.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Kicker(text: title)
-                    if let detail {
-                        Text(detail.uppercased())
-                            .font(.caption2.weight(.black).monospaced())
-                            .foregroundStyle(WikiTheme.subtle)
-                            .lineLimit(1)
-                    }
-                    Spacer(minLength: 0)
-                }
+            VStack(alignment: .leading, spacing: 9) {
+                DiscoveryRailHeader(
+                    title: title,
+                    detail: detail,
+                    itemCount: items.count,
+                    mediaCount: items.filter { $0.media != nil }.count,
+                    tint: railTint
+                )
+                .accessibilityIdentifier("DiscoveryRailHeader")
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
@@ -1518,13 +1516,88 @@ struct DiscoveryPhotoRail: View {
                                     index: index + 1,
                                     showsTrailMarker: showsTrailMarkers
                                 )
+                                .accessibilityIdentifier("DiscoveryRailCard-\(index + 1)")
                             }
                         }
                     }
                     .padding(.vertical, 2)
                 }
             }
+            .revealSweep(trigger: "\(items.map(\.id).joined(separator: "|"))-\(items.count)", tint: railTint)
         }
+    }
+
+    private var railTint: Color {
+        items.first?.tint ?? WikiTheme.blue
+    }
+}
+
+private struct DiscoveryRailHeader: View {
+    let title: String
+    let detail: String?
+    let itemCount: Int
+    let mediaCount: Int
+    let tint: Color
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            horizontalLayout
+            verticalLayout
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(itemCount) articles, \(mediaCount) with photos")
+    }
+
+    private var horizontalLayout: some View {
+        HStack(alignment: .center, spacing: 10) {
+            titleBlock
+            Spacer(minLength: 8)
+            metricPill(label: "SCAN", value: String(format: "%02d", itemCount), systemImage: "scope")
+            metricPill(label: "PHOTO", value: String(format: "%02d", mediaCount), systemImage: "photo")
+        }
+    }
+
+    private var verticalLayout: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            titleBlock
+            HStack(spacing: 7) {
+                metricPill(label: "SCAN", value: String(format: "%02d", itemCount), systemImage: "scope")
+                metricPill(label: "PHOTO", value: String(format: "%02d", mediaCount), systemImage: "photo")
+            }
+        }
+    }
+
+    private var titleBlock: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 9) {
+            Kicker(text: title)
+            if let detail {
+                Text(detail.uppercased())
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.subtle)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+            }
+        }
+    }
+
+    private func metricPill(label: String, value: String, systemImage: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(.caption2.weight(.black))
+            Text(label)
+                .font(.caption2.weight(.black).monospaced())
+            Text(value)
+                .font(.caption2.weight(.black).monospacedDigit())
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.08))
+        .overlay {
+            RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                .stroke(tint.opacity(0.24), lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
     }
 }
 
@@ -1538,15 +1611,22 @@ private struct DiscoveryRailCard: View {
             ZStack(alignment: .topLeading) {
                 ArticleHeroImage(media: item.media, title: item.title, height: 112, tint: item.tint, fallbackStyle: .archive)
                 if showsTrailMarker {
-                    Text(String(format: "%02d", index))
-                        .font(.caption2.weight(.black).monospaced())
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 4)
-                        .background(item.tint.opacity(0.90))
-                        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
-                        .padding(8)
+                    DiscoveryCardStamp(index: index, item: item)
                 }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                HStack(spacing: 4) {
+                    Image(systemName: item.media == nil ? "archivebox.fill" : "camera.aperture")
+                        .font(.caption2.weight(.black))
+                    Text(item.media == nil ? "ARCHIVE" : "PHOTO")
+                        .font(.caption2.weight(.black).monospaced())
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(.black.opacity(0.46))
+                .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+                .padding(8)
             }
             Text(item.title)
                 .font(.caption.weight(.bold))
@@ -1562,6 +1642,28 @@ private struct DiscoveryRailCard: View {
         .frame(width: 146, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(item.title), \(item.detail)")
+    }
+}
+
+private struct DiscoveryCardStamp: View {
+    let index: Int
+    let item: QuestDeckItem
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(.white.opacity(0.92))
+                .frame(width: 5, height: 5)
+            Text("DRIFT \(String(format: "%02d", index))")
+                .font(.caption2.weight(.black).monospaced())
+                .lineLimit(1)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 4)
+        .background(item.tint.opacity(0.90))
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .padding(8)
     }
 }
 
