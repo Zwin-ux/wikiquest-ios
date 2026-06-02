@@ -1451,45 +1451,6 @@ private struct QuestDeckPulseRail: View {
     }
 }
 
-struct VisualBreadcrumb: View {
-    let path: [String]
-    var tint: Color = WikiTheme.blue
-
-    var body: some View {
-        FlatSection(title: "Trail") {
-            if path.isEmpty {
-                Text("No clicks yet.")
-                    .font(.callout)
-                    .foregroundStyle(WikiTheme.muted)
-                    .padding(.vertical, 12)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(Array(path.enumerated()), id: \.offset) { index, title in
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(index == path.count - 1 ? tint : WikiTheme.hairline)
-                                    .frame(width: 8, height: 8)
-                                Text(title)
-                                    .font(.caption.weight(.bold).monospaced())
-                                    .foregroundStyle(index == path.count - 1 ? WikiTheme.ink : WikiTheme.blue)
-                                    .lineLimit(1)
-                            }
-                            .padding(.vertical, 8)
-                            if index < path.count - 1 {
-                                Rectangle()
-                                    .fill(WikiTheme.hairline)
-                                    .frame(width: 18, height: 1)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 6)
-                }
-            }
-        }
-    }
-}
-
 struct DiscoveryPhotoRail: View {
     let items: [QuestDeckItem]
     var title = "Discovered"
@@ -1699,39 +1660,6 @@ struct ArticlePreview: View {
         .padding(.vertical, 12)
         .overlay(alignment: .top) {
             Rectangle().fill(tint).frame(height: 2)
-        }
-    }
-}
-
-struct LinkTrailStrip: View {
-    let path: [String]
-
-    var body: some View {
-        FlatSection(title: "Trail") {
-            if path.isEmpty {
-                Text("No clicks yet.")
-                    .font(.callout)
-                    .foregroundStyle(WikiTheme.muted)
-                    .padding(.vertical, 12)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 7) {
-                        ForEach(Array(path.enumerated()), id: \.offset) { index, title in
-                            Text(title)
-                                .font(.caption.weight(.semibold).monospaced())
-                                .foregroundStyle(index == path.count - 1 ? WikiTheme.ink : WikiTheme.blue)
-                                .lineLimit(1)
-                                .padding(.vertical, 8)
-                            if index < path.count - 1 {
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2.weight(.bold))
-                                    .foregroundStyle(WikiTheme.subtle)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 6)
-                }
-            }
         }
     }
 }
