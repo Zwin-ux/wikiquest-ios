@@ -195,6 +195,7 @@ private struct MysteryPhotoStage: View {
             MysteryStageRail(
                 modeTitle: viewModel.mode == .daily ? "Daily" : "Practice",
                 puzzleTitle: viewModel.title,
+                hints: viewModel.currentHints,
                 hintsRevealed: viewModel.hintsRevealed,
                 totalHints: viewModel.totalHints,
                 guessesRemaining: viewModel.guessesRemaining,
@@ -237,6 +238,7 @@ private struct MysteryStageStamp: View {
 private struct MysteryStageRail: View {
     let modeTitle: String
     let puzzleTitle: String
+    let hints: [WikiHint]
     let hintsRevealed: Int
     let totalHints: Int
     let guessesRemaining: Int
@@ -260,10 +262,9 @@ private struct MysteryStageRail: View {
             }
 
             HStack(spacing: 7) {
-                ForEach(0..<pipCount, id: \.self) { index in
+                ForEach(clueSlots) { slot in
                     MysteryCluePip(
-                        index: index,
-                        isOpen: index < hintsRevealed,
+                        slot: slot,
                         isComplete: isComplete,
                         tint: statusTint
                     )
@@ -286,6 +287,17 @@ private struct MysteryStageRail: View {
         max(totalHints, 1)
     }
 
+    private var clueSlots: [MysteryClueSlot] {
+        let openedHints = hints
+            .sorted { $0.index < $1.index }
+            .map { MysteryClueSlot(index: $0.index, type: $0.type, isOpen: true) }
+        let openIndices = Set(openedHints.map(\.index))
+        let lockedSlots = (1...pipCount)
+            .filter { !openIndices.contains($0) }
+            .map { MysteryClueSlot(index: $0, type: nil, isOpen: false) }
+        return (openedHints + lockedSlots).sorted { $0.index < $1.index }
+    }
+
     private var statusText: String {
         if isComplete {
             return isCorrect ? "solved" : "revealed"
@@ -301,9 +313,54 @@ private struct MysteryStageRail: View {
     }
 }
 
-private struct MysteryCluePip: View {
+private struct MysteryClueSlot: Identifiable, Equatable {
     let index: Int
+    let type: String?
     let isOpen: Bool
+
+    var id: Int { index }
+
+    var systemImage: String {
+        guard let type else { return "lock.fill" }
+        switch type.lowercased() {
+        case "thumbnail":
+            return "camera.aperture"
+        case "categories":
+            return "tag.fill"
+        case "fingerprint":
+            return "waveform.path.ecg"
+        case "description":
+            return "text.alignleft"
+        case "redacted":
+            return "eye.slash.fill"
+        default:
+            return "questionmark"
+        }
+    }
+
+    var accessibilityLabel: String {
+        guard isOpen else { return "Clue \(index) locked" }
+        let name: String
+        switch type?.lowercased() {
+        case "thumbnail":
+            name = "photo clue"
+        case "categories":
+            name = "category trail"
+        case "fingerprint":
+            name = "article shape"
+        case "description":
+            name = "description"
+        case "redacted":
+            name = "redacted clue"
+        default:
+            name = "clue"
+        }
+        return "Clue \(index), \(name), open"
+    }
+}
+
+private struct MysteryCluePip: View {
+    let slot: MysteryClueSlot
     let isComplete: Bool
     let tint: Color
     @EnvironmentObject private var motion: MotionSettings
@@ -311,19 +368,26 @@ private struct MysteryCluePip: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(isOpen ? tint : WikiTheme.surfaceStrong.opacity(0.88))
-            Text("\(index + 1)")
-                .font(.caption2.weight(.black).monospacedDigit())
-                .foregroundStyle(isOpen ? Color.white : WikiTheme.subtle)
+                .fill(slot.isOpen ? tint : WikiTheme.surfaceStrong.opacity(0.88))
+            Image(systemName: slot.systemImage)
+                .font(.caption2.weight(.black))
+                .foregroundStyle(slot.isOpen ? Color.white : WikiTheme.subtle)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 24)
         .overlay {
             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .stroke(isOpen ? tint.opacity(0.0) : WikiTheme.hairline, lineWidth: 1)
+                .stroke(slot.isOpen ? tint.opacity(0.0) : WikiTheme.hairline, lineWidth: 1)
         }
-        .scaleEffect(isOpen && !isComplete && !motion.reduceMotion ? 1.02 : 1)
-        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: isOpen)
+        .overlay(alignment: .bottomTrailing) {
+            Text("\(slot.index)")
+                .font(.system(size: 7, weight: .black, design: .monospaced))
+                .foregroundStyle(slot.isOpen ? Color.white.opacity(0.78) : WikiTheme.subtle.opacity(0.72))
+                .padding(3)
+        }
+        .scaleEffect(slot.isOpen && !isComplete && !motion.reduceMotion ? 1.02 : 1)
+        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: slot.isOpen)
+        .accessibilityLabel(slot.accessibilityLabel)
     }
 }
 
