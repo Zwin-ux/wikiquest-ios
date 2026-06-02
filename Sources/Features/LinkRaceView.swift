@@ -28,7 +28,7 @@ struct LinkRaceView: View {
                 .accessibilityIdentifier("RaceRecoveryNotice")
             }
 
-            if let loadingTitle = viewModel.loadingTitle {
+            if let loadingTitle = viewModel.loadingTitle, viewModel.current == nil {
                 WikiLoadingGlyph(title: "ROUTING", detail: loadingDetail(for: loadingTitle), tint: WikiTheme.blue)
             }
 
@@ -68,7 +68,7 @@ struct LinkRaceView: View {
                 }
             }
 
-            if viewModel.current == nil && viewModel.error == nil {
+            if viewModel.current == nil && viewModel.error == nil && viewModel.loadingTitle == nil {
                 WikiLoadingGlyph(title: "READY", detail: "Picking a start and target.", tint: WikiTheme.blue)
             }
         }
