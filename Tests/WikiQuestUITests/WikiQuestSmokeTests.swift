@@ -32,6 +32,7 @@ final class WikiQuestSmokeTests: XCTestCase {
         XCTAssertTrue(app.wikiElement(containingLabel: "Map").exists)
         XCTAssertFalse(app.wikiElement("WIKIQUEST OS").exists)
         XCTAssertFalse(app.wikiElement(containingLabel: "APPLE ID REQUIRED").exists)
+        XCTAssertFalse(app.wikiElement("WikiDock").exists)
         XCTAssertFalse(app.buttons["Today"].exists)
         XCTAssertFalse(app.buttons["Mystery"].exists)
     }
@@ -55,7 +56,22 @@ final class WikiQuestSmokeTests: XCTestCase {
         XCTAssertTrue(app.wikiElement("HomeMode-mystery").exists)
         XCTAssertTrue(app.wikiElement("HomeMode-race").exists)
         XCTAssertTrue(app.wikiElement("HomeMode-nearby").exists)
+        XCTAssertTrue(app.wikiElement("WikiDock").exists)
+        XCTAssertTrue(app.wikiElement("WikiDock-today").exists)
+        XCTAssertTrue(app.wikiElement("WikiDock-mystery").exists)
+        XCTAssertTrue(app.wikiElement("WikiDock-race").exists)
+        XCTAssertTrue(app.wikiElement("WikiDock-map").exists)
         XCTAssertFalse(app.buttons["Sign in with Apple"].exists)
+    }
+
+    func testSignedInDockNavigatesToRace() {
+        let app = XCUIApplication()
+        app.launchEnvironment["WIKIQUEST_SESSION_TOKEN"] = "ui-test-token"
+        app.launch()
+
+        XCTAssertTrue(app.wikiElement("WikiDock-race").waitForExistence(timeout: 6))
+        app.wikiElement("WikiDock-race").tap()
+        XCTAssertTrue(app.wikiElement(containingLabel: "SPECIAL:LINK-RACE").waitForExistence(timeout: 6))
     }
 }
 
