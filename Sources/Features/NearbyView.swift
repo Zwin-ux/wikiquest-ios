@@ -132,7 +132,12 @@ struct NearbyView: View {
                         }
 
                         if viewModel.phase == .loading || viewModel.phase == .locating {
-                            WikiLoadingGlyph(title: "LOADING", detail: location.statusText, tint: WikiTheme.blue)
+                            MapLoadingSignalStrip(
+                                phase: viewModel.phase,
+                                detail: location.statusText,
+                                articleCount: viewModel.articles.count
+                            )
+                            .accessibilityIdentifier("NearbyLoadingSignalStrip")
                         }
 
                         if viewModel.phase == .empty {
@@ -332,6 +337,105 @@ private struct MapControlSheet<Content: View>: View {
         }
         .accessibilityIdentifier("NearbyControlSheet")
         .motionTick(trigger: "\(tint)", tint: tint)
+    }
+}
+
+private struct MapLoadingSignalStrip: View {
+    let phase: NearbyPhase
+    let detail: String
+    let articleCount: Int
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var tick = 0
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            StageSignalBadge(
+                label: label,
+                systemImage: systemImage,
+                tint: WikiTheme.green,
+                isActive: true
+            )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Kicker(text: phase == .locating ? "Map center" : "Nearby pages")
+                Text(detailText)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 8)
+
+            MapLoadingRail(activeIndex: activeIndex)
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(max(articleCount, 0))")
+                    .font(.system(.title3, design: .monospaced).weight(.black))
+                    .foregroundStyle(WikiTheme.green)
+                    .contentTransition(.numericText())
+                Text("pages")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(WikiTheme.subtle)
+            }
+        }
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .task { await runTicker() }
+        .motionTick(trigger: "\(phase)-\(tick)-\(articleCount)", tint: WikiTheme.green)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var label: String {
+        phase == .locating ? "LOCATE" : "SCAN"
+    }
+
+    private var systemImage: String {
+        phase == .locating ? "location.viewfinder" : "map"
+    }
+
+    private var detailText: String {
+        detail.isEmpty ? "Scanning Wikipedia around the map." : detail
+    }
+
+    private var activeIndex: Int {
+        motion.reduceMotion ? 4 : tick
+    }
+
+    @MainActor
+    private func runTicker() async {
+        if motion.reduceMotion {
+            tick = 4
+            return
+        }
+        while !Task.isCancelled {
+            withAnimation(WikiMotion.tick) {
+                tick = (tick + 1) % 5
+            }
+            try? await Task.sleep(nanoseconds: 460_000_000)
+        }
+    }
+}
+
+private struct MapLoadingRail: View {
+    let activeIndex: Int
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<5, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(index <= activeIndex ? WikiTheme.green : WikiTheme.hairline)
+                    .frame(width: index == activeIndex ? 18 : 8, height: 4)
+                    .opacity(index <= activeIndex ? 1 : 0.5)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
