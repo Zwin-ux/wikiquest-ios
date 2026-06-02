@@ -620,6 +620,7 @@ private struct LinkChoiceRow: View {
                 .frame(width: 2)
         }
         .opacity(state == .visited ? 0.62 : 1)
+        .commandLanePulse(trigger: state.motionKey, tint: state.tint, enabled: state == .loading)
         .motionTick(trigger: state.motionKey, tint: WikiTheme.blue, enabled: state == .loading)
     }
 }

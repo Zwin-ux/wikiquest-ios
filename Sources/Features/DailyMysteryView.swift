@@ -705,6 +705,7 @@ private struct MysterySuggestionChip: View {
                 .stroke(isSelected ? WikiTheme.green.opacity(0.70) : WikiTheme.hairline, lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous))
+        .commandLanePulse(trigger: isSelected, tint: WikiTheme.blue, enabled: isSelected)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Suggestion \(index), \(title)")
     }

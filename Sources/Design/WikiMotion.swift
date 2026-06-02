@@ -96,6 +96,69 @@ struct MotionTick<Value: Equatable>: ViewModifier {
     }
 }
 
+struct CommandLanePulse<Value: Equatable>: ViewModifier {
+    let trigger: Value
+    var tint: Color = WikiTheme.blue
+    var enabled = true
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var isActive = false
+    @State private var sweepOffset: CGFloat = -0.36
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isActive && enabled && !motion.reduceMotion ? 1.006 : 1)
+            .overlay {
+                if enabled && !motion.reduceMotion {
+                    GeometryReader { proxy in
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.clear, tint.opacity(0.34), .clear],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: max(38, proxy.size.width * 0.20))
+                            .offset(x: sweepOffset * proxy.size.width)
+                            .opacity(isActive ? 1 : 0)
+                            .allowsHitTesting(false)
+                    }
+                    .clipped()
+                    .blendMode(.plusLighter)
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                if enabled && !motion.reduceMotion {
+                    Rectangle()
+                        .fill(tint)
+                        .frame(width: isActive ? 72 : 0, height: 2)
+                        .opacity(isActive ? 0.95 : 0)
+                }
+            }
+            .animation(WikiMotion.active(WikiMotion.quick, reduceMotion: motion.reduceMotion), value: isActive)
+            .onChange(of: trigger) { _, _ in
+                pulse()
+            }
+    }
+
+    private func pulse() {
+        guard enabled, !motion.reduceMotion else { return }
+        sweepOffset = -0.28
+        withAnimation(WikiMotion.tick) {
+            isActive = true
+        }
+        withAnimation(.easeOut(duration: 0.28)) {
+            sweepOffset = 1.04
+        }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            withAnimation(WikiMotion.quick) {
+                isActive = false
+            }
+        }
+    }
+}
+
 struct RevealSweep<Value: Equatable>: ViewModifier {
     let trigger: Value
     var tint: Color = WikiTheme.blue
@@ -225,6 +288,10 @@ struct PanelReveal<Content: View>: View {
 extension View {
     func motionTick<Value: Equatable>(trigger: Value, tint: Color = WikiTheme.blue, enabled: Bool = true) -> some View {
         modifier(MotionTick(trigger: trigger, tint: tint, enabled: enabled))
+    }
+
+    func commandLanePulse<Value: Equatable>(trigger: Value, tint: Color = WikiTheme.blue, enabled: Bool = true) -> some View {
+        modifier(CommandLanePulse(trigger: trigger, tint: tint, enabled: enabled))
     }
 
     func revealSweep<Value: Equatable>(trigger: Value, tint: Color = WikiTheme.blue, enabled: Bool = true) -> some View {
