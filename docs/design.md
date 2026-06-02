@@ -110,6 +110,7 @@ Pass scores:
 - Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
 - First-impression cleanup: onboarding now leads with a compact `WikiQuest` cartridge header, keeps the photo preview as the main object, and pins Sign in with Apple as a bottom command bar so small phones always expose the account action without turning the screen into a form.
 - Onboarding boot pulse cleanup: the first-launch header uses a tiny live `READY` ticker beside the blue `W`, making the app feel like a playable system without adding copy or extra chrome.
+- Onboarding answer-lane cleanup: preview answers now read as game lanes with `ANSWER 01` metadata and `PICK`, `HIT`, `MISS`, or `LOCKED` badges, so first launch feels playable before Apple sign-in.
 - Quest Deck motion cleanup: the main deck card now has a tiny route pulse in the HUD corner, giving the signed-in start screen a live game-system feel while preserving the one-object layout.
 - Quest Deck command cleanup: mode tiles now end with specific game verbs instead of a generic `Open` label, so Today reads like choosing the next quest rather than browsing app tabs.
 - Quest Deck command-badge cleanup: mode verbs now render as compact colored action badges on the photo tile, making each quest choice read as a playable command instead of low-contrast metadata.
