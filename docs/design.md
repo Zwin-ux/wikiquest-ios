@@ -145,6 +145,7 @@ Pass scores:
 - Photo-stage signal cleanup: large article stages now expose a tiny `PHOTO`/`CLUE`/`ARCHIVE`/`LOCKED` scan badge, giving onboarding, Deck, Mystery, Race, and reveal previews a live game-object feel without adding new panels or noisy animation.
 - Map phase-signal cleanup: the MapKit stage now uses the same scan-badge language for locating, loading, pin, reveal, and empty states, keeping Map visually alive without adding a bottom-left instruction overlay.
 - Quest Deck reminder cleanup: the daily notification control is now a compact command strip instead of a `Reminder` card section, keeping Today focused on the play loop while still exposing the retention action.
+- Race boot-stage cleanup: pre-route `READY`/`ROUTING` states now render as a Link Race stage with a scan badge, tiny HUD, and route pulse instead of a generic loading glyph above the game flow.
 
 Not in scope for this cleanup:
 
