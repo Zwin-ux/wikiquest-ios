@@ -105,6 +105,7 @@ Pass scores:
 - Game Center reward cleanup: completed Daily, Race, Map, and Member events now emit one compact top-edge reward ribbon when Game Center is connected, keeping reward motion visible without covering the playfield.
 - Mystery clue filmstrip cleanup: the stage progress strip now shows clue-type symbols for opened hints and locked slots for the rest, so the reveal loop reads more like a playable case board than a generic counter row.
 - Race route-lane cleanup: blue-link choices now read as marker + lane + article thumbnail + compact action badge, improving the sense that each tap advances a route rather than opens a normal list item.
+- Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
 
 Not in scope for this cleanup:
 
