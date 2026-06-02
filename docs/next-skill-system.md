@@ -115,6 +115,7 @@ First shipped slice:
 - preview HUD polish shipped: onboarding now uses the shared game HUD cluster, result-specific haptics, and stable preview choice identifiers
 - signed-out dock gate verified: UI smoke tests keep the custom dock out of the onboarding flow
 - reveal-loop polish shipped: the preview photo now shows `CLUE`/`REVEALED` state directly on the image, the HUD tracks photo state instead of a static choices count, and first-launch copy stays short beside the simple blue `W`
+- boot-sequence polish shipped: the first-launch boot now advances through Mystery/Race/Map `READY` rows with mode accents instead of generic loading copy.
 
 ### Signed-In Today
 
