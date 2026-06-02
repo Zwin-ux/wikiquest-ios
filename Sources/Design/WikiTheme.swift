@@ -1250,7 +1250,9 @@ struct QuestDeckCard: View {
     let hudMetrics: [WikiMetric]
     var tint: Color = WikiTheme.blue
     let action: () -> Void
+    @EnvironmentObject private var motion: MotionSettings
     @State private var tapToken = 0
+    @State private var pulsePhase = false
 
     var body: some View {
         Button(action: {
@@ -1317,9 +1319,22 @@ struct QuestDeckCard: View {
                     .frame(width: 64, height: 4)
                     .padding(14)
             }
+            .overlay(alignment: .topTrailing) {
+                QuestDeckPulseRail(tint: tint, isActive: pulsePhase || motion.reduceMotion)
+                    .padding(14)
+            }
         }
         .buttonStyle(ArcadePressStyle())
         .motionTick(trigger: tapToken, tint: tint)
+        .onAppear {
+            guard !motion.reduceMotion else {
+                pulsePhase = true
+                return
+            }
+            withAnimation(.easeInOut(duration: 0.82).repeatForever(autoreverses: true)) {
+                pulsePhase = true
+            }
+        }
     }
 
     @ViewBuilder
@@ -1356,6 +1371,23 @@ struct QuestDeckCard: View {
         default:
             return "circle.fill"
         }
+    }
+}
+
+private struct QuestDeckPulseRail: View {
+    let tint: Color
+    let isActive: Bool
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<4, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(index == 0 ? tint : .white.opacity(isActive ? 0.78 : 0.36))
+                    .frame(width: index == 0 ? 18 : 9, height: 4)
+                    .opacity(isActive ? 1 : 0.52)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 

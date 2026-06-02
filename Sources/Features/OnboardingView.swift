@@ -68,19 +68,20 @@ struct OnboardingGate: View {
 
                     PreviewQuestPanel(session: $previewSession, quest: .firstRun)
 
-                    appleSignInBlock
-
                     OnboardingModeStrip(modes: modes)
 
                     OnboardingLegalLinks()
                 }
                 .padding(WikiTheme.screenPadding)
                 .padding(.top, max(8, proxy.safeAreaInsets.top + 4))
-                .padding(.bottom, max(18, proxy.safeAreaInsets.bottom + 18))
+                .padding(.bottom, max(132, proxy.safeAreaInsets.bottom + 112))
                 .frame(minHeight: proxy.size.height, alignment: .topLeading)
                 .accessibilityIdentifier("OnboardingContainer")
             }
             .scrollIndicators(.hidden)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                appleSignInCommandBar
+            }
             .accessibilityIdentifier("OnboardingContainer")
         }
         .background(WikiPaperBackground())
@@ -98,24 +99,40 @@ struct OnboardingGate: View {
     }
 
     private var onboardingHeader: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            OnboardingLogoMark(size: 62)
+        VStack(alignment: .leading, spacing: 11) {
+            HStack(alignment: .center, spacing: 12) {
+                OnboardingLogoMark(size: 58)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("WikiQuest")
+                        .font(.system(size: 38, weight: .black, design: .serif))
+                        .foregroundStyle(WikiTheme.ink)
+                        .minimumScaleFactor(0.70)
+                        .lineLimit(1)
+                        .accessibilityIdentifier("OnboardingTitle")
+                    Text("First quest ready")
+                        .font(.caption.weight(.black).monospaced())
+                        .foregroundStyle(WikiTheme.blue)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                OnboardingBootBadge()
+            }
+
             VStack(alignment: .leading, spacing: 8) {
-                Text("WikiQuest")
-                    .font(.system(size: 46, weight: .black, design: .serif))
-                    .foregroundStyle(WikiTheme.ink)
-                    .minimumScaleFactor(0.70)
-                    .accessibilityIdentifier("OnboardingTitle")
-                Text("Play the preview. Sign in to keep your streak.")
+                Text("Play one photo clue. Sign in to keep the run.")
                     .font(.callout)
                     .foregroundStyle(WikiTheme.muted)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .padding(.bottom, 4)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.rule.opacity(0.42)).frame(height: 1)
+        }
     }
 
-    private var appleSignInBlock: some View {
+    private var appleSignInCommandBar: some View {
         VStack(alignment: .leading, spacing: 12) {
             SignInWithAppleButton(.signIn) { request in
                 session.prepareAppleRequest(request)
@@ -129,26 +146,93 @@ struct OnboardingGate: View {
             .opacity(session.isSigningIn ? 0.72 : 1)
             .accessibilityIdentifier("OnboardingContinueWithApple")
 
-            if session.isSigningIn {
-                WikiLoadingGlyph(title: "Apple ID", detail: "Waiting for Apple.", tint: WikiTheme.ink)
-            } else if let error = session.lastAuthError {
-                InlineNotice(title: "SIGN IN", detail: error, tint: WikiTheme.red)
-            } else if previewSession.hasSelection {
-                Text("Save your solves, streak, Race paths, Map pins, and purchases.")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WikiTheme.subtle)
-                    .lineLimit(2)
-            } else {
-                Text("Try the preview first, then sign in when the game clicks.")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WikiTheme.subtle)
-                    .lineLimit(2)
+            OnboardingSignInStatus(
+                isSigningIn: session.isSigningIn,
+                error: session.lastAuthError,
+                hasPlayedPreview: previewSession.hasSelection
+            )
+        }
+        .padding(.horizontal, WikiTheme.screenPadding)
+        .padding(.top, 10)
+        .padding(.bottom, 10)
+        .background(WikiTheme.paper.opacity(0.985))
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.ink.opacity(0.24)).frame(height: 1)
+        }
+        .accessibilityIdentifier("OnboardingAppleCommandBar")
+    }
+}
+
+private struct OnboardingBootBadge: View {
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 5) {
+            Text("BOOT")
+                .font(.caption2.weight(.black).monospaced())
+                .foregroundStyle(WikiTheme.subtle)
+            HStack(spacing: 4) {
+                ForEach(0..<3, id: \.self) { index in
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(index == 0 ? WikiTheme.blue : WikiTheme.ink.opacity(0.22))
+                        .frame(width: 12, height: 4)
+                }
             }
         }
-        .padding(.vertical, 4)
-        .overlay(alignment: .top) {
-            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct OnboardingSignInStatus: View {
+    let isSigningIn: Bool
+    let error: String?
+    let hasPlayedPreview: Bool
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Circle()
+                .fill(tint)
+                .frame(width: 6, height: 6)
+            Text(label)
+                .font(.caption.weight(.black).monospaced())
+                .foregroundStyle(tint)
+                .lineLimit(1)
+            Text(detail)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(WikiTheme.subtle)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+            Spacer(minLength: 0)
         }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var label: String {
+        if isSigningIn {
+            return "APPLE"
+        }
+        if error != nil {
+            return "RETRY"
+        }
+        return hasPlayedPreview ? "SAVE" : "READY"
+    }
+
+    private var detail: String {
+        if isSigningIn {
+            return "Waiting for Apple."
+        }
+        if let error {
+            return error
+        }
+        if hasPlayedPreview {
+            return "Keep XP, streaks, Race paths, and Map pins."
+        }
+        return "Sign in anytime; the preview stays playable."
+    }
+
+    private var tint: Color {
+        if error != nil {
+            return WikiTheme.red
+        }
+        return isSigningIn ? WikiTheme.ink : WikiTheme.blue
     }
 }
 
