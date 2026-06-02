@@ -105,6 +105,7 @@ Pass scores:
 - Game Center reward cleanup: completed Daily, Race, Map, and Member events now emit one compact top-edge reward ribbon when Game Center is connected, keeping reward motion visible without covering the playfield.
 - Mystery clue filmstrip cleanup: the stage progress strip now shows clue-type symbols for opened hints and locked slots for the rest, so the reveal loop reads more like a playable case board than a generic counter row.
 - Race route-lane cleanup: blue-link choices now read as marker + lane + article thumbnail + compact action badge, improving the sense that each tap advances a route rather than opens a normal list item.
+- Race route-verb cleanup: Link Race now uses `Pick next exit`, `Take`, `Trace`, and route-tracing loading states instead of browser-like `Choose`, `Open`, or `GO` labels.
 - Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
 - First-impression cleanup: onboarding now leads with a compact `WikiQuest` cartridge header, keeps the photo preview as the main object, and pins Sign in with Apple as a bottom command bar so small phones always expose the account action without turning the screen into a form.
 - Quest Deck motion cleanup: the main deck card now has a tiny route pulse in the HUD corner, giving the signed-in start screen a live game-system feel while preserving the one-object layout.
