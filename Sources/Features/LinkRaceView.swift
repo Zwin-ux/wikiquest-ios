@@ -496,17 +496,13 @@ private struct LinkChoiceList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Kicker(text: routeLocked ? "Tracing route" : "Exits from current")
-                Spacer(minLength: 8)
-                Text(routeLocked ? "Tracing" : "\(links.count) exits")
-                    .font(.caption2.weight(.black).monospaced())
-                    .foregroundStyle(WikiTheme.blue)
-            }
-
-            if let loadingTitle {
-                RouteLockStrip(title: loadingTitle)
-            }
+            RaceExitCommandHeader(
+                totalExits: links.count,
+                availableExits: availableCount,
+                seenExits: seenCount,
+                loadingTitle: loadingTitle
+            )
+            .accessibilityIdentifier("RaceExitCommandHeader")
 
             ForEach(Array(links.enumerated()), id: \.element.id) { index, link in
                 let visited = visitedTitles.contains(link.title)
@@ -538,8 +534,98 @@ private struct LinkChoiceList: View {
         .motionTick(trigger: "\(links.count)-\(loadingTitle ?? "ready")", tint: WikiTheme.blue)
     }
 
-    private var routeLocked: Bool {
+    private var seenCount: Int {
+        links.filter { visitedTitles.contains($0.title) }.count
+    }
+
+    private var availableCount: Int {
+        max(0, links.count - seenCount)
+    }
+}
+
+private struct RaceExitCommandHeader: View {
+    let totalExits: Int
+    let availableExits: Int
+    let seenExits: Int
+    let loadingTitle: String?
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: isTracing ? "arrow.triangle.2.circlepath" : "link")
+                .font(.caption.weight(.black))
+                .foregroundStyle(WikiTheme.blue)
+                .frame(width: 30, height: 30)
+                .background(WikiTheme.blue.opacity(0.10))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .wikiBounce(enabled: isTracing && !motion.reduceMotion, value: loadingTitle ?? "ready")
+
+            VStack(alignment: .leading, spacing: 2) {
+                Kicker(text: isTracing ? "Tracing" : "Next exit")
+                Text(commandText)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(WikiTheme.ink)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 8)
+
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 7) {
+                    RaceExitStat(label: "Open", value: "\(availableExits)", tint: WikiTheme.blue)
+                    RaceExitStat(label: "Seen", value: "\(seenExits)", tint: WikiTheme.muted)
+                }
+
+                RaceExitStat(label: isTracing ? "Trace" : "Exits", value: isTracing ? "ON" : "\(totalExits)", tint: WikiTheme.blue)
+            }
+        }
+        .padding(.vertical, 8)
+        .overlay(alignment: .top) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(WikiTheme.hairline).frame(height: 1)
+        }
+        .motionTick(trigger: "\(availableExits)-\(seenExits)-\(loadingTitle ?? "ready")", tint: WikiTheme.blue)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var isTracing: Bool {
         loadingTitle != nil
+    }
+
+    private var commandText: String {
+        if let loadingTitle {
+            return "Tracing \(loadingTitle)"
+        }
+        if totalExits == 0 {
+            return "No exits on this page."
+        }
+        return "Pick a blue link to advance the route."
+    }
+}
+
+private struct RaceExitStat: View {
+    let label: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 1) {
+            Text(value)
+                .font(.system(.subheadline, design: .monospaced).weight(.black))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.74)
+                .contentTransition(.numericText())
+            Text(label.uppercased())
+                .font(.system(size: 8, weight: .black, design: .monospaced))
+                .foregroundStyle(WikiTheme.subtle)
+                .lineLimit(1)
+        }
+        .frame(minWidth: 38, alignment: .trailing)
     }
 }
 
@@ -764,33 +850,6 @@ private struct RaceChoiceActionBadge: View {
         case .visited:
             return WikiTheme.surface
         }
-    }
-}
-
-private struct RouteLockStrip: View {
-    let title: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "link")
-                .font(.caption.weight(.black))
-            Text(title)
-                .font(.caption.weight(.bold).monospaced())
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-            Spacer(minLength: 8)
-            Text("ROUTE")
-                .font(.caption2.weight(.black).monospaced())
-        }
-        .foregroundStyle(WikiTheme.blue)
-        .padding(.vertical, 8)
-        .overlay(alignment: .top) {
-            Rectangle().fill(WikiTheme.blue.opacity(0.28)).frame(height: 1)
-        }
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(WikiTheme.blue.opacity(0.28)).frame(height: 1)
-        }
-        .motionTick(trigger: title, tint: WikiTheme.blue)
     }
 }
 
