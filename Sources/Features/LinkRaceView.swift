@@ -39,7 +39,6 @@ struct LinkRaceView: View {
                     fallbackTargetTitle: viewModel.targets?.target,
                     clicks: viewModel.clickCount,
                     elapsed: viewModel.elapsedSeconds(now: now),
-                    xp: viewModel.savedXP ?? 0,
                     path: viewModel.path
                 )
                     .id(current.article.title)
@@ -243,13 +242,16 @@ private struct RacePhotoStage: View {
     let fallbackTargetTitle: String?
     let clicks: Int
     let elapsed: Int
-    let xp: Int
     let path: [String]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ZStack(alignment: .topTrailing) {
                 ArticleHeroImage(media: current.media, title: current.title, height: 292, tint: WikiTheme.blue)
+
+                RaceStageBadge(clicks: clicks)
+                    .padding(14)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 GameHUDCluster(items: [
                     GameHUDItem(label: "Clicks", value: "\(clicks)", systemImage: "cursorarrow.click", tint: WikiTheme.blue),
@@ -273,7 +275,7 @@ private struct RacePhotoStage: View {
                 .padding(16)
             }
 
-            RaceObjectiveStrip(target: target, fallbackTargetTitle: fallbackTargetTitle, xp: xp)
+            RaceObjectiveStrip(target: target, fallbackTargetTitle: fallbackTargetTitle, clicks: clicks)
                 .accessibilityIdentifier("RaceObjectiveStrip")
             RaceTrailInline(path: path)
                 .accessibilityIdentifier("RaceTrailInline")
@@ -283,10 +285,29 @@ private struct RacePhotoStage: View {
     }
 }
 
+private struct RaceStageBadge: View {
+    let clicks: Int
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: clicks == 0 ? "play.fill" : "link")
+                .font(.caption2.weight(.black))
+            Text(clicks == 0 ? "START" : "ROUTE \(String(format: "%02d", clicks))")
+                .font(.caption2.weight(.black).monospacedDigit())
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background(.black.opacity(0.58))
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .accessibilityHidden(true)
+    }
+}
+
 private struct RaceObjectiveStrip: View {
     let target: WikiArticle?
     let fallbackTargetTitle: String?
-    let xp: Int
+    let clicks: Int
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -302,9 +323,13 @@ private struct RaceObjectiveStrip: View {
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 3) {
-                Kicker(text: "XP")
-                TickerNumberText(value: xp, font: .system(.headline, design: .monospaced).weight(.black))
-                    .foregroundStyle(WikiTheme.green)
+                Kicker(text: "Route")
+                Text(clicks == 0 ? "START" : "\(clicks) clicks")
+                    .font(.system(.headline, design: .monospaced).weight(.black))
+                    .foregroundStyle(WikiTheme.blue)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .contentTransition(.numericText())
             }
         }
         .frame(maxWidth: .infinity, minHeight: 86, alignment: .leading)
@@ -472,7 +497,7 @@ private struct LinkChoiceList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Kicker(text: routeLocked ? "Tracing route" : "Pick next exit")
+                Kicker(text: routeLocked ? "Tracing route" : "Exits from current")
                 Spacer(minLength: 8)
                 Text(routeLocked ? "Tracing" : "\(links.count) exits")
                     .font(.caption2.weight(.black).monospaced())
