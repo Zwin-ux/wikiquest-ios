@@ -52,11 +52,13 @@ This is closer to game HUD/product design than standard app redesign.
    Define the playable surfaces: Quest Deck, Mystery, Race, Map, App Clip, HUD strips, and command areas.
 2. `design-consultation`
    Tighten the visual direction: photo treatment, blue `W` usage, typography, color, and spacing.
-3. `plan-design-review`
+3. `design-shotgun`
+   Explore a few concrete UI directions before code when a surface still feels weak; pick one restrained direction and do not turn every slice into a new style.
+4. `plan-design-review`
    Cut weak copy, excess panels, generic mobile patterns, and low-value motion before implementation.
-4. `plan-eng-review`
+5. `plan-eng-review`
    Split the work into safe SwiftUI changes with tests and no new runtime dependencies.
-5. `ship`
+6. `ship`
    Run public CI, TestFlight archive, device screenshots, and release notes only after the visual pass exists.
 
 ## Immediate Execution Target
@@ -180,6 +182,12 @@ First shipped slice:
 - command/reveal polish shipped: Map now gives Reveal/Next the primary command width, demotes Locate to an icon utility, and shows distance/XP as a result strip before the revealed article photo
 - fallback polish shipped: revealed targets without usable media now use the map fallback surface instead of a generic placeholder
 - recovery cleanup shipped: Map API/location load errors now include a `Retry map` command that reloads the current center
+
+### Ranks / Me
+
+- design-shotgun selection shipped: account and ranking failures use restrained OS command recovery, not modal alerts or red warning stacks
+- recovery cleanup shipped: Ranks, Me, and Game Center errors now appear near the affected surface with one direct retry command
+- empty-state cleanup shipped: Ranks only shows the empty board message after loading finishes and no API error is active
 
 ### App Clip
 
