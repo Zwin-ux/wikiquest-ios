@@ -140,6 +140,7 @@ Pass scores:
 - Dock feedback cleanup: signed-in tab changes now use the same compact command pulse and expose stable dock identifiers for screenshot QA, keeping navigation tactile without bringing back a tall active column.
 - Simple W brand cleanup: AppIcon, BrandMark, BrandGlyph, favicons, and web logo now use one optically centered path-based blue `W` with no compass ornament, SVG text, or font dependency. The mark should stay plain so the photo-led game surfaces carry the visual richness.
 - Map playfield cleanup: the MapKit stage now keeps only the compact phase badge and HUD on top of the map; the bottom-left instruction panel was removed so pin placement has a clearer play surface and commands stay in the lower sheet.
+- Map overlay primitive cleanup: the old `MapCommandOverlay` component was removed from the shared design system so future Map passes do not reintroduce persistent lower-map instruction panels.
 
 Not in scope for this cleanup:
 

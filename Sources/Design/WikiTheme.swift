@@ -1736,30 +1736,6 @@ struct LinkTrailStrip: View {
     }
 }
 
-struct MapCommandOverlay: View {
-    let title: String
-    let detail: String
-    var tint: Color = WikiTheme.blue
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Kicker(text: title)
-                .foregroundStyle(Color.white.opacity(0.72))
-            Text(detail)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white)
-                .lineLimit(2)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(WikiTheme.mapOverlay)
-        .overlay(alignment: .leading) {
-            Rectangle().fill(tint).frame(width: 3)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.controlRadius, style: .continuous))
-    }
-}
-
 enum Haptics {
     static func light() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
