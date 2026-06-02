@@ -102,6 +102,7 @@ Pass scores:
 - Media fallback cleanup: every shared image surface now has a mode-aware archive fallback, so no-image and image-load failure states still look like WikiQuest rather than broken media.
 - Discovery rail cleanup: Today pulls a wider random-page batch concurrently and shows more compact Wiki drift cards, giving the Deck more real Wikipedia texture without adding another panel.
 - Recovery cleanup: Mystery, Race, Map, Ranks, Me, and Game Center failures now show a direct retry command instead of passive error text, keeping both gameplay and account surfaces recoverable after API/network failures.
+- Game Center reward cleanup: completed Daily, Race, Map, and Member events now emit one compact top-edge reward ribbon when Game Center is connected, keeping reward motion visible without covering the playfield.
 
 Not in scope for this cleanup:
 

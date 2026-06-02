@@ -42,11 +42,20 @@ struct DailyMysteryView: View {
                 } else {
                     Haptics.error()
                 }
-                gameCenter.reportDailyMystery(
-                    score: viewModel.score,
-                    solved: viewModel.isCorrect,
-                    streak: 0
-                )
+                guard viewModel.mode == .daily else { return }
+                let score = viewModel.score
+                let solved = viewModel.isCorrect
+                Task { @MainActor in
+                    let profile = try? await api.userProfile()
+                    gameCenter.reportDailyMystery(
+                        score: score,
+                        solved: solved,
+                        streak: profile?.currentStreak ?? 0
+                    )
+                    if let xp = profile?.xp {
+                        gameCenter.reportWeeklyXP(xp)
+                    }
+                }
             }
         }
         .refreshable { await viewModel.load(signedIn: session.isSignedIn) }

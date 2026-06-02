@@ -45,4 +45,26 @@ final class NativeCapabilityTests: XCTestCase {
         XCTAssertFalse(OnboardingBootupPolicy.shouldShowBootup(isSignedIn: false, hasCompletedBootup: true))
         XCTAssertFalse(OnboardingBootupPolicy.shouldShowBootup(isSignedIn: true, hasCompletedBootup: false))
     }
+
+    func testGameCenterRewardEventsUseConcreteGameCopy() throws {
+        let id = try XCTUnwrap(UUID(uuidString: "f887d7ce-454c-4f09-9d31-e6c7866d28af"))
+
+        let daily = GameCenterRewardEvent.dailyMystery(score: 180, streak: 7, id: id)
+        XCTAssertEqual(daily.id, id)
+        XCTAssertEqual(daily.kind, .streak)
+        XCTAssertEqual(daily.title, "7-day streak synced")
+        XCTAssertEqual(daily.detail, "Daily score 180 / 7d streak")
+        XCTAssertEqual(daily.score, 180)
+
+        let nearby = GameCenterRewardEvent.nearby(distanceMeters: 42, score: 260, id: id)
+        XCTAssertEqual(nearby.kind, .nearby)
+        XCTAssertEqual(nearby.title, "Bullseye synced")
+        XCTAssertEqual(nearby.detail, "42 m from target")
+        XCTAssertEqual(nearby.score, 260)
+
+        let race = GameCenterRewardEvent.linkRace(elapsedSeconds: 0, id: id)
+        XCTAssertEqual(race.kind, .race)
+        XCTAssertEqual(race.detail, "1s submitted to Game Center")
+        XCTAssertEqual(race.score, 1)
+    }
 }

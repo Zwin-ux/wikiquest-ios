@@ -21,11 +21,109 @@ enum WikiQuestLeaderboardID {
     static let nearbyClosestGuess = "wikiquest.nearby_closest_guess"
 }
 
+struct GameCenterRewardEvent: Identifiable, Equatable {
+    enum Kind: String, Equatable {
+        case daily
+        case streak
+        case race
+        case nearby
+        case member
+    }
+
+    let id: UUID
+    let kind: Kind
+    let title: String
+    let detail: String
+    let systemImage: String
+    let score: Int?
+
+    init(
+        id: UUID = UUID(),
+        kind: Kind,
+        title: String,
+        detail: String,
+        systemImage: String,
+        score: Int? = nil
+    ) {
+        self.id = id
+        self.kind = kind
+        self.title = title
+        self.detail = detail
+        self.systemImage = systemImage
+        self.score = score
+    }
+
+    static func dailyMystery(score: Int, streak: Int, id: UUID = UUID()) -> GameCenterRewardEvent {
+        if streak >= 30 {
+            return GameCenterRewardEvent(
+                id: id,
+                kind: .streak,
+                title: "30-day streak synced",
+                detail: "Daily score \(score) / \(streak)d streak",
+                systemImage: "flame.fill",
+                score: score
+            )
+        }
+        if streak >= 7 {
+            return GameCenterRewardEvent(
+                id: id,
+                kind: .streak,
+                title: "7-day streak synced",
+                detail: "Daily score \(score) / \(streak)d streak",
+                systemImage: "flame.fill",
+                score: score
+            )
+        }
+        return GameCenterRewardEvent(
+            id: id,
+            kind: .daily,
+            title: "Daily score synced",
+            detail: "Mystery result posted to Game Center",
+            systemImage: "questionmark.circle.fill",
+            score: score
+        )
+    }
+
+    static func linkRace(elapsedSeconds: Int, id: UUID = UUID()) -> GameCenterRewardEvent {
+        GameCenterRewardEvent(
+            id: id,
+            kind: .race,
+            title: "Race time synced",
+            detail: "\(max(1, elapsedSeconds))s submitted to Game Center",
+            systemImage: "flag.checkered",
+            score: max(1, elapsedSeconds)
+        )
+    }
+
+    static func nearby(distanceMeters: Double, score: Int, id: UUID = UUID()) -> GameCenterRewardEvent {
+        let distance = NearbyScoring.format(distanceMeters)
+        return GameCenterRewardEvent(
+            id: id,
+            kind: .nearby,
+            title: distanceMeters <= 100 ? "Bullseye synced" : "Map result synced",
+            detail: "\(distance) from target",
+            systemImage: distanceMeters <= 100 ? "scope" : "mappin.and.ellipse",
+            score: score
+        )
+    }
+
+    static func memberFounder(id: UUID = UUID()) -> GameCenterRewardEvent {
+        GameCenterRewardEvent(
+            id: id,
+            kind: .member,
+            title: "Member Founder synced",
+            detail: "Achievement posted to Game Center",
+            systemImage: "sparkles"
+        )
+    }
+}
+
 @MainActor
 final class GameCenterStore: ObservableObject {
     @Published var isAuthenticated = false
     @Published var statusText = "Game Center idle"
     @Published var lastError: String?
+    @Published var rewardEvent: GameCenterRewardEvent?
 
     func authenticate() {
         #if canImport(GameKit)
@@ -52,6 +150,7 @@ final class GameCenterStore: ObservableObject {
 
     func reportDailyMystery(score: Int, solved: Bool, streak: Int) {
         guard solved else { return }
+        emitRewardIfAvailable(.dailyMystery(score: score, streak: streak))
         reportAchievement(WikiQuestAchievementID.firstSolve)
         if streak >= 7 { reportAchievement(WikiQuestAchievementID.streak7) }
         if streak >= 30 { reportAchievement(WikiQuestAchievementID.streak30) }
@@ -63,11 +162,13 @@ final class GameCenterStore: ObservableObject {
     }
 
     func reportLinkRaceCompletion(elapsedSeconds: Int) {
+        emitRewardIfAvailable(.linkRace(elapsedSeconds: elapsedSeconds))
         reportAchievement(WikiQuestAchievementID.linkRaceFinish)
         reportScore(max(1, elapsedSeconds), leaderboardID: WikiQuestLeaderboardID.linkRaceBestTime)
     }
 
     func reportNearbyResult(distanceMeters: Double, score: Int) {
+        emitRewardIfAvailable(.nearby(distanceMeters: distanceMeters, score: score))
         if distanceMeters <= 100 {
             reportAchievement(WikiQuestAchievementID.nearbyBullseye)
         }
@@ -78,7 +179,25 @@ final class GameCenterStore: ObservableObject {
     }
 
     func reportMemberFounder() {
+        emitRewardIfAvailable(.memberFounder())
         reportAchievement(WikiQuestAchievementID.memberFounder)
+    }
+
+    func clearReward() {
+        rewardEvent = nil
+    }
+
+    private func emitRewardIfAvailable(_ event: GameCenterRewardEvent) {
+        guard canReportToGameCenter else { return }
+        rewardEvent = event
+    }
+
+    private var canReportToGameCenter: Bool {
+        #if canImport(GameKit)
+        return GKLocalPlayer.local.isAuthenticated
+        #else
+        return false
+        #endif
     }
 
     private func reportAchievement(_ identifier: String) {

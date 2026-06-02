@@ -188,6 +188,7 @@ First shipped slice:
 - design-shotgun selection shipped: account and ranking failures use restrained OS command recovery, not modal alerts or red warning stacks
 - recovery cleanup shipped: Ranks, Me, and Game Center errors now appear near the affected surface with one direct retry command
 - empty-state cleanup shipped: Ranks only shows the empty board message after loading finishes and no API error is active
+- reward polish shipped: connected Game Center reports now trigger one compact top-edge reward ribbon, and Daily Mystery fetches current streak before posting Daily/streak achievements
 
 ### App Clip
 
