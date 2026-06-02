@@ -156,6 +156,7 @@ private struct HomeModeRail: View {
     let deckMedia: WikiMedia?
     let navigate: (AppTab) -> Void
     @State private var selectedModeID: String?
+    @State private var selectionToken = 0
 
     private let columns = [
         GridItem(.adaptive(minimum: 104), spacing: 8)
@@ -170,11 +171,17 @@ private struct HomeModeRail: View {
                         Button {
                             Haptics.light()
                             selectedModeID = mode.id
+                            selectionToken &+= 1
                             navigate(mode.tab)
                         } label: {
                             ModeDeckTile(mode: mode, media: media(for: index), index: index + 1)
                         }
                         .buttonStyle(ArcadePressStyle())
+                        .commandLanePulse(
+                            trigger: "\(selectedModeID ?? "none")-\(selectionToken)",
+                            tint: mode.color,
+                            enabled: selectedModeID == mode.id
+                        )
                         .motionTick(trigger: selectedModeID == mode.id ? selectedModeID : nil, tint: mode.color)
                         .accessibilityIdentifier("HomeMode-\(mode.id)")
                     }

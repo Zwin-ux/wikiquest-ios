@@ -126,6 +126,7 @@ First shipped slice:
 - discovery rail cleanup shipped: random article photos now read as a secondary Wiki drift with numbered visual trail cards
 - discovery rail density shipped: Today now pulls a broader concurrent random-page batch and shows a five-card Wiki drift rail with tighter reveal timing
 - small-phone rail cleanup shipped: Mystery/Race/Map uses an adaptive grid so narrow phones get two readable columns instead of squeezed three-up tiles
+- deck command motion shipped: the Daily card and mode tiles now use the shared command-lane pulse, matching the tactile feedback used inside Mystery, Race, and Map
 - smoke coverage shipped: signed-in UI tests now assert the Quest Deck card and Home mode rail exist
 - shared HUD cleanup shipped: Quest Deck now uses the same compact game HUD cluster as the mode screens
 

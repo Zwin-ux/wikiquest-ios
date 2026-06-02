@@ -123,6 +123,7 @@ Pass scores:
 - Map city rail cleanup: sample-city jumps now live in a horizontal command rail with selected-state feedback, keeping the lower sheet tappable on small iPhones instead of squeezing utility chips into one row.
 - Map command-deck cleanup: reveal/next now live in a Map-specific primary action lane above the revealed photo, with `PIN READY`, `REVEAL`, `NEXT`, and utility icons visible before the larger article card can push controls down.
 - Command-lane motion cleanup: onboarding answers, Mystery guesses, Race exits, and Map reveal/next now share one short command pulse, making taps feel accepted without adding cinematic motion or new dependencies.
+- Quest Deck motion consistency: the Daily card and Mystery/Race/Map mode tiles now use the same command pulse as gameplay lanes, so Today feels like the start of play rather than an app menu.
 
 Not in scope for this cleanup:
 

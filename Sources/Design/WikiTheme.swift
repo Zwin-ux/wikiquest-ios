@@ -1326,6 +1326,7 @@ struct QuestDeckCard: View {
             }
         }
         .buttonStyle(ArcadePressStyle())
+        .commandLanePulse(trigger: tapToken, tint: tint)
         .motionTick(trigger: tapToken, tint: tint)
         .onAppear {
             guard !motion.reduceMotion else {
