@@ -132,15 +132,11 @@ private struct MysteryCommandDeck: View {
                         Task { await viewModel.revealHint(signedIn: isSignedIn) }
                     }
                     .accessibilityIdentifier("MysteryRevealHintButton")
-                    CommandButton(
-                        title: "Refresh",
-                        icon: "arrow.clockwise",
-                        tint: WikiTheme.ink,
+                    MysteryRefreshButton(
                         isDisabled: viewModel.isLoading
                     ) {
                         Task { await viewModel.load(signedIn: isSignedIn) }
                     }
-                    .accessibilityIdentifier("MysteryRefreshButton")
                 }
 
                 if !viewModel.suggestions.isEmpty {
@@ -157,6 +153,35 @@ private struct MysteryCommandDeck: View {
             Rectangle().fill(WikiTheme.amber.opacity(0.72)).frame(height: 2)
         }
         .motionTick(trigger: "\(viewModel.mode.id)-\(viewModel.score)-\(viewModel.currentHints.count)-\(viewModel.isComplete)", tint: WikiTheme.amber)
+    }
+}
+
+private struct MysteryRefreshButton: View {
+    let isDisabled: Bool
+    let action: () -> Void
+    @State private var tapToken = 0
+
+    var body: some View {
+        Button {
+            Haptics.light()
+            tapToken &+= 1
+            action()
+        } label: {
+            Image(systemName: "arrow.clockwise")
+                .font(.callout.weight(.black))
+                .foregroundStyle(WikiTheme.ink)
+                .frame(width: 46, height: 46)
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .stroke(WikiTheme.rule.opacity(0.82), lineWidth: 1)
+                }
+        }
+        .buttonStyle(ArcadePressStyle())
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.52 : 1)
+        .accessibilityLabel("Refresh puzzle")
+        .accessibilityIdentifier("MysteryRefreshButton")
+        .motionTick(trigger: tapToken, tint: WikiTheme.ink, enabled: !isDisabled)
     }
 }
 

@@ -108,6 +108,7 @@ Pass scores:
 - Map result-line cleanup: reveal now draws a red line between the guess pin and target pin on the MapKit stage, with the reveal summary using the same pin-to-target language.
 - First-impression cleanup: onboarding now leads with a compact `WikiQuest` cartridge header, keeps the photo preview as the main object, and pins Sign in with Apple as a bottom command bar so small phones always expose the account action without turning the screen into a form.
 - Quest Deck motion cleanup: the main deck card now has a tiny route pulse in the HUD corner, giving the signed-in start screen a live game-system feel while preserving the one-object layout.
+- Mystery command cleanup: Reveal hint is now the dominant gameplay command, while Refresh is a compact utility icon. This keeps the command area closer to a game verb row and stops maintenance controls from competing with the solve loop.
 
 Not in scope for this cleanup:
 
