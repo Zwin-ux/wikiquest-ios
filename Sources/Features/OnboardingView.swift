@@ -164,20 +164,43 @@ struct OnboardingGate: View {
 }
 
 private struct OnboardingBootBadge: View {
+    @EnvironmentObject private var motion: MotionSettings
+    @State private var activeIndex = 0
+    @State private var didStart = false
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 5) {
-            Text("BOOT")
+            Text("READY")
                 .font(.caption2.weight(.black).monospaced())
                 .foregroundStyle(WikiTheme.subtle)
             HStack(spacing: 4) {
                 ForEach(0..<3, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .fill(index == 0 ? WikiTheme.blue : WikiTheme.ink.opacity(0.22))
-                        .frame(width: 12, height: 4)
+                        .fill(index == activeIndex ? WikiTheme.blue : WikiTheme.ink.opacity(0.22))
+                        .frame(width: index == activeIndex && !motion.reduceMotion ? 16 : 10, height: 4)
+                        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: activeIndex)
                 }
             }
         }
+        .task { await runTicker() }
         .accessibilityHidden(true)
+    }
+
+    @MainActor
+    private func runTicker() async {
+        guard !didStart else { return }
+        didStart = true
+        guard !motion.reduceMotion else {
+            activeIndex = 0
+            return
+        }
+
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 520_000_000)
+            withAnimation(WikiMotion.tick) {
+                activeIndex = (activeIndex + 1) % 3
+            }
+        }
     }
 }
 
