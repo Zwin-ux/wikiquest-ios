@@ -475,25 +475,52 @@ private struct CityRail: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Kicker(text: "Jump")
-            HStack(spacing: 8) {
-                ForEach(cities) { city in
-                    Button {
-                        Haptics.light()
-                        selectedCityID = city.id
-                        choose(city)
-                    } label: {
-                        Text(city.label)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(cities) { city in
+                        Button {
+                            Haptics.light()
+                            selectedCityID = city.id
+                            choose(city)
+                        } label: {
+                            CityJumpChip(city: city, isSelected: selectedCityID == city.id)
+                        }
+                        .buttonStyle(ArcadePressStyle())
+                        .motionTick(trigger: selectedCityID == city.id ? selectedCityID : nil, tint: WikiTheme.blue)
+                        .accessibilityIdentifier("NearbyCityJump-\(city.label.replacingOccurrences(of: " ", with: ""))")
                     }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(WikiTheme.blue)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .overlay(RoundedRectangle(cornerRadius: WikiTheme.radius).stroke(WikiTheme.rule.opacity(0.75)))
-                    .buttonStyle(ArcadePressStyle())
-                    .motionTick(trigger: selectedCityID == city.id ? selectedCityID : nil, tint: WikiTheme.blue)
                 }
+                .padding(.vertical, 2)
             }
+            .scrollIndicators(.hidden)
         }
+    }
+}
+
+private struct CityJumpChip: View {
+    let city: KnownCity
+    let isSelected: Bool
+
+    var body: some View {
+        HStack(spacing: 7) {
+            Image(systemName: isSelected ? "scope" : "location")
+                .font(.caption.weight(.black))
+            Text(city.label)
+                .font(.caption.weight(.bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.76)
+        }
+        .foregroundStyle(isSelected ? .white : WikiTheme.blue)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 8)
+        .background(isSelected ? WikiTheme.blue : WikiTheme.blue.opacity(0.06))
+        .overlay {
+            RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                .stroke(isSelected ? WikiTheme.blue : WikiTheme.rule.opacity(0.75), lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 }
 
