@@ -1266,6 +1266,10 @@ struct QuestDeckCard: View {
     let title: String
     let detail: String
     let media: WikiMedia?
+    var visualState: ArticleVisualState = .revealed
+    var fallbackStyle: MediaFallbackStyle = .archive
+    var stateLabel: String?
+    var stateSystemImage = "scope"
     let hudMetrics: [WikiMetric]
     var commandText = "Start quest"
     var tint: Color = WikiTheme.blue
@@ -1284,10 +1288,10 @@ struct QuestDeckCard: View {
                 ArticleHeroImage(
                     media: media,
                     title: title,
-                    visualState: .revealed,
+                    visualState: visualState,
                     height: 322,
                     tint: tint,
-                    fallbackStyle: .archive
+                    fallbackStyle: fallbackStyle
                 )
 
                 VStack(alignment: .leading, spacing: 0) {
@@ -1343,6 +1347,12 @@ struct QuestDeckCard: View {
                 QuestDeckPulseRail(tint: tint, isActive: pulsePhase || motion.reduceMotion)
                     .padding(14)
             }
+            .overlay(alignment: .top) {
+                if let stateLabel {
+                    QuestDeckStateBadge(label: stateLabel, systemImage: stateSystemImage, visualState: visualState, tint: tint)
+                        .padding(.top, 14)
+                }
+            }
         }
         .buttonStyle(ArcadePressStyle())
         .commandLanePulse(trigger: tapToken, tint: tint)
@@ -1383,6 +1393,8 @@ struct QuestDeckCard: View {
         switch label.lowercased() {
         case "reset":
             return "timer"
+        case "hints":
+            return "eye"
         case "streak":
             return "flame.fill"
         case "xp":
@@ -1392,6 +1404,32 @@ struct QuestDeckCard: View {
         default:
             return "circle.fill"
         }
+    }
+}
+
+private struct QuestDeckStateBadge: View {
+    let label: String
+    let systemImage: String
+    let visualState: ArticleVisualState
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(.caption2.weight(.black))
+            Text(label.uppercased())
+                .font(.caption2.weight(.black).monospaced())
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background(background)
+        .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
+        .accessibilityHidden(true)
+    }
+
+    private var background: Color {
+        visualState == .locked ? WikiTheme.ink.opacity(0.70) : tint.opacity(0.88)
     }
 }
 

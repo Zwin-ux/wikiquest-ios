@@ -20,6 +20,7 @@ struct HomeView: View {
     @EnvironmentObject private var reminders: ReminderStore
     @State private var profile: UserProfile?
     @State private var entitlements: EntitlementSummary?
+    @State private var dailyState: DailyRandomState?
     @State private var now = Date()
     @State private var deckArticle: WikiArticle?
     @State private var discoveryItems: [QuestDeckItem] = []
@@ -35,9 +36,13 @@ struct HomeView: View {
     var body: some View {
         WikiScreen(navigationTitle: "Deck", spacing: 16, showsWindowHeader: false) {
             QuestDeckCard(
-                title: "Daily Mystery",
-                detail: "Find the hidden Wikipedia page before reset.",
-                media: deckArticle?.media,
+                title: dailyDeckVisual.title,
+                detail: dailyDeckVisual.detail,
+                media: dailyDeckVisual.media,
+                visualState: dailyDeckVisual.visualState,
+                fallbackStyle: .mystery,
+                stateLabel: dailyDeckVisual.stateLabel,
+                stateSystemImage: dailyDeckVisual.stateSystemImage,
                 hudMetrics: deckMetrics,
                 commandText: "Play daily",
                 tint: WikiTheme.amber
@@ -46,7 +51,7 @@ struct HomeView: View {
             }
             .accessibilityIdentifier("QuestDeckCard")
 
-            MediaCreditRow(media: deckArticle?.media)
+            MediaCreditRow(media: dailyDeckVisual.media)
 
             HomeModeRail(
                 modes: modes,
@@ -76,10 +81,19 @@ struct HomeView: View {
     private var deckMetrics: [WikiMetric] {
         [
             WikiMetric(label: "Reset", text: WikiDisplayFormat.resetCountdown(now: now), tint: WikiTheme.amber),
+            WikiMetric(label: "Hints", text: dailyHintText, tint: WikiTheme.amber),
             WikiMetric(label: "Streak", value: profile?.currentStreak ?? 0, tint: WikiTheme.amber),
-            WikiMetric(label: "XP", value: profile?.xp ?? 0, tint: WikiTheme.blue),
-            WikiMetric(label: "Level", value: profile?.level ?? 1, tint: WikiTheme.green)
+            WikiMetric(label: "XP", value: profile?.xp ?? 0, tint: WikiTheme.blue)
         ]
+    }
+
+    private var dailyDeckVisual: DailyDeckVisualState {
+        DailyDeckVisualState.make(from: dailyState)
+    }
+
+    private var dailyHintText: String {
+        guard let dailyState else { return "0/6" }
+        return "\(dailyState.hintsRevealed)/\(dailyState.totalHints)"
     }
 
     @MainActor
@@ -87,14 +101,17 @@ struct HomeView: View {
         guard session.isSignedIn else {
             profile = nil
             entitlements = nil
+            dailyState = nil
             WikiQuestSnapshotStore.save(snapshot: .signedOut)
             return
         }
         async let profileTask = try? api.userProfile()
         async let entitlementTask = try? api.entitlements()
+        async let dailyTask = try? api.dailyMystery()
         async let discoveryTask: Void = refreshDiscovery()
         profile = await profileTask
         entitlements = await entitlementTask
+        dailyState = await dailyTask
         _ = await discoveryTask
         WikiQuestSnapshotStore.save(
             snapshot: WikiQuestWidgetSnapshot(
