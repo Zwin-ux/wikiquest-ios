@@ -153,6 +153,7 @@ struct NearbyView: View {
                             revealIcon: revealActionIcon,
                             revealDisabled: revealDisabled,
                             revealPlaysHaptic: true,
+                            shareText: mapShareText,
                             reveal: {
                                 Task {
                                     if viewModel.phase == .revealed {
@@ -166,15 +167,6 @@ struct NearbyView: View {
                                 location.request()
                             }
                         )
-
-                        if viewModel.phase == .revealed, let article = viewModel.selected {
-                            ShareLink(item: nearbyShareText(article: article)) {
-                                Label("Share result", systemImage: "square.and.arrow.up")
-                                    .font(.callout.weight(.semibold))
-                                    .foregroundStyle(WikiTheme.blue)
-                            }
-                            .buttonStyle(ArcadePressStyle())
-                        }
 
                         CityRail(cities: cities) { city in
                             Task { await loadCity(city) }
@@ -299,6 +291,13 @@ struct NearbyView: View {
         if viewModel.phase == .revealed { return "arrow.clockwise" }
         if viewModel.guess != nil { return "scope" }
         return "mappin.and.ellipse"
+    }
+
+    private var mapShareText: String? {
+        guard viewModel.phase == .revealed, let article = viewModel.selected else {
+            return nil
+        }
+        return nearbyShareText(article: article)
     }
 
     private func loadCity(_ city: KnownCity) async {
@@ -546,6 +545,7 @@ private struct MapActionRow: View {
     let revealIcon: String
     let revealDisabled: Bool
     let revealPlaysHaptic: Bool
+    let shareText: String?
     let reveal: () -> Void
     let locate: () -> Void
 
@@ -559,10 +559,39 @@ private struct MapActionRow: View {
                 playsHaptic: revealPlaysHaptic,
                 action: reveal
             )
+            if let shareText {
+                MapShareButton(shareText: shareText)
+            }
             MapLocateButton(action: locate)
         }
         .padding(.top, 2)
         .accessibilityIdentifier("NearbyActionRow")
+    }
+}
+
+private struct MapShareButton: View {
+    let shareText: String
+    @State private var tapToken = 0
+
+    var body: some View {
+        ShareLink(item: shareText) {
+            Image(systemName: "square.and.arrow.up")
+                .font(.callout.weight(.black))
+                .foregroundStyle(WikiTheme.blue)
+                .frame(width: 46, height: 46)
+                .overlay {
+                    RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
+                        .stroke(WikiTheme.blue.opacity(0.82), lineWidth: 1)
+                }
+        }
+        .buttonStyle(ArcadePressStyle())
+        .simultaneousGesture(TapGesture().onEnded {
+            Haptics.light()
+            tapToken &+= 1
+        })
+        .accessibilityLabel("Share result")
+        .accessibilityIdentifier("NearbyShareResultButton")
+        .motionTick(trigger: tapToken, tint: WikiTheme.blue)
     }
 }
 
