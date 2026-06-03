@@ -186,7 +186,7 @@ private struct HomeModeRail: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Kicker(text: "Choose quest")
+                Kicker(text: "Path select")
                 Spacer(minLength: 8)
                 Text("\(modes.count) paths")
                     .font(.caption.weight(.semibold))
