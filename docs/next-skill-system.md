@@ -184,12 +184,13 @@ First shipped slice:
 - trail motion cleanup shipped: Race path now reads as numbered route nodes with current-article emphasis, fresh connector feedback, sweep motion, and automatic scroll-to-latest behavior
 - fallback polish shipped: current, target, and link-choice image failures now fall back to the article archive surface
 - recovery cleanup shipped: Race route errors now include a `New race` command that also clears any live activity
-- route-lane cleanup shipped: blue-link choices now use compact route connectors and GO/OPEN/SEEN badges so the next move feels like a route action instead of a generic row tap
+- route-lane cleanup shipped: blue-link choices now use compact route connectors and TAKE/TRACE/SEEN badges so the next move feels like a route action instead of a generic row tap
 - objective polish shipped: the Race photo stage now shows `START`/`ROUTE` on the current article image, and the target strip reports route state instead of showing active-round `0 XP`
-- exit-command polish shipped: Race link choices now start with a compact command header showing open exits, seen exits, and tracing state, so the next move reads as game instrumentation instead of a generic section header
+- exit-command polish shipped: Race link choices now start with a compact command header showing ready exits, seen exits, and tracing state, so the next move reads as game instrumentation instead of a generic section header
 - transition stability shipped: once the current article stage is visible, route tracing stays inside the exit header and selected exit lane instead of pushing a loading glyph above the playfield.
 - photo-stage signal shipped: the current article stage now reports whether the route is using a real Wikipedia photo or archive fallback without crowding the target strip.
 - boot-stage polish shipped: Race `READY` and initial `ROUTING` states now use a route boot stage with scan badge, HUD, and pulse rail instead of a generic loading glyph.
+- exit-scan polish shipped: Race's blue-link command header now uses `Exit scan`, ready/seen/trace stats, and a tiny route rail instead of browser-like open-exit language.
 
 ### Map
 
