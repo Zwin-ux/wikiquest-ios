@@ -217,6 +217,7 @@ First shipped slice:
 - phase-signal polish shipped: the top-left Map phase chip now uses the shared scan badge for locating, loading, pin, reveal, and empty states, matching the live photo-stage language without covering the map.
 - loading-strip polish shipped: Map locating/loading now renders as a lower command-sheet `LOCATE`/`SCAN` strip with page count and a tiny rail, replacing the generic loading glyph.
 - city-scan polish shipped: sample-city controls now render as numbered `CITY` scan lanes with `SCAN`/`LIVE` badges and shared command feedback instead of utility jump chips.
+- target-lock polish shipped: placed Map pins now show `Target lock`, a tiny lock rail, and `LOCKED` state, while empty/loading actions use scan language instead of generic choose/wait copy.
 
 ### Ranks / Me
 
