@@ -27,6 +27,7 @@ struct ProfileView: View {
                 statusText: session.statusText,
                 isSignedIn: session.isSignedIn
             )
+            .accessibilityIdentifier("ProfileOSHeader")
 
             if viewModel.isLoading {
                 WikiLoadingGlyph(title: "SYNCING", detail: "Refreshing account, XP, and discoveries.", tint: WikiTheme.blue)

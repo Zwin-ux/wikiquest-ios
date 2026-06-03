@@ -138,6 +138,9 @@ final class DailyMysteryViewModel: ObservableObject {
     }
 
     func load(signedIn: Bool) async {
+        if applyScreenshotFixtureIfNeeded() {
+            return
+        }
         guard signedIn else {
             error = "Sign in with Apple to save Mystery XP and streaks."
             daily = nil
@@ -234,5 +237,57 @@ final class DailyMysteryViewModel: ObservableObject {
         guard isComplete, let title = answerTitle else { return }
         if answerArticle?.title == title { return }
         answerArticle = try? await wikipedia.summary(title: title)
+    }
+
+    private func applyScreenshotFixtureIfNeeded() -> Bool {
+        guard ProcessInfo.processInfo.environment["WIKIQUEST_SCREENSHOT_MYSTERY_REVEALED"] == "1" else {
+            return false
+        }
+        let media = WikiMedia.from(
+            thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/640px-The_Great_Wave_off_Kanagawa.jpg",
+            image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/1024px-The_Great_Wave_off_Kanagawa.jpg",
+            source: "https://commons.wikimedia.org/wiki/File:The_Great_Wave_off_Kanagawa.jpg",
+            fallbackStyle: .mystery
+        )
+        daily = DailyRandomState(
+            date: "2026-06-03",
+            puzzleNumber: 81,
+            totalHints: 6,
+            hintsRevealed: 6,
+            maxGuesses: 6,
+            revealedHints: [
+                WikiHint(index: 1, type: "description", value: .string("A famous Japanese woodblock print.")),
+                WikiHint(index: 2, type: "thumbnail", value: .string("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/640px-The_Great_Wave_off_Kanagawa.jpg")),
+                WikiHint(index: 3, type: "fingerprint", value: .fingerprint(FingerprintHint(titleWords: 4, extractChars: 640, extractWords: 94, sectionsCount: 6, referencesCount: 38, incomingLinks: 1200, lengthBand: "medium")))
+            ],
+            guesses: [
+                GuessRecord(text: "Mount Fuji", correct: false, hintAt: 2),
+                GuessRecord(text: "Ukiyo-e", correct: false, hintAt: 4),
+                GuessRecord(text: "Kanagawa", correct: false, hintAt: 6)
+            ],
+            guessCount: 6,
+            guessesRemaining: 0,
+            isCorrect: false,
+            isComplete: true,
+            score: 0,
+            timeMs: 184000,
+            startedAt: "2026-06-03T00:00:00Z",
+            answer: WikiAnswer(title: "The Great Wave off Kanagawa", pageUrl: "https://en.wikipedia.org/wiki/The_Great_Wave_off_Kanagawa")
+        )
+        answerArticle = WikiArticle(
+            title: "The Great Wave off Kanagawa",
+            description: "Woodblock print by Hokusai",
+            extract: "The answer is revealed for screenshot review.",
+            url: URL(string: "https://en.wikipedia.org/wiki/The_Great_Wave_off_Kanagawa"),
+            media: media
+        )
+        practice = nil
+        mode = .daily
+        error = nil
+        isLoading = false
+        isSubmitting = false
+        guess = ""
+        suggestions = []
+        return true
     }
 }

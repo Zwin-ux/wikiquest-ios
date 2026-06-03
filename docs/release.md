@@ -36,6 +36,23 @@ Public CI builds without signing. TestFlight release requires private Apple and 
 7. Capture screenshots: icon, onboarding, Quest Deck, Mystery, Race, Map, Ranks, Me, App Clip.
 8. Review screenshots before public App Store submission.
 
+## Screenshot Review Workflow
+
+Run the manual `Screenshot Review` GitHub workflow before TestFlight release review.
+It captures simulator PNG artifacts for:
+
+- app icon
+- onboarding
+- Quest Deck
+- Mystery with the failed `REVEALED` HUD state
+- Race
+- Map
+- Ranks
+- Me
+- App Clip
+
+Use the default `iPhone SE (3rd generation)` input first to stress small-phone text fit, then compare against real TestFlight/device screenshots before App Store submission.
+
 ## App Clip
 
 The App Clip is included in the archive only when the App Clip provisioning profile secret exists. Public App Clip invocation still needs Associated Domains and App Store Connect App Clip metadata.
