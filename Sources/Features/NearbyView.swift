@@ -621,7 +621,7 @@ private struct MapQuestStatus: View {
         case .revealed:
             return "Distance"
         case .empty:
-            return "Jump"
+            return "Scan"
         }
     }
 
@@ -706,23 +706,37 @@ private struct CityRail: View {
     let cities: [KnownCity]
     let choose: (KnownCity) -> Void
     @State private var selectedCityID: UUID?
+    @State private var selectionToken = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Kicker(text: "Jump")
+            HStack(alignment: .firstTextBaseline) {
+                Kicker(text: "City scan")
+                Spacer(minLength: 8)
+                Text("\(cities.count) anchors")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.subtle)
+                    .lineLimit(1)
+            }
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(cities) { city in
+                    ForEach(Array(cities.enumerated()), id: \.element.id) { index, city in
                         Button {
                             Haptics.light()
                             selectedCityID = city.id
+                            selectionToken &+= 1
                             choose(city)
                         } label: {
-                            CityJumpChip(city: city, isSelected: selectedCityID == city.id)
+                            CityJumpChip(
+                                city: city,
+                                index: index + 1,
+                                isSelected: selectedCityID == city.id
+                            )
                         }
                         .buttonStyle(ArcadePressStyle())
-                        .motionTick(trigger: selectedCityID == city.id ? selectedCityID : nil, tint: WikiTheme.blue)
+                        .commandLanePulse(trigger: selectionToken, tint: WikiTheme.blue, enabled: selectedCityID == city.id)
+                        .motionTick(trigger: selectedCityID == city.id ? selectionToken : 0, tint: WikiTheme.blue, enabled: selectedCityID == city.id)
                         .accessibilityIdentifier("NearbyCityJump-\(city.label.replacingOccurrences(of: " ", with: ""))")
                     }
                 }
@@ -735,27 +749,62 @@ private struct CityRail: View {
 
 private struct CityJumpChip: View {
     let city: KnownCity
+    let index: Int
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 7) {
-            Image(systemName: isSelected ? "scope" : "location")
-                .font(.caption.weight(.black))
-            Text(city.label)
-                .font(.caption.weight(.bold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.76)
+        HStack(spacing: 8) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(isSelected ? Color.white.opacity(0.18) : WikiTheme.blue.opacity(0.10))
+                Image(systemName: isSelected ? "scope" : "mappin.and.ellipse")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(isSelected ? .white : WikiTheme.blue)
+            }
+            .frame(width: 28, height: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("CITY \(indexLabel)")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(isSelected ? Color.white.opacity(0.74) : WikiTheme.subtle)
+                Text(city.label)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(isSelected ? .white : WikiTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.76)
+            }
+
+            HStack(spacing: 4) {
+                Text(isSelected ? "LIVE" : "SCAN")
+                    .font(.caption2.weight(.black).monospaced())
+                    .lineLimit(1)
+                Image(systemName: isSelected ? "checkmark" : "arrow.right")
+                    .font(.caption2.weight(.black))
+            }
+            .foregroundStyle(isSelected ? WikiTheme.blue : .white)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 5)
+            .background(isSelected ? Color.white : WikiTheme.blue)
+            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
-        .foregroundStyle(isSelected ? .white : WikiTheme.blue)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
         .background(isSelected ? WikiTheme.blue : WikiTheme.blue.opacity(0.06))
         .overlay {
             RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous)
                 .stroke(isSelected ? WikiTheme.blue : WikiTheme.rule.opacity(0.75), lineWidth: 1)
         }
+        .overlay(alignment: .topLeading) {
+            Rectangle()
+                .fill(isSelected ? Color.white.opacity(0.84) : WikiTheme.blue.opacity(0.58))
+                .frame(width: 34, height: 2)
+        }
         .clipShape(RoundedRectangle(cornerRadius: WikiTheme.radius, style: .continuous))
         .accessibilityElement(children: .combine)
+    }
+
+    private var indexLabel: String {
+        index < 10 ? "0\(index)" : "\(index)"
     }
 }
 

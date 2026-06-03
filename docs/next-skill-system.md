@@ -215,6 +215,7 @@ First shipped slice:
 - playfield cleanup shipped: Map no longer places a bottom-left instruction panel over MapKit; the live stage keeps phase + HUD only, and instructions/commands stay in the lower command sheet.
 - phase-signal polish shipped: the top-left Map phase chip now uses the shared scan badge for locating, loading, pin, reveal, and empty states, matching the live photo-stage language without covering the map.
 - loading-strip polish shipped: Map locating/loading now renders as a lower command-sheet `LOCATE`/`SCAN` strip with page count and a tiny rail, replacing the generic loading glyph.
+- city-scan polish shipped: sample-city controls now render as numbered `CITY` scan lanes with `SCAN`/`LIVE` badges and shared command feedback instead of utility jump chips.
 
 ### Ranks / Me
 
