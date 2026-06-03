@@ -263,3 +263,4 @@ First shipped slice:
 - Reduce Motion removes non-essential animation.
 - Public CI passes.
 - TestFlight screenshot review passes before release.
+- Manual `Screenshot Review` workflow produces PNG artifacts for icon, onboarding, Quest Deck, Mystery, Race, Map, Ranks, Me, and App Clip before final device review.

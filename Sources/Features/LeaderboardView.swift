@@ -20,6 +20,7 @@ struct LeaderboardView: View {
             )
 
             LeaderboardBoardSwitch(selection: $viewModel.tab)
+                .accessibilityIdentifier("LeaderboardBoardSwitch")
 
             if let error = viewModel.error {
                 RecoveryNotice(
