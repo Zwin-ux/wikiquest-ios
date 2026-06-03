@@ -247,11 +247,11 @@ struct NearbyView: View {
         case .loading:
             return "Loading nearby pages"
         case .guess, .denied:
-            return viewModel.guess == nil ? "Drop a pin" : "Pin armed"
+            return viewModel.guess == nil ? "Aim on map" : "Target locked"
         case .revealed:
             return viewModel.selected?.title ?? "Target revealed"
         case .empty:
-            return "Try another city"
+            return "Scan another city"
         }
     }
 
@@ -267,13 +267,13 @@ struct NearbyView: View {
     private var revealActionTitle: String {
         switch viewModel.phase {
         case .locating, .loading:
-            return "Loading map"
+            return "Scanning map"
         case .empty:
-            return "Choose city"
+            return "Scan city"
         case .revealed:
             return "Next"
         case .guess, .denied:
-            return viewModel.guess != nil ? "Reveal target" : "Reveal"
+            return viewModel.guess != nil ? "Reveal target" : "Aim on map"
         }
     }
 
@@ -824,8 +824,8 @@ private struct MapPinFeedbackStrip: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Kicker(text: "Pin armed")
-                Text("Reveal target or tap the map to move it.")
+                Kicker(text: "Target lock")
+                Text("Reveal is armed. Tap map to retarget.")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(WikiTheme.muted)
                     .lineLimit(1)
@@ -834,9 +834,12 @@ private struct MapPinFeedbackStrip: View {
 
             Spacer(minLength: 8)
 
-            Text("READY")
-                .font(.caption2.weight(.black).monospaced())
-                .foregroundStyle(tint)
+            VStack(alignment: .trailing, spacing: 4) {
+                MapTargetLockRail(tint: tint)
+                Text("LOCKED")
+                    .font(.caption2.weight(.black).monospaced())
+                    .foregroundStyle(tint)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 9)
@@ -847,6 +850,21 @@ private struct MapPinFeedbackStrip: View {
             Rectangle().fill(tint.opacity(0.28)).frame(height: 1)
         }
         .motionTick(trigger: trigger, tint: tint)
+    }
+}
+
+private struct MapTargetLockRail: View {
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<3, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(index == 2 ? tint : tint.opacity(0.42))
+                    .frame(width: index == 2 ? 14 : 7, height: 4)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
@@ -973,14 +991,16 @@ private struct MapPrimaryActionLane: View {
 
     private var kicker: String {
         switch phase {
-        case .locating, .loading:
-            return "MAP"
+        case .locating:
+            return "LOCATE"
+        case .loading:
+            return "MAP SCAN"
         case .guess, .denied:
-            return hasGuess ? "PIN READY" : "DROP PIN"
+            return hasGuess ? "TARGET" : "MAP AIM"
         case .revealed:
             return "RESULT"
         case .empty:
-            return "EMPTY"
+            return "CITY SCAN"
         }
     }
 
@@ -989,26 +1009,26 @@ private struct MapPrimaryActionLane: View {
         case .locating:
             return "Finding your map center."
         case .loading:
-            return "Loading Wikipedia pages."
+            return "Scanning nearby pages."
         case .guess, .denied:
-            return hasGuess ? "Reveal target or move the pin." : "Tap the map to arm reveal."
+            return hasGuess ? "Reveal is armed. Tap map to retarget." : "Tap the map stage to lock a pin."
         case .revealed:
             return "Load another hidden article."
         case .empty:
-            return "Try a city jump below."
+            return "Pick a city scan below."
         }
     }
 
     private var commandCode: String {
         switch phase {
         case .locating, .loading:
-            return "WAIT"
+            return "SCAN"
         case .guess, .denied:
-            return hasGuess ? "REVEAL" : "PIN"
+            return hasGuess ? "REVEAL" : "AIM"
         case .revealed:
             return "NEXT"
         case .empty:
-            return "JUMP"
+            return "CITY"
         }
     }
 
