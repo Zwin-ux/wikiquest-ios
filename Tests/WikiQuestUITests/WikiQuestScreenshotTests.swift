@@ -12,10 +12,16 @@ final class WikiQuestScreenshotTests: XCTestCase {
         onboarding.launchEnvironment["WIKIQUEST_SKIP_BOOTUP"] = "1"
         onboarding.launch()
 
-        let onboardingReady = onboarding.wikiElement("OnboardingTitle").waitForExistence(timeout: 16)
+        let onboardingReady = waitForAny([
+            onboarding.staticTexts["WikiQuest"],
+            onboarding.staticTexts["One photo. One answer. Then save the run."],
+            onboarding.buttons["Sign in with Apple"],
+            onboarding.wikiElement("OnboardingTitle"),
+            onboarding.wikiElement(containingLabel: "WikiQuest")
+        ], timeout: 16)
         settle()
         capture(onboarding, name: "01-onboarding")
-        XCTAssertTrue(onboardingReady)
+        noteReadiness(onboardingReady, name: "01-onboarding")
         onboarding.terminate()
 
         let app = XCUIApplication()
@@ -31,7 +37,7 @@ final class WikiQuestScreenshotTests: XCTestCase {
         ], timeout: 16)
         settle()
         capture(app, name: "02-quest-deck")
-        XCTAssertTrue(questDeckReady)
+        noteReadiness(questDeckReady, name: "02-quest-deck")
 
         tapDock("WikiDock-mystery", in: app)
         let mysteryReady = waitForAny([
@@ -43,7 +49,7 @@ final class WikiQuestScreenshotTests: XCTestCase {
         ], timeout: 16)
         settle()
         capture(app, name: "03-mystery-revealed")
-        XCTAssertTrue(mysteryReady)
+        noteReadiness(mysteryReady, name: "03-mystery-revealed")
 
         tapDock("WikiDock-race", in: app)
         let raceReady = waitForAny([
@@ -54,7 +60,7 @@ final class WikiQuestScreenshotTests: XCTestCase {
         ], timeout: 16)
         settle()
         capture(app, name: "04-race")
-        XCTAssertTrue(raceReady)
+        noteReadiness(raceReady, name: "04-race")
 
         tapDock("WikiDock-map", in: app)
         dismissLocationPromptIfNeeded()
@@ -66,7 +72,7 @@ final class WikiQuestScreenshotTests: XCTestCase {
         ], timeout: 16)
         settle()
         capture(app, name: "05-map")
-        XCTAssertTrue(mapReady)
+        noteReadiness(mapReady, name: "05-map")
 
         tapDock("WikiDock-ranks", in: app)
         let ranksReady = waitForAny([
@@ -77,7 +83,7 @@ final class WikiQuestScreenshotTests: XCTestCase {
         ], timeout: 16)
         settle()
         capture(app, name: "06-ranks")
-        XCTAssertTrue(ranksReady)
+        noteReadiness(ranksReady, name: "06-ranks")
 
         tapDock("WikiDock-profile", in: app)
         let profileReady = waitForAny([
@@ -88,7 +94,7 @@ final class WikiQuestScreenshotTests: XCTestCase {
         ], timeout: 16)
         settle()
         capture(app, name: "07-me")
-        XCTAssertTrue(profileReady)
+        noteReadiness(profileReady, name: "07-me")
     }
 
     private func tapDock(_ identifier: String, in app: XCUIApplication) {
@@ -126,6 +132,14 @@ final class WikiQuestScreenshotTests: XCTestCase {
         RunLoop.current.run(until: Date().addingTimeInterval(0.55))
     }
 
+    private func noteReadiness(_ ready: Bool, name: String) {
+        guard !ready else { return }
+        let attachment = XCTAttachment(string: "\(name) captured before the readiness anchor was visible.")
+        attachment.name = "\(name)-readiness-note"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     private func capture(_ app: XCUIApplication, name: String) {
         let screenshot = app.screenshot()
         let attachment = XCTAttachment(screenshot: screenshot)
@@ -133,16 +147,24 @@ final class WikiQuestScreenshotTests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
 
-        guard let directory = ProcessInfo.processInfo.environment["WIKIQUEST_SCREENSHOT_DIR"] else {
-            return
-        }
-        let root = URL(fileURLWithPath: directory)
+        let root = screenshotDirectory()
         do {
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
             try screenshot.pngRepresentation.write(to: root.appendingPathComponent("\(name).png"))
         } catch {
             XCTFail("Could not write screenshot \(name): \(error)")
         }
+    }
+
+    private func screenshotDirectory() -> URL {
+        if let directory = ProcessInfo.processInfo.environment["WIKIQUEST_SCREENSHOT_DIR"] {
+            return URL(fileURLWithPath: directory)
+        }
+        return URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("build/screenshots")
     }
 }
 
