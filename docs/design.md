@@ -155,7 +155,7 @@ Pass scores:
 - Quest Deck mode-path cleanup: signed-in Mystery/Race/Map tiles now cycle a compact path rail, keeping the mode picker alive as route selection without adding another panel.
 - Map city-scan cleanup: sample-city controls now read as numbered `CITY` scan lanes with `SCAN`/`LIVE` badges and shared command feedback instead of plain jump chips.
 - Race exit-scan cleanup: the blue-link command header now says `Exit scan`, shows ready/seen/trace state, and adds a tiny route rail so the list reads as playable exits instead of browser links.
-- Map target-lock cleanup: placed pins now show `Target lock` with a tiny lock rail and `LOCKED` state, while empty/loading actions use scan language instead of generic choose/wait copy.
+- Map target-lock cleanup: unplaced pins now read as `Aim on map` instead of a disabled set-pin command; placed pins show `Target lock` with a tiny lock rail and `LOCKED` state, while empty/loading actions use scan language instead of generic choose/wait copy.
 
 Not in scope for this cleanup:
 

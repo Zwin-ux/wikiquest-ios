@@ -247,7 +247,7 @@ struct NearbyView: View {
         case .loading:
             return "Loading nearby pages"
         case .guess, .denied:
-            return viewModel.guess == nil ? "Set target" : "Target locked"
+            return viewModel.guess == nil ? "Aim on map" : "Target locked"
         case .revealed:
             return viewModel.selected?.title ?? "Target revealed"
         case .empty:
@@ -273,7 +273,7 @@ struct NearbyView: View {
         case .revealed:
             return "Next"
         case .guess, .denied:
-            return viewModel.guess != nil ? "Reveal target" : "Set pin"
+            return viewModel.guess != nil ? "Reveal target" : "Aim on map"
         }
     }
 
@@ -996,7 +996,7 @@ private struct MapPrimaryActionLane: View {
         case .loading:
             return "MAP SCAN"
         case .guess, .denied:
-            return hasGuess ? "TARGET" : "SET PIN"
+            return hasGuess ? "TARGET" : "MAP AIM"
         case .revealed:
             return "RESULT"
         case .empty:
@@ -1011,7 +1011,7 @@ private struct MapPrimaryActionLane: View {
         case .loading:
             return "Scanning nearby pages."
         case .guess, .denied:
-            return hasGuess ? "Reveal is armed. Tap map to retarget." : "Tap map to set target."
+            return hasGuess ? "Reveal is armed. Tap map to retarget." : "Tap the map stage to lock a pin."
         case .revealed:
             return "Load another hidden article."
         case .empty:
@@ -1024,7 +1024,7 @@ private struct MapPrimaryActionLane: View {
         case .locating, .loading:
             return "SCAN"
         case .guess, .denied:
-            return hasGuess ? "REVEAL" : "PIN"
+            return hasGuess ? "REVEAL" : "AIM"
         case .revealed:
             return "NEXT"
         case .empty:
