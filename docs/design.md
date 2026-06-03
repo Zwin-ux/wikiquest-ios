@@ -152,6 +152,7 @@ Pass scores:
 - Quest Deck rail cleanup: the Daily card's top rail now ticks across markers instead of breathing on a fixed segment, matching the short rail motion used by Mystery, Race, and Map.
 - Onboarding boot-handoff cleanup: the first boot no longer ends on a generic `Continue`; it uses a flat `Boot ready` / `Start preview` command with a short rail tick and haptic tap.
 - Onboarding path-strip cleanup: first-launch mode rows now read as compact PATH 01/02/03 command lanes with mode glyphs, action badges, and a reduced-motion-aware rail instead of plain app rows.
+- Quest Deck mode-path cleanup: signed-in Mystery/Race/Map tiles now cycle a compact path rail, keeping the mode picker alive as route selection without adding another panel.
 
 Not in scope for this cleanup:
 
