@@ -156,6 +156,7 @@ Pass scores:
 - Map city-scan cleanup: sample-city controls now read as numbered `CITY` scan lanes with `SCAN`/`LIVE` badges and shared command feedback instead of plain jump chips.
 - Race exit-scan cleanup: the blue-link command header now says `Exit scan`, shows ready/seen/trace state, and adds a tiny route rail so the list reads as playable exits instead of browser links.
 - Map target-lock cleanup: unplaced pins now read as `Aim on map` instead of a disabled set-pin command; placed pins show `Target lock` with a tiny lock rail and `LOCKED` state, while empty/loading actions use scan language instead of generic choose/wait copy.
+- Design-review solve-state cleanup: Mystery loading/status copy now uses clue-slot and solve language, failed results read `REVEALED`, the empty clue rail says `SEALED` instead of `READY`, and Quest Deck mode selection says `Path select`.
 
 Not in scope for this cleanup:
 

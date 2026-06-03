@@ -142,6 +142,7 @@ First shipped slice:
 - reminder command polish shipped: the daily notification control now renders as a compact `Daily signal` command strip with arm/disarm states, removing the last generic reminder card from the Quest Deck flow.
 - rail-motion polish shipped: the Daily card's top rail now ticks across markers instead of breathing on a fixed segment, matching the game rail motion used in Mystery, Race, and Map.
 - mode-path polish shipped: signed-in Mystery/Race/Map tiles now cycle a compact path rail, so the mode picker reads as route selection rather than a static app menu.
+- mode-rail review shipped: the signed-in mode rail now says `Path select` instead of generic choose-quest copy.
 
 ### Mystery
 
@@ -165,6 +166,7 @@ First shipped slice:
 - photo-stage signal shipped: Mystery and preview photo clues now use the shared scan badge so clue/fallback/image states read as live stage instrumentation, not passive image labels.
 - loading-strip polish shipped: Mystery puzzle loading now stays inside the command deck as a `SYNC` strip with clue/shot metadata and a tiny rail, replacing the generic loading glyph.
 - empty-clue polish shipped: Mystery's unrevealed clue timeline now starts as a locked clue rail with a live `LOCKED` badge instead of a generic `READY` notice.
+- solve-state review shipped: Mystery loading/status copy now uses clue-slot and solve language, failed results read `REVEALED`, and the empty clue rail says `SEALED` instead of `READY`.
 
 ### Race
 

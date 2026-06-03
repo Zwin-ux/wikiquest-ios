@@ -201,7 +201,7 @@ private struct MysteryCommandLoadingStrip: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Kicker(text: mode == .daily ? "Daily puzzle" : "Practice puzzle")
-                Text(mode == .daily ? "Opening today's clue file." : "Building a fresh clue file.")
+                Text(mode == .daily ? "Syncing today's clue slots." : "Seeding practice clue slots.")
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(WikiTheme.ink)
                     .lineLimit(1)
@@ -308,7 +308,7 @@ private struct MysteryCommandStatusStrip: View {
                 .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
-                Kicker(text: mode == .daily ? "Daily command" : "Practice command")
+                Kicker(text: mode == .daily ? "Daily solve" : "Practice solve")
                 Text(statusText)
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(WikiTheme.ink)
@@ -322,6 +322,8 @@ private struct MysteryCommandStatusStrip: View {
                 Text(isComplete ? resultLabel : "\(guessesRemaining)")
                     .font(.system(.title3, design: .monospaced).weight(.black))
                     .foregroundStyle(tint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
                     .contentTransition(.numericText())
                 Text(isComplete ? "result" : "shots")
                     .font(.caption2.weight(.black).monospaced())
@@ -341,16 +343,16 @@ private struct MysteryCommandStatusStrip: View {
 
     private var statusText: String {
         if isComplete {
-            return isCorrect ? "Solved. Share it or start another run." : "Answer opened. Study the page and try again."
+            return isCorrect ? "Solved. Share result or start another run." : "Answer revealed. Study the trail and try again."
         }
         if hintsRevealed == 0 {
-            return "Reveal a clue or take a first shot."
+            return "Open a clue slot or take a blind shot."
         }
-        return "Use the clue trail to name the hidden article."
+        return "Read the clue trail and name the article."
     }
 
     private var resultLabel: String {
-        isCorrect ? "WIN" : "OPEN"
+        isCorrect ? "WIN" : "REVEALED"
     }
 
     private var systemImage: String {
@@ -520,7 +522,7 @@ private struct MysteryPhotoStage: View {
     private var stageHUDItems: [GameHUDItem] {
         if viewModel.isComplete {
             return [
-                GameHUDItem(label: "Result", value: viewModel.isCorrect ? "SOLVED" : "OPEN", systemImage: viewModel.isCorrect ? "checkmark.seal.fill" : "eye.fill", tint: viewModel.isCorrect ? WikiTheme.green : WikiTheme.red),
+                GameHUDItem(label: "Result", value: viewModel.isCorrect ? "SOLVED" : "REVEALED", systemImage: viewModel.isCorrect ? "checkmark.seal.fill" : "eye.fill", tint: viewModel.isCorrect ? WikiTheme.green : WikiTheme.red),
                 GameHUDItem(label: "Time", value: WikiDisplayFormat.time(milliseconds: viewModel.timeMs), systemImage: "timer", tint: WikiTheme.violet, flashesOnChange: false),
                 GameHUDItem(label: "Hints", value: "\(viewModel.hintsRevealed)/\(viewModel.totalHints)", systemImage: "eye", tint: WikiTheme.amber)
             ]
@@ -942,7 +944,7 @@ private struct EmptyMysteryState: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Kicker(text: "Clue file")
-                    Text("READY")
+                    Text("SEALED")
                         .font(.caption2.weight(.black).monospaced())
                         .foregroundStyle(WikiTheme.amber)
                 }
