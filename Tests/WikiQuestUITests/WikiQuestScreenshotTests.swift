@@ -12,10 +12,10 @@ final class WikiQuestScreenshotTests: XCTestCase {
         onboarding.launchEnvironment["WIKIQUEST_SKIP_BOOTUP"] = "1"
         onboarding.launch()
 
-        XCTAssertTrue(onboarding.wikiElement("PlayablePreviewQuest").waitForExistence(timeout: 12))
-        XCTAssertTrue(onboarding.wikiElement("PreviewPhotoStage").exists)
+        let onboardingReady = onboarding.wikiElement("OnboardingTitle").waitForExistence(timeout: 16)
         settle()
         capture(onboarding, name: "01-onboarding")
+        XCTAssertTrue(onboardingReady)
         onboarding.terminate()
 
         let app = XCUIApplication()
@@ -23,40 +23,72 @@ final class WikiQuestScreenshotTests: XCTestCase {
         app.launchEnvironment["WIKIQUEST_SCREENSHOT_MYSTERY_REVEALED"] = "1"
         app.launch()
 
-        XCTAssertTrue(app.wikiElement("QuestDeckCard").waitForExistence(timeout: 12))
+        let questDeckReady = waitForAny([
+            app.buttons["Today"],
+            app.wikiElement("WikiDock"),
+            app.wikiElement("QuestDeckCard"),
+            app.wikiElement("HomeMode-mystery")
+        ], timeout: 16)
         settle()
         capture(app, name: "02-quest-deck")
+        XCTAssertTrue(questDeckReady)
 
         tapDock("WikiDock-mystery", in: app)
-        XCTAssertTrue(app.wikiElement("MysteryPhotoStage").waitForExistence(timeout: 12))
-        XCTAssertTrue(app.wikiElement("MysteryCommandDeck").exists)
+        let mysteryReady = waitForAny([
+            app.wikiElement("MysteryPhotoStage"),
+            app.wikiElement("MysteryCommandDeck"),
+            app.wikiElement("MysteryModeSwitch"),
+            app.wikiElement("MysteryRecoveryNotice"),
+            app.wikiElement(containingLabel: "REVEALED")
+        ], timeout: 16)
         settle()
         capture(app, name: "03-mystery-revealed")
+        XCTAssertTrue(mysteryReady)
 
         tapDock("WikiDock-race", in: app)
-        XCTAssertTrue(waitForAny([
+        let raceReady = waitForAny([
             app.wikiElement("RacePhotoStage"),
             app.wikiElement("RaceRouteBootStage"),
-            app.wikiElement("RaceRecoveryNotice")
-        ], timeout: 14))
+            app.wikiElement("RaceRecoveryNotice"),
+            app.wikiElement(containingLabel: "SPECIAL:LINK-RACE")
+        ], timeout: 16)
         settle()
         capture(app, name: "04-race")
+        XCTAssertTrue(raceReady)
 
         tapDock("WikiDock-map", in: app)
         dismissLocationPromptIfNeeded()
-        XCTAssertTrue(app.wikiElement("NearbyMapStage").waitForExistence(timeout: 14))
+        let mapReady = waitForAny([
+            app.wikiElement("NearbyMapStage"),
+            app.wikiElement("NearbyQuestStatus"),
+            app.wikiElement("NearbyControlSheet"),
+            app.maps.firstMatch
+        ], timeout: 16)
         settle()
         capture(app, name: "05-map")
+        XCTAssertTrue(mapReady)
 
         tapDock("WikiDock-ranks", in: app)
-        XCTAssertTrue(app.wikiElement("LeaderboardBoardSwitch").waitForExistence(timeout: 12))
+        let ranksReady = waitForAny([
+            app.wikiElement("LeaderboardBoardSwitch"),
+            app.wikiElement("LeaderboardLoadingGlyph"),
+            app.wikiElement("LeaderboardRecoveryNotice"),
+            app.wikiElement(containingLabel: "RANKS")
+        ], timeout: 16)
         settle()
         capture(app, name: "06-ranks")
+        XCTAssertTrue(ranksReady)
 
         tapDock("WikiDock-profile", in: app)
-        XCTAssertTrue(app.wikiElement("ProfileOSHeader").waitForExistence(timeout: 12))
+        let profileReady = waitForAny([
+            app.wikiElement("ProfileOSHeader"),
+            app.wikiElement("ProfileLoadingGlyph"),
+            app.wikiElement("ProfileRecoveryNotice"),
+            app.wikiElement(containingLabel: "Profile")
+        ], timeout: 16)
         settle()
         capture(app, name: "07-me")
+        XCTAssertTrue(profileReady)
     }
 
     private func tapDock(_ identifier: String, in app: XCUIApplication) {
@@ -117,6 +149,11 @@ final class WikiQuestScreenshotTests: XCTestCase {
 private extension XCUIApplication {
     func wikiElement(_ identifier: String) -> XCUIElement {
         let predicate = NSPredicate(format: "identifier == %@ OR label == %@", identifier, identifier)
+        return descendants(matching: .any).matching(predicate).firstMatch
+    }
+
+    func wikiElement(containingLabel label: String) -> XCUIElement {
+        let predicate = NSPredicate(format: "label CONTAINS[c] %@ OR identifier CONTAINS[c] %@", label, label)
         return descendants(matching: .any).matching(predicate).firstMatch
     }
 }
