@@ -685,13 +685,18 @@ private struct RaceExitCommandHeader: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .wikiBounce(enabled: isTracing && !motion.reduceMotion, value: loadingTitle ?? "ready")
 
-            VStack(alignment: .leading, spacing: 2) {
-                Kicker(text: isTracing ? "Tracing" : "Next exit")
+            VStack(alignment: .leading, spacing: 4) {
+                Kicker(text: isTracing ? "Route trace" : "Exit scan")
                 Text(commandText)
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(WikiTheme.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.78)
+                RaceExitScanRail(
+                    availableExits: availableExits,
+                    seenExits: seenExits,
+                    isTracing: isTracing
+                )
             }
             .layoutPriority(1)
 
@@ -699,11 +704,11 @@ private struct RaceExitCommandHeader: View {
 
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 7) {
-                    RaceExitStat(label: "Open", value: "\(availableExits)", tint: WikiTheme.blue)
+                    RaceExitStat(label: "Ready", value: "\(availableExits)", tint: WikiTheme.blue)
                     RaceExitStat(label: "Seen", value: "\(seenExits)", tint: WikiTheme.muted)
                 }
 
-                RaceExitStat(label: isTracing ? "Trace" : "Exits", value: isTracing ? "ON" : "\(totalExits)", tint: WikiTheme.blue)
+                RaceExitStat(label: isTracing ? "Trace" : "Total", value: isTracing ? "ON" : "\(totalExits)", tint: WikiTheme.blue)
             }
         }
         .padding(.vertical, 8)
@@ -726,9 +731,53 @@ private struct RaceExitCommandHeader: View {
             return "Tracing \(loadingTitle)"
         }
         if totalExits == 0 {
-            return "No exits on this page."
+            return "No blue-link exits on this page."
         }
-        return "Pick a blue link to advance the route."
+        return "Take one exit lane to extend the route."
+    }
+}
+
+private struct RaceExitScanRail: View {
+    let availableExits: Int
+    let seenExits: Int
+    let isTracing: Bool
+
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<4, id: \.self) { step in
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(fill(for: step))
+                    .frame(width: width(for: step), height: 4)
+            }
+        }
+        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: isTracing)
+        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: availableExits)
+        .accessibilityHidden(true)
+    }
+
+    private func fill(for step: Int) -> Color {
+        if isTracing {
+            return step == 0 ? WikiTheme.blue : WikiTheme.blue.opacity(motion.reduceMotion ? 0.36 : 0.24)
+        }
+        guard availableExits > 0 else {
+            return WikiTheme.hairline
+        }
+        if step < min(availableExits, 4) {
+            return WikiTheme.blue.opacity(step == 0 ? 0.82 : 0.42)
+        }
+        if step < min(seenExits, 4) {
+            return WikiTheme.muted.opacity(0.38)
+        }
+        return WikiTheme.hairline
+    }
+
+    private func width(for step: Int) -> CGFloat {
+        guard isTracing, !motion.reduceMotion else {
+            return step == 0 ? 12 : 8
+        }
+        return step == 0 ? 24 : 8
     }
 }
 
