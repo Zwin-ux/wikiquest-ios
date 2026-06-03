@@ -173,8 +173,11 @@ private struct HomeModeRail: View {
     let discoveryItems: [QuestDeckItem]
     let deckMedia: WikiMedia?
     let navigate: (AppTab) -> Void
+    @EnvironmentObject private var motion: MotionSettings
     @State private var selectedModeID: String?
     @State private var selectionToken = 0
+    @State private var activeIndex = 0
+    @State private var didStartTicker = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 104), spacing: 8)
@@ -182,7 +185,14 @@ private struct HomeModeRail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Kicker(text: "Choose quest")
+            HStack(alignment: .firstTextBaseline) {
+                Kicker(text: "Choose quest")
+                Spacer(minLength: 8)
+                Text("\(modes.count) paths")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WikiTheme.subtle)
+                    .lineLimit(1)
+            }
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(Array(modes.enumerated()), id: \.element.id) { index, mode in
                     PanelReveal(delay: Double(index) * 0.035) {
@@ -192,7 +202,12 @@ private struct HomeModeRail: View {
                             selectionToken &+= 1
                             navigate(mode.tab)
                         } label: {
-                            ModeDeckTile(mode: mode, media: media(for: index), index: index + 1)
+                            ModeDeckTile(
+                                mode: mode,
+                                media: media(for: index),
+                                index: index + 1,
+                                isActive: index == activeIndex
+                            )
                         }
                         .buttonStyle(ArcadePressStyle())
                         .commandLanePulse(
@@ -206,6 +221,9 @@ private struct HomeModeRail: View {
                 }
             }
         }
+        .task {
+            await runTicker()
+        }
     }
 
     private func media(for index: Int) -> WikiMedia? {
@@ -214,12 +232,30 @@ private struct HomeModeRail: View {
         }
         return deckMedia
     }
+
+    @MainActor
+    private func runTicker() async {
+        guard !didStartTicker else { return }
+        didStartTicker = true
+        guard !motion.reduceMotion, modes.count > 1 else {
+            activeIndex = 0
+            return
+        }
+
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 980_000_000)
+            withAnimation(WikiMotion.tick) {
+                activeIndex = (activeIndex + 1) % modes.count
+            }
+        }
+    }
 }
 
 private struct ModeDeckTile: View {
     let mode: ModeTile
     let media: WikiMedia?
     let index: Int
+    let isActive: Bool
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -237,7 +273,7 @@ private struct ModeDeckTile: View {
                         .font(.callout.weight(.black))
                         .foregroundStyle(.white)
                     Spacer(minLength: 4)
-                    Text(String(format: "%02d", index))
+                    Text(indexLabel)
                         .font(.caption2.weight(.black).monospaced())
                         .foregroundStyle(.white)
                         .padding(.horizontal, 7)
@@ -279,14 +315,16 @@ private struct ModeDeckTile: View {
         }
         .frame(maxWidth: .infinity, minHeight: 118, alignment: .leading)
         .overlay(alignment: .topLeading) {
-            Rectangle()
-                .fill(mode.color)
-                .frame(width: 28, height: 3)
+            ModeDeckPathRail(tint: mode.color, isActive: isActive)
                 .padding(9)
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(mode.title), \(mode.detail), \(mode.command)")
+    }
+
+    private var indexLabel: String {
+        index < 10 ? "0\(index)" : "\(index)"
     }
 }
 
@@ -300,6 +338,40 @@ private extension ModeTile {
         default:
             return .article
         }
+    }
+}
+
+private struct ModeDeckPathRail: View {
+    let tint: Color
+    let isActive: Bool
+
+    @EnvironmentObject private var motion: MotionSettings
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<3, id: \.self) { step in
+                RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                    .fill(fill(for: step))
+                    .frame(width: width(for: step), height: 3)
+            }
+        }
+        .opacity(isActive || motion.reduceMotion ? 1 : 0.58)
+        .animation(WikiMotion.active(WikiMotion.tick, reduceMotion: motion.reduceMotion), value: isActive)
+        .accessibilityHidden(true)
+    }
+
+    private func fill(for step: Int) -> Color {
+        guard isActive else {
+            return step == 0 ? tint.opacity(0.72) : Color.white.opacity(0.34)
+        }
+        return step == 0 ? tint : Color.white.opacity(motion.reduceMotion ? 0.62 : 0.76)
+    }
+
+    private func width(for step: Int) -> CGFloat {
+        guard isActive, !motion.reduceMotion else {
+            return step == 0 ? 10 : 5
+        }
+        return step == 0 ? 14 : 6
     }
 }
 

@@ -141,6 +141,7 @@ First shipped slice:
 - photo-stage signal shipped: the Daily card now carries a compact `PHOTO`/`CLUE`/`ARCHIVE`/`LOCKED` scan badge beside the WikiQuest label instead of adding another metric strip.
 - reminder command polish shipped: the daily notification control now renders as a compact `Daily signal` command strip with arm/disarm states, removing the last generic reminder card from the Quest Deck flow.
 - rail-motion polish shipped: the Daily card's top rail now ticks across markers instead of breathing on a fixed segment, matching the game rail motion used in Mystery, Race, and Map.
+- mode-path polish shipped: signed-in Mystery/Race/Map tiles now cycle a compact path rail, so the mode picker reads as route selection rather than a static app menu.
 
 ### Mystery
 
