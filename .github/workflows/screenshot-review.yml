@@ -65,10 +65,28 @@ jobs:
           fi
           if [ -n "$line" ]; then
             simulator_id="$(printf "%s" "$line" | sed -E 's/.*id:([^,}]+).*/\1/' | xargs)"
-            destination="id=$simulator_id"
           else
-            destination="generic/platform=iOS Simulator"
+            device_type="$(xcrun simctl list devicetypes | grep -F "$DEVICE_NAME" | sed -E 's/.*\((com\.apple\.CoreSimulator\.SimDeviceType\.[^)]+)\).*/\1/' | head -n 1)"
+            if [ -z "$device_type" ]; then
+              device_type="$(xcrun simctl list devicetypes | grep -F 'iPhone SE' | sed -E 's/.*\((com\.apple\.CoreSimulator\.SimDeviceType\.[^)]+)\).*/\1/' | head -n 1)"
+            fi
+            if [ -z "$device_type" ]; then
+              device_type="$(xcrun simctl list devicetypes | grep -F 'iPhone' | sed -E 's/.*\((com\.apple\.CoreSimulator\.SimDeviceType\.[^)]+)\).*/\1/' | head -n 1)"
+            fi
+            runtime_id="$(xcrun simctl list runtimes | grep '^iOS ' | grep -v unavailable | sed -E 's/.* - (com\.apple\.CoreSimulator\.SimRuntime\.[^ ]+).*/\1/' | tail -n 1)"
+            if [ -z "$device_type" ] || [ -z "$runtime_id" ]; then
+              echo "Available destinations:"
+              printf "%s\n" "$destinations"
+              echo "Available iOS runtimes:"
+              xcrun simctl list runtimes | grep '^iOS ' || true
+              echo "Could not resolve a concrete iOS Simulator for screenshot review."
+              exit 1
+            fi
+            simulator_id="$(xcrun simctl create "WikiQuest Screenshot ${DEVICE_NAME}" "$device_type" "$runtime_id")"
           fi
+          xcrun simctl boot "$simulator_id" || true
+          xcrun simctl bootstatus "$simulator_id" -b
+          destination="id=$simulator_id"
           echo "Using destination: $destination"
           {
             echo "destination<<EOF"
