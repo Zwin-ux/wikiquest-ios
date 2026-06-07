@@ -34,3 +34,8 @@ ExportOptions.plist
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# Internal Documentation
+docs/next-skill-system.md
+docs/roadmap.md
+docs/release.md
